@@ -1,0 +1,3 @@
+timestamp,username,group,partner,task,intention,intentionTimestamp,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,score,partnerScore
+1760571828281,user01,treatment,user02,Task 1,6,1760571813425,0.62,24,0.4895482253187058,27,C,1760571828281,,
+1760571893332,user01,treatment,user02,Task 2,4,1760571890910,0.62,24,0.598866641621596,39,A,1760571893332,,

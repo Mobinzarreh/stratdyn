@@ -1,389 +1,991 @@
 {
     "tasks": [
-        { 
-            "label": "Task Colorado",
+        {
+            "label": "Task 1",
+            "uValue": 0.62,
             "options": [
-                {"label": "Design K", "image": "item_fanta", "upside": "130", "downside": "-48"}, 
-                {"label": "Design L", "image": "robert_utah", "upside": "105", "downside": "-17"}, 
-                {"label": "Design M", "image":  "carpet_magazine", "upside": "115", "downside": "-27"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-            "label": "Task Pennsylvania",
-            "options": [
-                {"label": "Design K", "image": "robert_utah", "upside": "96", "downside": "-7"}, 
-                {"label": "Design L", "image": "carpet_magazine", "upside": "107", "downside": "-20"}, 
-                {"label": "Design M", "image":  "item_fanta", "upside": "122", "downside": "-37"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-            "label": "Task Louisiana",
-            "options": [
-                {"label": "Design K", "image": "robert_utah", "upside": "88", "downside": "3"}, 
-                {"label": "Design L", "image": "item_fanta", "upside": "114", "downside": "-28"}, 
-                {"label": "Design M", "image":  "carpet_magazine", "upside": "100", "downside": "-11"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Delaware",
-        "options": [
-                {"label": "Design K", "image": "carpet_magazine", "upside": "95", "downside": "-4"}, 
-                {"label": "Design L", "image": "robert_utah", "upside": "82", "downside": "11"}, 
-                {"label": "Design M", "image":  "item_fanta", "upside": "106", "downside": "-19"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Maryland",
-        "options": [
-                {"label": "Design K", "image": "item_fanta", "upside": "100", "downside": "-9"}, 
-                {"label": "Design L", "image": "carpet_magazine", "upside": "88", "downside": "4"}, 
-                {"label": "Design M", "image":  "robert_utah", "upside": "72", "downside": "23"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Virginia",
-        "options": [
-                {"label": "Design K", "image": "stream_early", "upside": "115", "downside": "-48"}, 
-                {"label": "Design L", "image": "echo_steak", "upside": "130", "downside": "-70"}, 
-                {"label": "Design M", "image":  "edward_beer", "upside": "105", "downside": "-33"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Washington",
-        "options": [
-                {"label": "Design K", "image": "friend_michigan", "upside": "96", "downside": "-20"}, 
-                {"label": "Design L", "image": "floor_lima", "upside": "107", "downside": "-36"}, 
-                {"label": "Design M", "image":  "item_fanta", "upside": "122", "downside": "-60"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Wisconsin",
-        "options": [
-                {"label": "Design K", "image": "echo_steak", "upside": "114", "downside": "-46"},
-                {"label": "Design L", "image": "edward_beer", "upside": "88", "downside": "-8"}, 
-                {"label": "Design M", "image":  "stream_early", "upside": "100", "downside": "-25"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Oklahoma",
-        "options": [
-                {"label": "Design K", "image": "floor_lima", "upside": "95", "downside": "-18"}, 
-                {"label": "Design L", "image": "friend_michigan", "upside": "82", "downside": "2"}, 
-                {"label": "Design M", "image":  "item_fanta", "upside": "106", "downside": "-35"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Hawaii",
-        "options": [
-                {"label": "Design K", "image": "floor_lima", "upside": "88", "downside": "-7"}, 
-                {"label": "Design L", "image": "item_fanta", "upside": "100", "downside": "-25"}, 
-                {"label": "Design M", "image":  "friend_michigan", "upside": "72", "downside": "17"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Nevada",
-        "options": [
-                {"label": "Design K", "image": "six_cardinal", "upside": "130", "downside": "-140"}, 
-                {"label": "Design L", "image": "robert_utah", "upside": "105", "downside": "-80"}, 
-                {"label": "Design M", "image":  "seven_hot", "upside": "115", "downside": "-105"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task New Jersey",
-        "options": [
-                {"label": "Design K", "image": "seven_hot", "upside": "107", "downside": "-85"}, 
-                {"label": "Design L", "image": "six_cardinal", "upside": "122", "downside": "-120"}, 
-                {"label": "Design M", "image":  "robert_utah", "upside": "96", "downside": "-59"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task North Carolina",
-        "options": [
-                {"label": "Design K", "image": "robert_utah", "upside": "88", "downside": "-40"}, 
-                {"label": "Design L", "image": "seven_hot", "upside": "100", "downside": "-67"}, 
-                {"label": "Design M", "image":  "six_cardinal", "upside": "114", "downside": "-100"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task New York",
-        "options": [
-                {"label": "Design K", "image": "johnny_october", "upside": "82", "downside": "-25"}, 
-                {"label": "Design L", "image": "johnny_washington", "upside": "106", "downside": "-85"},
-                {"label": "Design M", "image":  "london_fanta", "upside": "95", "downside": "-55"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Texas",
-        "options": [
-                {"label": "Design K", "image": "johnny_washington", "upside": "100", "downside": "-68"}, 
-                {"label": "Design L", "image": "johnny_october", "upside": "72", "downside": "-2"}, 
-                {"label": "Design M", "image":  "london_fanta", "upside": "88", "downside": "-40"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Alaska",
-        "options": [
-                {"label": "Design K", "image": "carpet_magazine", "upside": "105", "downside": "-116"}, 
-                {"label": "Design L", "image": "alaska_oscar", "upside": "115", "downside": "-145"}, 
-                {"label": "Design M", "image":  "diet_south", "upside": "130", "downside": "-190"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Kansas",
-        "options": [
-                {"label": "Design K", "image": "alaska_oscar", "upside": "107", "downside": "-122"}, 
-                {"label": "Design L", "image": "ohio_colorado", "upside": "122", "downside": "-170"}, 
-                {"label": "Design M", "image":  "carpet_magazine", "upside": "96", "downside": "-90"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Arizona",
-        "options": [
-                {"label": "Design K", "image": "ohio_colorado", "upside": "114", "downside": "-142"}, 
-                {"label": "Design L", "image": "mike_social", "upside": "100", "downside": "-100"}, 
-                {"label": "Design M", "image":  "london_sweet", "upside": "88", "downside": "-65"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Tennessee",
-        "options": [
-                {"label": "Design K", "image": "diet_south", "upside": "106", "downside": "-118"}, 
-                {"label": "Design L", "image": "carpet_magazine", "upside": "82", "downside": "-46"}, 
-                {"label": "Design M", "image":  "alaska_oscar", "upside": "95", "downside": "-85"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Illinois",
-        "options": [
-                {"label": "Design K", "image": "carpet_magazine", "upside": "72", "downside": "-16"}, 
-                {"label": "Design L", "image": "alaska_oscar", "upside": "88", "downside": "-65"}, 
-                {"label": "Design M", "image":  "ohio_colorado", "upside": "100", "downside": "-68"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Alabama",
-        "options": [
-                {"label": "Design K", "image": "neptune_pip", "upside": "130", "downside": "-270"}, 
-                {"label": "Design L", "image": "monkey_hawaii", "upside": "105", "downside": "-170"}, 
-                {"label": "Design M", "image":  "pluto_delaware", "upside": "115", "downside": "-210"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task California",
-        "options": [
-                {"label": "Design K", "image": "stream_lactose", "upside": "122", "downside": "-240"}, 
-                {"label": "Design L", "image": "tennis_bakerloo", "upside": "107", "downside": "-180"}, 
-                {"label": "Design M", "image":  "two_zebra", "upside": "96", "downside": "-136"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-
-            ]
-        },
-        { 
-        "label": "Task Kentucky",
-        "options": [
-                {"label": "Design K", "image": "two_zebra", "upside": "88", "downside": "-102"}, 
-                {"label": "Design L", "image": "tennis_bakerloo", "upside": "100", "downside": "-150"}, 
-                {"label": "Design M", "image":  "stream_lactose", "upside": "114", "downside": "-210"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Michigan",
-        "options": [
-                {"label": "Design K", "image": "pluto_delaware", "upside": "95", "downside": "-130"}, 
-                {"label": "Design L", "image": "neptune_pip", "upside": "106", "downside": "-175"}, 
-                {"label": "Design M", "image":  "monkey_hawaii", "upside": "82", "downside": "-80"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Minnesota",
-        "options": [
-                {"label": "Design K", "image": "two_zebra", "upside": "72", "downside": "-40"}, 
-                {"label": "Design L", "image": "stream_lactose", "upside": "100", "downside": "-150"}, 
-                {"label": "Design M", "image":  "tennis_bakerloo", "upside": "88", "downside": "-105"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Wyoming",
-        "options": [
-                {"label": "Design K", "image": "neptune_pip", "upside": "130", "downside": "-400"}, 
-                {"label": "Design L", "image": "friend_michigan", "upside": "105", "downside": "-250"}, 
-                {"label": "Design M", "image":  "johnny_washington", "upside": "115", "downside": "-310"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Ohio",
-        "options": [
-                {"label": "Design K", "image": "johnny_washington", "upside": "107", "downside": "-280"}, 
-                {"label": "Design L", "image": "friend_michigan", "upside": "96", "downside": "-205"}, 
-                {"label": "Design M", "image":  "neptune_pip", "upside": "122", "downside": "-350"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Nebraska",
-        "options": [
-                {"label": "Design K", "image": "johnny_washington", "upside": "100", "downside": "-230"}, 
-                {"label": "Design L", "image": "neptune_pip", "upside": "114", "downside": "-300"}, 
-                {"label": "Design M", "image":  "friend_michigan", "upside": "88", "downside": "-170"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Maine",
-        "options": [
-                {"label": "Design K", "image": "neptune_pip", "upside": "106", "downside": "-270"}, 
-                {"label": "Design L", "image": "johnny_washington", "upside": "95", "downside": "-200"}, 
-                {"label": "Design M", "image":  "friend_michigan", "upside": "82", "downside": "-138"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Oregon",
-        "options": [
-                {"label": "Design K", "image": "friend_michigan", "upside": "72", "downside": "-75"}, 
-                {"label": "Design L", "image": "johnny_washington", "upside": "88", "downside": "-165"}, 
-                {"label": "Design M", "image":  "neptune_pip", "upside": "100", "downside": "-230"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
-            ]
-        },
-        { 
-        "label": "Task Idoha",
-        "options": [
-                {"label": "Design K", "image": "johnny_washington", "upside": "75", "downside": "5"}, 
-                {"label": "Design L", "image": "seven_hot", "upside": "85", "downside": "10"},
-                {"label": "Design M", "image":  "robert_utah", "upside": "95", "downside": "15"}, 
-                {"label": "Design Y", "image": "johnny_washington", "upside": "115", "downside": "25"}
-            ]
-        },
-        { 
-        "label": "Task Florida",
-        "options": [
-                {"label": "Design K", "image": "echo_steak", "upside": "85", "downside": "0"}, 
-                {"label": "Design L", "image": "seven_hot", "upside": "65", "downside": "10"}, 
-                {"label": "Design M", "image":  "ohio_colorado", "upside": "75", "downside": "5"}, 
-                {"label": "Design Y", "image": "diet_south", "upside": "100", "downside": "20"}
-            ]
-        },
-        { 
-        "label": "Task Utah",
-        "options": [
-                {"label": "Design K", "image": "sweet_cardinal", "upside": "70", "downside": "10"}, 
-                {"label": "Design L", "image": "mike_social", "upside": "80", "downside": "5"}, 
-                {"label": "Design M", "image":  "london_sweet", "upside": "60", "downside": "20"}, 
-                {"label": "Design Y", "image": "stream_lactose", "upside": "90", "downside": "17"}
-            ]
-        },
-        { 
-        "label": "Task Massachusetts",
-        "options": [
-                {"label": "Design K", "image": "edward_beer", "upside": "45", "downside": "10"}, 
-                {"label": "Design L", "image": "johnny_october", "upside": "65", "downside": "0"}, 
-                {"label": "Design M", "image":  "carpet_magazine", "upside": "55", "downside": "5"}, 
-                {"label": "Design Y", "image": "mike_social", "upside": "80", "downside": "16"}
-            ]
-        },
-        { 
-        "label": "Task  Montana",
-        "options": [
-                {"label": "Design K", "image": "item_fanta", "upside": "50", "downside": "5"}, 
-                {"label": "Design L", "image": "monkey_hawaii", "upside": "60", "downside": "0"}, 
-                {"label": "Design M", "image":  "friend_michigan", "upside": "40", "downside": "10"}, 
-                {"label": "Design Y", "image": "pluto_delaware", "upside": "75", "downside": "15"}
-            ]
-        },
-        { 
-        "label": "Task  Mississippi",
-        "options": [
-                {"label": "Design K", "image": "alaska_oscar", "upside": "55", "downside": "0"}, 
-                {"label": "Design L", "image": "floor_california", "upside": "35", "downside": "10"}, 
-                {"label": "Design M", "image":  "two_zebra", "upside": "45", "downside": "5"}, 
-                {"label": "Design Y", "image": "tennis_bakerloo", "upside": "70", "downside": "14"}
+                {
+                    "label": "A",
+                    "upside": "90",
+                    "downside": "-15"
+                },
+                {
+                    "label": "B",
+                    "upside": "70",
+                    "downside": "17"
+                },
+                {
+                    "label": "C",
+                    "upside": "80",
+                    "downside": "1"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
             ]
         },
         {
-            "label": "Training Task 1",
+            "label": "Task 2",
+            "uValue": 0.62,
             "options": [
-                {"label": "Design K", "image": "seven_hot", "upside": "92", "downside": "-45"}, 
-                {"label": "Design L", "image": "robert_utah", "upside": "77", "downside": "-15"}, 
-                {"label": "Design M", "image":  "six_cardinal", "upside": "111", "downside": "-90"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
+                {
+                    "label": "A",
+                    "upside": "88",
+                    "downside": "-11"
+                },
+                {
+                    "label": "B",
+                    "upside": "68",
+                    "downside": "21"
+                },
+                {
+                    "label": "C",
+                    "upside": "77",
+                    "downside": "6"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
             ]
         },
         {
-            "label": "Training Task 2",
+            "label": "Task 3",
+            "uValue": 0.62,
             "options": [
-                {"label": "Design K", "image": "item_fanta", "upside": "95", "downside": "-30"}, 
-                {"label": "Design L", "image": "friend_michigan", "upside": "68", "downside": "18"}, 
-                {"label": "Design M", "image":  "floor_lima", "upside": "86", "downside": "-18"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
+                {
+                    "label": "A",
+                    "upside": "86",
+                    "downside": "-9"
+                },
+                {
+                    "label": "B",
+                    "upside": "66",
+                    "downside": "24"
+                },
+                {
+                    "label": "C",
+                    "upside": "75",
+                    "downside": "9"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
             ]
         },
         {
-            "label": "Training Task 3",
+            "label": "Task 4",
+            "uValue": 0.62,
             "options": [
-                {"label": "Design K", "image": "carpet_magazine", "upside": "57", "downside": "7"}, 
-                {"label": "Design L", "image": "edward_beer", "upside": "68", "downside": "3"}, 
-                {"label": "Design M", "image":  "johnny_october", "upside": "48", "downside": "13"}, 
-                {"label": "Design Y", "image": "mike_social", "upside": "83", "downside": "19"}
+                {
+                    "label": "A",
+                    "upside": "85",
+                    "downside": "-7"
+                },
+                {
+                    "label": "B",
+                    "upside": "65",
+                    "downside": "26"
+                },
+                {
+                    "label": "C",
+                    "upside": "74",
+                    "downside": "11"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
             ]
         },
         {
-            "label": "Training Task 4",
+            "label": "Task 5",
+            "uValue": 0.62,
             "options": [
-                {"label": "Design K", "image": "monkey_hawaii", "upside": "90", "downside": "-120"}, 
-                {"label": "Design L", "image": "pluto_delaware", "upside": "110", "downside": "-190"}, 
-                {"label": "Design M", "image":  "neptune_pip", "upside": "128", "downside": "-260"}, 
-                {"label": "Design Y", "image": "floor_california", "upside": "50", "downside": "50"}
+                {
+                    "label": "A",
+                    "upside": "83",
+                    "downside": "-4"
+                },
+                {
+                    "label": "B",
+                    "upside": "64",
+                    "downside": "27"
+                },
+                {
+                    "label": "C",
+                    "upside": "71",
+                    "downside": "16"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 6",
+            "uValue": 0.67,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "90",
+                    "downside": "-32"
+                },
+                {
+                    "label": "B",
+                    "upside": "70",
+                    "downside": "9"
+                },
+                {
+                    "label": "C",
+                    "upside": "80",
+                    "downside": "-11"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 7",
+            "uValue": 0.67,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "88",
+                    "downside": "-28"
+                },
+                {
+                    "label": "B",
+                    "upside": "68",
+                    "downside": "13"
+                },
+                {
+                    "label": "C",
+                    "upside": "77",
+                    "downside": "-6"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 8",
+            "uValue": 0.67,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "86",
+                    "downside": "-24"
+                },
+                {
+                    "label": "B",
+                    "upside": "66",
+                    "downside": "17"
+                },
+                {
+                    "label": "C",
+                    "upside": "75",
+                    "downside": "-1"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 9",
+            "uValue": 0.67,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "85",
+                    "downside": "-22"
+                },
+                {
+                    "label": "B",
+                    "upside": "65",
+                    "downside": "19"
+                },
+                {
+                    "label": "C",
+                    "upside": "74",
+                    "downside": "1"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 10",
+            "uValue": 0.67,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "83",
+                    "downside": "-18"
+                },
+                {
+                    "label": "B",
+                    "upside": "64",
+                    "downside": "21"
+                },
+                {
+                    "label": "C",
+                    "upside": "71",
+                    "downside": "7"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 11",
+            "uValue": 0.72,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "90",
+                    "downside": "-53"
+                },
+                {
+                    "label": "B",
+                    "upside": "70",
+                    "downside": "-2"
+                },
+                {
+                    "label": "C",
+                    "upside": "80",
+                    "downside": "-28"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 12",
+            "uValue": 0.72,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "88",
+                    "downside": "-48"
+                },
+                {
+                    "label": "B",
+                    "upside": "68",
+                    "downside": "3"
+                },
+                {
+                    "label": "C",
+                    "upside": "77",
+                    "downside": "-21"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 13",
+            "uValue": 0.72,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "86",
+                    "downside": "-44"
+                },
+                {
+                    "label": "B",
+                    "upside": "66",
+                    "downside": "8"
+                },
+                {
+                    "label": "C",
+                    "upside": "75",
+                    "downside": "-15"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 14",
+            "uValue": 0.72,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "85",
+                    "downside": "-40"
+                },
+                {
+                    "label": "B",
+                    "upside": "65",
+                    "downside": "11"
+                },
+                {
+                    "label": "C",
+                    "upside": "74",
+                    "downside": "-12"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 15",
+            "uValue": 0.72,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "83",
+                    "downside": "-36"
+                },
+                {
+                    "label": "B",
+                    "upside": "64",
+                    "downside": "14"
+                },
+                {
+                    "label": "C",
+                    "upside": "71",
+                    "downside": "-5"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 16",
+            "uValue": 0.77,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "90",
+                    "downside": "-85"
+                },
+                {
+                    "label": "B",
+                    "upside": "70",
+                    "downside": "-18"
+                },
+                {
+                    "label": "C",
+                    "upside": "80",
+                    "downside": "-52"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 17",
+            "uValue": 0.77,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "88",
+                    "downside": "-79"
+                },
+                {
+                    "label": "B",
+                    "upside": "68",
+                    "downside": "-11"
+                },
+                {
+                    "label": "C",
+                    "upside": "77",
+                    "downside": "-41"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 18",
+            "uValue": 0.77,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "86",
+                    "downside": "-71"
+                },
+                {
+                    "label": "B",
+                    "upside": "66",
+                    "downside": "-4"
+                },
+                {
+                    "label": "C",
+                    "upside": "75",
+                    "downside": "-35"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 19",
+            "uValue": 0.77,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "85",
+                    "downside": "-68"
+                },
+                {
+                    "label": "B",
+                    "upside": "65",
+                    "downside": "-1"
+                },
+                {
+                    "label": "C",
+                    "upside": "74",
+                    "downside": "-31"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 20",
+            "uValue": 0.77,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "83",
+                    "downside": "-63"
+                },
+                {
+                    "label": "B",
+                    "upside": "64",
+                    "downside": "3"
+                },
+                {
+                    "label": "C",
+                    "upside": "71",
+                    "downside": "-21"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 21",
+            "uValue": 0.82,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "90",
+                    "downside": "-133"
+                },
+                {
+                    "label": "B",
+                    "upside": "70",
+                    "downside": "-42"
+                },
+                {
+                    "label": "C",
+                    "upside": "80",
+                    "downside": "-88"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 22",
+            "uValue": 0.82,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "88",
+                    "downside": "-125"
+                },
+                {
+                    "label": "B",
+                    "upside": "68",
+                    "downside": "-33"
+                },
+                {
+                    "label": "C",
+                    "upside": "77",
+                    "downside": "-76"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 23",
+            "uValue": 0.82,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "86",
+                    "downside": "-118"
+                },
+                {
+                    "label": "B",
+                    "upside": "66",
+                    "downside": "-24"
+                },
+                {
+                    "label": "C",
+                    "upside": "75",
+                    "downside": "-66"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 24",
+            "uValue": 0.82,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "85",
+                    "downside": "-110"
+                },
+                {
+                    "label": "B",
+                    "upside": "65",
+                    "downside": "-19"
+                },
+                {
+                    "label": "C",
+                    "upside": "74",
+                    "downside": "-60"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Task 25",
+            "uValue": 0.82,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "83",
+                    "downside": "-101"
+                },
+                {
+                    "label": "B",
+                    "upside": "64",
+                    "downside": "-14"
+                },
+                {
+                    "label": "C",
+                    "upside": "71",
+                    "downside": "-48"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Distraction Task 1",
+            "uValue": 0.5,
+            "isDistraction": true,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "80",
+                    "downside": "20"
+                },
+                {
+                    "label": "B",
+                    "upside": "75",
+                    "downside": "25"
+                },
+                {
+                    "label": "C",
+                    "upside": "70",
+                    "downside": "30"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Distraction Task 2",
+            "uValue": 0.55,
+            "isDistraction": true,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "85",
+                    "downside": "15"
+                },
+                {
+                    "label": "B",
+                    "upside": "78",
+                    "downside": "22"
+                },
+                {
+                    "label": "C",
+                    "upside": "72",
+                    "downside": "28"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Distraction Task 3",
+            "uValue": 0.6,
+            "isDistraction": true,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "88",
+                    "downside": "10"
+                },
+                {
+                    "label": "B",
+                    "upside": "80",
+                    "downside": "18"
+                },
+                {
+                    "label": "C",
+                    "upside": "74",
+                    "downside": "24"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Distraction Task 4",
+            "uValue": 0.65,
+            "isDistraction": true,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "90",
+                    "downside": "5"
+                },
+                {
+                    "label": "B",
+                    "upside": "82",
+                    "downside": "15"
+                },
+                {
+                    "label": "C",
+                    "upside": "76",
+                    "downside": "20"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Distraction Task 5",
+            "uValue": 0.7,
+            "isDistraction": true,
+            "options": [
+                {
+                    "label": "A",
+                    "upside": "87",
+                    "downside": "0"
+                },
+                {
+                    "label": "B",
+                    "upside": "79",
+                    "downside": "10"
+                },
+                {
+                    "label": "C",
+                    "upside": "73",
+                    "downside": "15"
+                },
+                {
+                    "label": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
             ]
         }
     ],
     "partners": {
-        "user0059": "user0060",
-        "user0060": "user0059",
-        "user0061": "user0062",
-        "user0062": "user0061"
+        "user01": "user02",
+        "user02": "user01",
+        "user03": "user04",
+        "user04": "user03",
+        "user05": "user06",
+        "user06": "user05"
     },
     "assignments": {
-
-        "user0059": [36, 37, 38, 39, 6, 0, 20, 31, 15, 3, 12, 9, 18, 22, 34, 8, 4, 14, 11, 17, 32, 13, 25, 7, 19, 5, 35, 23, 24, 10, 29, 1, 30, 27, 16, 2, 26, 33, 28, 21],
-        "user0060": [36, 37, 38, 39, 1, 13, 2, 31, 4, 25, 8, 21, 14, 26, 34, 12, 15, 18, 29, 28, 32, 0, 3, 27, 5, 19, 35, 16, 10, 24, 11, 6, 30, 7, 23, 20, 22, 23, 17, 9],
-
-        "user0061": [36, 37, 38, 39, 0, 20, 31, 15, 3, 12, 9, 18, 22, 34, 8, 4, 14, 11, 17, 32, 13, 25, 7, 19, 5, 35, 23, 24, 10, 29, 1, 30, 27, 16, 2, 26, 33, 28, 21, 6],
-        "user0062": [36, 37, 38, 39, 13, 2, 31, 4, 25, 8, 21, 14, 26, 34, 12, 15, 18, 29, 28, 32, 0, 3, 27, 5, 19, 35, 16, 10, 24, 11, 6, 30, 7, 23, 20, 22, 23, 17, 9, 1],
-
-        "user005": [36, 37, 38, 39, 20, 31, 15, 3, 12, 9, 18, 22, 34, 8, 4, 14, 11, 17, 32, 13, 25, 7, 19, 5, 35, 23, 24, 10, 29, 1, 30, 27, 16, 2, 26, 33, 28, 21, 6, 0],
-        "user006": [36, 37, 38, 39, 2, 31, 4, 25, 8, 21, 14, 26, 34, 12, 15, 18, 29, 28, 32, 0, 3, 27, 5, 19, 35, 16, 10, 24, 11, 6, 30, 7, 23, 20, 22, 23, 17, 9, 1, 13],
-
-        "user007": [36, 37, 38, 39, 31, 15, 3, 12, 9, 18, 22, 34, 8, 4, 14, 11, 17, 32, 13, 25, 7, 19, 5, 35, 23, 24, 10, 29, 1, 30, 27, 16, 2, 26, 33, 28, 21, 6, 0, 20],
-        "user008": [36, 37, 38, 39, 31, 4, 25, 8, 21, 14, 26, 34, 12, 15, 18, 29, 28, 32, 0, 3, 27, 5, 19, 35, 16, 10, 24, 11, 6, 30, 7, 23, 20, 22, 23, 17, 9, 1, 13, 2],
-
-        "user009": [36, 37, 38, 39, 15, 3, 12, 9, 18, 22, 34, 8, 4, 14, 11, 17, 32, 13, 25, 7, 19, 5, 35, 23, 24, 10, 29, 1, 30, 27, 16, 2, 26, 33, 28, 21, 6, 0, 20, 31],
-        "user0010": [36, 37, 38, 39, 4, 25, 8, 21, 14, 26, 34, 12, 15, 18, 29, 28, 32, 0, 3, 27, 5, 19, 35, 16, 10, 24, 11, 6, 30, 7, 23, 20, 22, 23, 17, 9, 1, 13, 2, 31]
-
+        "user01": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            25,
+            5,
+            6,
+            7,
+            8,
+            9,
+            26,
+            10,
+            11,
+            12,
+            13,
+            14,
+            27,
+            15,
+            16,
+            17,
+            18,
+            19,
+            28,
+            20,
+            21,
+            22,
+            23,
+            24,
+            29
+        ],
+        "user02": [
+            0,
+            5,
+            10,
+            15,
+            20,
+            25,
+            1,
+            6,
+            11,
+            16,
+            21,
+            26,
+            2,
+            7,
+            12,
+            17,
+            22,
+            27,
+            3,
+            8,
+            13,
+            18,
+            23,
+            28,
+            4,
+            9,
+            14,
+            19,
+            24,
+            29
+        ],
+        "user03": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            25,
+            5,
+            6,
+            7,
+            8,
+            9,
+            26,
+            10,
+            11,
+            12,
+            13,
+            14,
+            27,
+            15,
+            16,
+            17,
+            18,
+            19,
+            28,
+            20,
+            21,
+            22,
+            23,
+            24,
+            29
+        ],
+        "user04": [
+            0,
+            5,
+            10,
+            15,
+            20,
+            25,
+            1,
+            6,
+            11,
+            16,
+            21,
+            26,
+            2,
+            7,
+            12,
+            17,
+            22,
+            27,
+            3,
+            8,
+            13,
+            18,
+            23,
+            28,
+            4,
+            9,
+            14,
+            19,
+            24,
+            29
+        ],
+        "user05": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            25,
+            5,
+            6,
+            7,
+            8,
+            9,
+            26,
+            10,
+            11,
+            12,
+            13,
+            14,
+            27,
+            15,
+            16,
+            17,
+            18,
+            19,
+            28,
+            20,
+            21,
+            22,
+            23,
+            24,
+            29
+        ],
+        "user06": [
+            0,
+            5,
+            10,
+            15,
+            20,
+            25,
+            1,
+            6,
+            11,
+            16,
+            21,
+            26,
+            2,
+            7,
+            12,
+            17,
+            22,
+            27,
+            3,
+            8,
+            13,
+            18,
+            23,
+            28,
+            4,
+            9,
+            14,
+            19,
+            24,
+            29
+        ]
     }
 }

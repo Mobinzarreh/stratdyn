@@ -1,6 +1,7 @@
 module.exports = function(io) {
     const fs = require('fs');
     var _ = require('lodash');
+    const { calculateUPercentile, calculateRiskDominance, calculateRPercentile, getTaskUValue } = require('./utils/calculations');
 
     // read the admin credentials from file
     const adminCredentials = JSON.parse(
@@ -21,70 +22,94 @@ module.exports = function(io) {
     experiment.decisions = {};
     Object.keys(experiment.assignments).forEach((user) => {
         experiment.decisions[user] = Array.from(Array(experiment.tasks.length), ()=> {
-            return {"design": null, "strategy": null, "collabBelief": null, "score": null};
+            return {
+                "intention": null,
+                "intentionTimestamp": null,
+                "design": null,
+                "strategy": null,
+                "uValue": null,
+                "uPercentile": null,
+                "rValue": null,
+                "rPercentile": null,
+                "score": null
+            };
         });
     });
 
-    let currentTaskIndex = -3;
-
-    let showMediator = false;
-    let showRobot= true;
+    let currentTaskIndex = -2; // Start at demographics survey for testing (-3 = wait, -2 = demographics, -1 = presurvey, 0+ = tasks)
+    let autoAdvance = true; // Set to true for testing, false for admin-controlled sessions
 
     let timestamp = Math.floor(new Date().getTime() / 1000);
+    let sessionId = 'session1'; // Can be changed as needed
 
-    let taskLogFile = "task_experimentalgroup_" + 'session7.csv';
-    let preSurveyLogFile = "presurvey_experimentalgroup_" + 'session7.csv';
-    //let postSurveyLogFile = timestamp + '-post.csv';
-    let postSurveyLogFile = "postsurvey_experimentalgroup_" + 'session7.csv';
-    let demographicsSurveyLogFile = "demographics_survey_experimentalgroup_" + 'session7.csv';
+    // Helper function to get log files based on user group
+    function getLogFiles(group) {
+        return {
+            task: `task_${group}_${sessionId}.csv`,
+            presurvey: `presurvey_${group}_${sessionId}.csv`,
+            postsurvey: `postsurvey_${group}_${sessionId}.csv`,
+            demographics: `demographics_survey_${group}_${sessionId}.csv`
+        };
+    }
 
-    fs.writeFile(
-        taskLogFile, 
-        "timestamp" + "," + "username" + "," + "partner" + "," + "task" + "," + "design" + "," + "strategy" + "," + "collabBelief" + "," + "usedRobot" + ", " + "score" + "," + "partnerScore" + "\r\n",
-        err => {
-            if (err) {
-                console.error(err);
+    // Initialize log files for both groups
+    const createdLogFiles = new Set();
+    
+    function initializeLogFiles(group) {
+        if (createdLogFiles.has(group)) return; // Already created for this group
+        
+        const logFiles = getLogFiles(group);
+        
+        // Create task log file with new headers
+        fs.writeFile(
+            logFiles.task, 
+            "timestamp,username,group,partner,task,intention,intentionTimestamp,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,score,partnerScore\r\n",
+            err => {
+                if (err) {
+                    console.error(err);
+                }
             }
-        }
-    );
+        );
 
-    fs.writeFile(
-        preSurveyLogFile, 
-        "timestamp" + "," + "username" + "," + "q1t2" + "," + "q2r3" + "," + "q3c1" + "," + "q4r2" + 
-        "," + "q5t1" + "," + "q6r1" + "," + "q7c3" + "," + "q8t3" + "," + "q9c2" + "\r\n",
-        err => {
-            if (err) {
-                console.error(err);
+        // Create pre-survey log file
+        fs.writeFile(
+            logFiles.presurvey, 
+            "timestamp,username,group,q1t2,q2r3,q3c1,q4r2,q5t1,q6r1,q7c3,q8t3,q9c2\r\n",
+            err => {
+                if (err) {
+                    console.error(err);
+                }
             }
-        }
-    );
+        );
 
-    fs.writeFile(
-        postSurveyLogFile, 
-        "timestamp" + "," + "username" + "," + "q1c2" + "," + "q2r1" + "," + "q3t3" + "," + "q4r2" + 
-        "," + "q5t1" + "," + "q6c3" + "," + "q7t2" + "," + "q8c1" + "," + "q9r3" + "\r\n",
-        err => {
-            if (err) {
-                console.error(err);
+        // Create post-survey log file
+        fs.writeFile(
+            logFiles.postsurvey, 
+            "timestamp,username,group,q1c2,q2r1,q3t3,q4r2,q5t1,q6c3,q7t2,q8c1,q9r3\r\n",
+            err => {
+                if (err) {
+                    console.error(err);
+                }
             }
-        }
-    );
+        );
 
-    fs.writeFile(
-        demographicsSurveyLogFile, 
-        "timestamp" + "," + "username" + "," + "demographics-survey-q1" + "," + "demographics-survey-q2"
-         + "," + "demographics-survey-q3" + "," + "demographics-survey-q4" + 
-        "," + "demographics-survey-q5" + "," + "demographics-survey-q63" + 
-        "," + "demographics-survey-q7" + "\r\n",
-        err => {
-            if (err) {
-                console.error(err);
+        // Create demographics survey log file
+        fs.writeFile(
+            logFiles.demographics, 
+            "timestamp,username,group,demographics-survey-q1,demographics-survey-q2,demographics-survey-q3,demographics-survey-q4,demographics-survey-q5,demographics-survey-q6,demographics-survey-q7\r\n",
+            err => {
+                if (err) {
+                    console.error(err);
+                }
             }
-        }
-    );
+        );
+        
+        createdLogFiles.add(group);
+    }
 
 
     // keep track of logged-in users and admins
+    // users structure: {username: {socket: socket, group: 'treatment'|'control'}}
     const users = {};
     const admins = {};
 
@@ -93,7 +118,7 @@ module.exports = function(io) {
         // keep track of username
         var username = null;
         
-        function showDesignTask(context) {
+        function showDesignTask(context, stage = 'intention') {
             // retrieve the current task and work with a cloned copy
             let task = JSON.parse(
                 JSON.stringify(
@@ -107,8 +132,25 @@ module.exports = function(io) {
                     experiment.tasks[experiment.assignments[task.partner][currentTaskIndex]]
                 )
             );
-            task.showMediator = showMediator;
-            task.showRobot = showRobot;
+            
+            // Calculate u percentile for this task
+            const myUValue = task.uValue;
+            const myUPercentile = calculateUPercentile(myUValue, experiment.tasks);
+            task.uValue = myUValue;
+            task.uPercentile = myUPercentile;
+            
+            // Calculate R and R percentile for paired tasks
+            const partnerUValue = task.partnerTask.uValue;
+            const rValue = calculateRiskDominance(myUValue, partnerUValue);
+            const rPercentile = calculateRPercentile(rValue, experiment.tasks);
+            task.rValue = rValue;
+            task.rPercentile = rPercentile;
+            
+            // Get user group
+            const userGroup = users[username] ? users[username].group : 'treatment';
+            task.userGroup = userGroup;
+            task.stage = stage; // 'intention' or 'choice'
+            
             // compute the progress percentage
             task.progress = Math.round(100*(currentTaskIndex+1)/(experiment.tasks.length+1));
             // send a socket.io show design task
@@ -150,19 +192,25 @@ module.exports = function(io) {
             Object.keys(experiment.decisions).forEach((user) => {
                 let totalScore = 0;
                 for (let taskIndex = 4; taskIndex < Math.min(currentTaskIndex + 1, experiment.tasks.length); taskIndex++) {
-                    totalScore += experiment.decisions[user][taskIndex].score;
+                    totalScore += experiment.decisions[user][taskIndex].score || 0;
                 }
                 if (currentTaskIndex >= 0 && currentTaskIndex < experiment.tasks.length) {
+                    const userGroup = users[user] ? users[user].group : 'unknown';
                     decisions[user] = {
                         "online": user in users,
+                        "group": userGroup,
                         "task": experiment.tasks[experiment.assignments[user][currentTaskIndex]].label,
+                        "intention": experiment.decisions[user][currentTaskIndex].intention,
                         "design": experiment.decisions[user][currentTaskIndex].design,
                         "strategy": experiment.decisions[user][currentTaskIndex].strategy,
                         "score": experiment.decisions[user][currentTaskIndex].score,
                         "totalScore": totalScore
                     };
                 } else {
-                    decisions[user] = {"online": user in users};
+                    decisions[user] = {
+                        "online": user in users,
+                        "group": users[user] ? users[user].group : 'unknown'
+                    };
                 }
             });
             // send a socket.io show admin screen
@@ -217,22 +265,38 @@ module.exports = function(io) {
                 request.hasOwnProperty('username') 
                 && request.username in userCredentials
                 && request.hasOwnProperty('passcode')
-                && request.passcode == userCredentials[request.username]
             ) {
-                // authentication successful; update the authenticated username
-                username = request.username;
-                // register user socket
-                users[username] = socket;
-                // notify admins of new user
-                Object.keys(admins).forEach(admin => {
-                    showAdminScreen(admins[admin]);
-                });
+                // Support both old (string) and new (object) format
+                const userCred = userCredentials[request.username];
+                const passcode = typeof userCred === 'string' ? userCred : userCred.passcode;
+                const group = typeof userCred === 'string' ? 'treatment' : userCred.group;
+                
+                if (request.passcode == passcode) {
+                    // authentication successful; update the authenticated username
+                    username = request.username;
+                    // register user socket with group info
+                    users[username] = { socket: socket, group: group };
+                    
+                    // Initialize log files for this group if not already done
+                    initializeLogFiles(group);
+                    
+                    // notify admins of new user
+                    Object.keys(admins).forEach(admin => {
+                        showAdminScreen(admins[admin]);
+                    });
+                } else {
+                    // authentication NOT successful
+                    username = null;
+                }
             } else {
                 // authentication NOT successful
                 username = null;
             }
-            // send a socket.io login response message
-            socket.emit('login-response', username);
+            // send a socket.io login response message with group info
+            socket.emit('login-response', {
+                username: username,
+                group: username && users[username] ? users[username].group : null
+            });
             showContent(socket);
         });
 
@@ -241,15 +305,55 @@ module.exports = function(io) {
             showContent(socket)
         });
 
+        // bind behavior to a socket.io intention submission (Part 1)
+        socket.on('submit-intention', (request) => {
+            if (username != null) {
+                console.log('Intention submitted:', request);
+                // save the intention
+                experiment.decisions[username][currentTaskIndex].intention = request.intention;
+                experiment.decisions[username][currentTaskIndex].intentionTimestamp = Date.now();
+                
+                // Calculate and store u percentile
+                const myTask = experiment.tasks[experiment.assignments[username][currentTaskIndex]];
+                const uValue = myTask.uValue;
+                const uPercentile = calculateUPercentile(uValue, experiment.tasks);
+                experiment.decisions[username][currentTaskIndex].uValue = uValue;
+                experiment.decisions[username][currentTaskIndex].uPercentile = uPercentile;
+                
+                console.log({
+                    "user": username,
+                    "intention": request.intention,
+                    "uValue": uValue,
+                    "uPercentile": uPercentile
+                });
+                
+                // Now show Part 2 (choice stage)
+                showDesignTask(socket, 'choice');
+            }
+        });
+
         socket.on('submit-decision', (request) => {
             if (username != null) {
-                console.log(request);
-                // save the task decision
+                console.log('Final decision submitted:', request);
+                // save the task decision (final choice)
                 experiment.decisions[username][currentTaskIndex].design = request.design.replace("\xa0", " ");
                 if (request.strategy) {
                     experiment.decisions[username][currentTaskIndex].strategy = request.strategy.replace("\xa0", " ");
                 }
+                
+                // Calculate and store R percentile
                 let partner = experiment.partners[username];
+                if (partner != null) {
+                    const myTask = experiment.tasks[experiment.assignments[username][currentTaskIndex]];
+                    const partnerTask = experiment.tasks[experiment.assignments[partner][currentTaskIndex]];
+                    const myUValue = myTask.uValue;
+                    const partnerUValue = partnerTask.uValue;
+                    const rValue = calculateRiskDominance(myUValue, partnerUValue);
+                    const rPercentile = calculateRPercentile(rValue, experiment.tasks);
+                    
+                    experiment.decisions[username][currentTaskIndex].rValue = rValue;
+                    experiment.decisions[username][currentTaskIndex].rPercentile = rPercentile;
+                }
                 var myScore = null;
                 var partnerScore = null;
                 if (partner != null && experiment.decisions[partner]){
@@ -286,52 +390,65 @@ module.exports = function(io) {
                     }
                 }
 
+                const userGroup = users[username] ? users[username].group : 'treatment';
+                const logFiles = getLogFiles(userGroup);
+                const decision = experiment.decisions[username][currentTaskIndex];
+                
                 console.log({
                     "user": username,
+                    "group": userGroup,
+                    "intention": decision.intention,
                     "design": request.design,
                     "strategy": request.strategy,
+                    "uValue": decision.uValue,
+                    "uPercentile": decision.uPercentile,
+                    "rValue": decision.rValue,
+                    "rPercentile": decision.rPercentile,
                     "score": myScore,
-                    "partnerScore": partnerScore,
+                    "partnerScore": partnerScore
                 });
+                
                 // notify admins of new decision
                 Object.keys(admins).forEach(admin => {
                     showAdminScreen(admins[admin]);
                 });
+                
                 let task = experiment.tasks[experiment.assignments[username][currentTaskIndex]];
+                
+                // Write to CSV with new format
                 fs.appendFile(
-                    taskLogFile, 
-                    Date.now() + "," + username + "," + experiment.partners[username] + "," + task.label + "," + request.design + "," + request.strategy + "," + experiment.decisions[username][currentTaskIndex].collabBelief + ", " + request.usedRobot + ", " + myScore + ", " + partnerScore + "\r\n",
+                    logFiles.task, 
+                    Date.now() + "," + 
+                    username + "," + 
+                    userGroup + "," + 
+                    experiment.partners[username] + "," + 
+                    task.label + "," + 
+                    (decision.intention || '') + "," + 
+                    (decision.intentionTimestamp || '') + "," + 
+                    (decision.uValue || '') + "," + 
+                    (decision.uPercentile || '') + "," + 
+                    (decision.rValue || '') + "," + 
+                    (decision.rPercentile || '') + "," + 
+                    request.design + "," + 
+                    Date.now() + "," + 
+                    (myScore || '') + "," + 
+                    (partnerScore || '') + "\r\n",
                     err => {
                         if (err) {
                           console.error(err);
                         }
                     }
                 );
+                
+                // Auto-advance to next task if enabled
+                if (autoAdvance && currentTaskIndex >= 0 && currentTaskIndex < experiment.tasks.length) {
+                    currentTaskIndex++;
+                    io.emit("update-content");
+                }
             }
         });
 
-        socket.on('submit-collabBelief', (request) => {
-            if (username != null) {
-                console.log({
-                    "user": username,
-                    "results": request
-                });
-                experiment.decisions[username][currentTaskIndex].collabBelief = request.collabBelief;
-                // send the updated collab belief to the partner
-                let partner = experiment.partners[username];
-                if (partner != null && partner in users) {
-                    users[partner].emit(
-                        "update-collab-belief", 
-                        {"collabBelief": request.collabBelief}
-                    );
-                }
-                console.log(request)
-                console.log(username + "\t"
-                + experiment.tasks[experiment.assignments[username][currentTaskIndex]].label + "\t"
-                + request.collabBelief + "\t"
-                )
-            }
-        });
+        // Removed submit-collabBelief handler - replaced by submit-intention
 
         
         socket.on('submit-survey', (request) => {
@@ -355,11 +472,14 @@ module.exports = function(io) {
                     + request["q9c2"]
                 );
 
+                const userGroup = users[username] ? users[username].group : 'treatment';
+                const logFiles = getLogFiles(userGroup);
+                
                 fs.appendFile(
-                    preSurveyLogFile, 
-                    Date.now() + "," + username + "," + request["q1t2"] + "," + request["q2r3"] + 
+                    logFiles.presurvey, 
+                    Date.now() + "," + username + "," + userGroup + "," + request["q1t2"] + "," + request["q2r3"] + 
                     "," +  request["q3c1"] + "," +request["q4r2"] + "," + request["q5t1"] + "," + 
-                    "," + request["q6r1"] + "," + request["q7c3"] + "," + request["q8t3"]  + "," + 
+                    request["q6r1"] + "," + request["q7c3"] + "," + request["q8t3"]  + "," + 
                     request["q9c2"] +  "\r\n",
                     err => {
                         if (err) {
@@ -367,6 +487,12 @@ module.exports = function(io) {
                         }
                     }
                 );
+                
+                // Auto-advance to next stage if enabled
+                if (autoAdvance && currentTaskIndex === -1) {
+                    currentTaskIndex = 0;
+                    io.emit("update-content");
+                }
             }
         });
 
@@ -391,9 +517,12 @@ module.exports = function(io) {
                     + request["q8c1"] + "\t"
                     + request["q9r3"]
                 );
+                const userGroup = users[username] ? users[username].group : 'treatment';
+                const logFiles = getLogFiles(userGroup);
+                
                 fs.appendFile(
-                    postSurveyLogFile, 
-                    Date.now() + "," + username + "," + request["q1c2"] + "," + request["q2r1"] + 
+                    logFiles.postsurvey, 
+                    Date.now() + "," + username + "," + userGroup + "," + request["q1c2"] + "," + request["q2r1"] + 
                     "," +  request["q3t3"] + "," +request["q4r2"] + "," + request["q5t1"] + "," + 
                     request["q6c3"] + "," + request["q7t2"] + "," + request["q8c1"]  + "," + 
                     request["q9r3"] +  "\r\n",
@@ -403,6 +532,12 @@ module.exports = function(io) {
                         }
                     }
                 );
+                
+                // Auto-advance to thank you screen if enabled
+                if (autoAdvance && currentTaskIndex === experiment.tasks.length) {
+                    currentTaskIndex++;
+                    io.emit("update-content");
+                }
             }
         });
 
@@ -424,9 +559,12 @@ module.exports = function(io) {
                     + request["demographics-survey-q6"] + "\t"
                     + request["demographics-survey-q7"] 
                 );
+                const userGroup = users[username] ? users[username].group : 'treatment';
+                const logFiles = getLogFiles(userGroup);
+                
                 fs.appendFile(
-                    demographicsSurveyLogFile, 
-                    Date.now() + "," + username + "," + request["demographics-survey-q1"] + "," + 
+                    logFiles.demographics, 
+                    Date.now() + "," + username + "," + userGroup + "," + request["demographics-survey-q1"] + "," + 
                     request["demographics-survey-q2"] + "," +  request["demographics-survey-q3"] + 
                     "," +request["demographics-survey-q4"] + "," + request["demographics-survey-q5"] + 
                     ","  + request["demographics-survey-q6"] + "," + request["demographics-survey-q7"]  +  
@@ -437,6 +575,12 @@ module.exports = function(io) {
                         }
                     }
                 );
+                
+                // Auto-advance to next stage if enabled
+                if (autoAdvance && currentTaskIndex === -2) {
+                    currentTaskIndex = -1;
+                    io.emit("update-content");
+                }
             }
         });
 

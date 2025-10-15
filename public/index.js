@@ -2,12 +2,12 @@ $(document).ready(function() {
     // establish socket.io connection
     var socket = io();
 
+    // store user group (treatment/control)
+    var userGroup = null;
+
     // bind behavior to clicks on table row (tr) elements contained within the design table body
     $("#design tbody").on("click", "tr", (event) => {
-        if (
-            !$("#design .spinner-border").hasClass("d-none") 
-            || !$("#collabBelief").prop("disabled")
-        ) {
+        if (!$("#design .spinner-border").hasClass("d-none")) {
             // do not make changes if waiting
             return;
         }
@@ -40,150 +40,6 @@ $(document).ready(function() {
     });
 
 
-    
-    let chart = new Chart("myChart", {
-        type: "scatter",
-        data: {
-          datasets: [
-          {
-            label: "Design K",
-            pointRadius: 4,
-            pointBackgroundColor: "rgba(0,255,0,1)",
-            borderColor: "rgba(0,255,0,1)",
-            pointBorderWidth: 0,
-            data: [{x:0, y:-100}, {x:100, y:100},]
-          },
-          {
-            label: "Design L",
-            pointRadius: 4,
-            pointBackgroundColor: "rgba(0,175,0,1)",
-            borderColor: "rgba(0,175,0,1)",
-            pointBorderWidth: 0,
-            data: [{x:0, y:-80}, {x:100, y:80},]
-          },
-          {
-            label: "Design M",
-            pointRadius: 4,
-            pointBackgroundColor: "rgba(0,100,0,1)",
-            borderColor: "rgba(0,100,0,1)",
-            pointBorderWidth: 0,
-            data: [{x:0, y:-70}, {x:100, y:70},]
-          },
-          {
-            label: "Design Y",
-            pointRadius: 4,
-            pointBackgroundColor: "rgba(230,0,0,1)",
-            borderColor: "rgba(255,0,0,1)",
-            pointBorderWidth: 0,
-            data: [{x:0, y:50}, {x:100, y:50},]
-          },
-          {
-            label: "My Belief",
-            pointRadius: 0,
-            pointBackgroundColor: "rgba(0,0,255,1)",
-            borderColor: "rgba(0,0,255,1)",
-            borderDash: [5,5],
-            data: [{x:40, y:-100}, {x:40, y:100},]
-          },
-          {
-            label: "My Partner's Belief",
-            pointRadius: 0,
-            pointBackgroundColor: "rgba(100,0,100,1)",
-            borderColor: "rgba(150,0,150,1)",
-            borderDash: [10,5],
-            data: [{x:60, y:-100}, {x:60, y:100},]
-          },
-          {
-            label: "Min Required Belief",
-            pointRadius: 0,
-            pointBackgroundColor: "rgba(0,0,0,1)",
-            borderColor: "rgba(0,0,0,1)",
-            borderDash: [18,5],
-            data: [{x:50, y:-100}, {x:50, y:100},]
-          }
-          
-        ]
-        },
-        options: {
-            showLine: true,
-            scales: {
-                y: {
-                    title: {text:"Expected Value", display: true}
-                },
-                x: {
-                    title: {text:"Probability of Collaboration", display: true}
-                }
-            }
-        }
-      });
-
-    // bind behavior to clicks on robot
-    $("#robot-button").on("click", () => {
-        usedRobot = true;
-        let upsideK = parseInt(currentDesignTask.options[0].upside, 10)
-        let downsideK = parseInt(currentDesignTask.options[0].downside, 10)
-        let upsideL = parseInt(currentDesignTask.options[1].upside, 10)
-        let downsideL = parseInt(currentDesignTask.options[1].downside, 10)
-        let upsideM = parseInt(currentDesignTask.options[2].upside, 10)
-        let downsideM = parseInt(currentDesignTask.options[2].downside, 10)
-        let upsideY = parseInt(currentDesignTask.options[3].upside, 10)
-        let downsideY = parseInt(currentDesignTask.options[3].downside, 10)
-        let probability = (parseInt(partnerCollabBelief, 10)/100)
-        let myProb = parseInt($("#collabBelief").val())
-        let K_EV = (upsideK*probability) + (downsideK*(1-probability))
-        let L_EV = (upsideL*probability) + (downsideL*(1-probability))
-        let M_EV = (upsideM*probability) + (downsideM*(1-probability))
-        let Y_EV = (upsideY*probability) + (downsideY*(1-probability))
-        // currentDesignTask.options[$(event.currentTarget).index()].upside
-        // currentDesignTask.options[$(event.currentTarget).index()].downside
-        // currentDesignTask.options[3].upside
-        // currentDesignTask.options[3].downside
-        let stagUpside = parseInt(currentDesignTask.options[0].upside, 10)
-        let stagDownside = parseInt(currentDesignTask.options[0].downside, 10)
-        let hareUpside = parseInt(currentDesignTask.options[3].upside, 10)
-        let hareDownside = parseInt(currentDesignTask.options[3].downside, 10)
-        let normDevLossMath = ((hareUpside - stagDownside)/(hareUpside - stagDownside + stagUpside - hareDownside)*100)
-        let normDevLoss = normDevLossMath.toFixed(0)
-        $("#robot-modal .modal-body p").html(
-            " - " + " " + "Minimum Required Belief= " + " " + "%" + normDevLoss  + 
-            "<br/> - " + " " + "Partner Belief= " + "%" + partnerCollabBelief 
-        );
-        chart.data.datasets[0].data[0].y= downsideK;
-        chart.data.datasets[0].data[1].y= upsideK;
-        chart.data.datasets[1].data[0].y= downsideL;
-        chart.data.datasets[1].data[1].y= upsideL;
-        chart.data.datasets[2].data[0].y= downsideM;
-        chart.data.datasets[2].data[1].y= upsideM;
-        chart.data.datasets[3].data[0].y= downsideY;
-        chart.data.datasets[3].data[1].y= upsideY;
-        chart.data.datasets[4].data[0].x= myProb;
-        chart.data.datasets[4].data[0].y= Math.min(downsideK,downsideL, downsideM, downsideY);
-        chart.data.datasets[4].data[1].x= myProb;
-        chart.data.datasets[4].data[1].y= Math.max(upsideK,upsideL, upsideM, upsideY);
-        chart.data.datasets[5].data[0].x= partnerCollabBelief;
-        chart.data.datasets[5].data[0].y= Math.min(downsideK,downsideL, downsideM, downsideY);
-        chart.data.datasets[5].data[1].x= partnerCollabBelief;
-        chart.data.datasets[5].data[1].y= Math.max(upsideK,upsideL, upsideM, upsideY);
-        if (upsideY === downsideY) {
-        chart.data.datasets[6].data[0].x= normDevLoss;
-        chart.data.datasets[6].data[0].y= Math.min(downsideK,downsideL, downsideM, downsideY);
-        chart.data.datasets[6].data[1].x= normDevLoss;
-        chart.data.datasets[6].data[1].y= Math.max(upsideK,upsideL, upsideM, upsideY);
-        chart.show(6)
-    }   else {
-        chart.data.datasets[6].data[0].x= 100;
-        chart.data.datasets[6].data[0].y= Math.min(downsideK,downsideL, downsideM, downsideY);
-        chart.data.datasets[6].data[1].x= 100;
-        chart.data.datasets[6].data[1].y= Math.max(upsideK,upsideL, upsideM, upsideY);
-        chart.hide(6)
-    }
-        chart.update();
-        $("#robot-modal").modal("show");
-
-        console.log(currentDesignTask);
-    });
-
-
     // bind behavior to login form submissions
     $("#login-form").on("submit", (event) => {
         // send a socket.io login request with the username and passcode
@@ -193,9 +49,12 @@ $(document).ready(function() {
     });
 
     // bind behavior to the socket.io login response
-    socket.on("login-response", (username) => {
-        if (username) {
+    socket.on("login-response", (response) => {
+        if (response.username) {
             // response contains a valid username; user is logged in
+            // store user group for conditional display
+            userGroup = response.group;
+            console.log("Logged in as:", response.username, "Group:", userGroup);
             // unset invalid flags on form inputs
             $("#username-input, #passcode-input").removeClass("is-invalid");
             // hide the login button
@@ -203,7 +62,7 @@ $(document).ready(function() {
             // unhide the logout text
             $("#logout-text").removeClass("d-none");
             // set the logout text to the logged-in username
-            $("#logout-username").text(username);
+            $("#logout-username").text(response.username);
             // hide the login modal dialog
             $("#login-modal").modal('hide');
         } else {
@@ -217,6 +76,23 @@ $(document).ready(function() {
     $("#logout-username").on("click", () => {
         // send a socket.io request to logout
         socket.emit("logout-request");
+    });
+
+    // bind behavior to intention slider changes
+    $("#intention-slider").on("input", function() {
+        $("#intention-value").text($(this).val());
+    });
+
+    // bind behavior to intention form submission
+    $("#intention-form").on("submit", (event) => {
+        event.preventDefault();
+        // show spinner and disable button
+        $("#intention-button .spinner-border").removeClass("d-none");
+        $("#intention-button").prop("disabled", true);
+        // send intention to server
+        socket.emit("submit-intention", {
+            intention: parseInt($("#intention-slider").val())
+        });
     });
 
     // bind behavior to clicks on the design button
@@ -233,101 +109,101 @@ $(document).ready(function() {
             "design": $("#design .table-active .design-label").text(),
             "strategy": $("#design .table-active").data("strategy"),
             "upside": parseInt($("#design .table-active .design-upside").text()),
-            "downside": parseInt($("#design .table-active .design-downside").text()),
-            "usedRobot": usedRobot,
+            "downside": parseInt($("#design .table-active .design-downside").text())
         });
     });
 
     var currentDesignTask = null;
-    var usedRobot = false;
 
     // bind behavior to the socket.io show design task
     socket.on("show-design-task", (response) => {
-        // hide the welcome, admin, wait, and thank-you screens
-        $("#welcome, #admin, #wait, #thank-you, #main-survey, #demographics-survey, #main-postsurvey").collapse("hide");
-        // show the design interface
-        $("#design").collapse("show");
-        // hide spinner on button and update text
-        $("#design .spinner-border").addClass("d-none");
-        $("#design .design-button-label").text("Confirm Decision");
-        // remove active status from any table rows
-        $("#design tbody tr").removeClass("table-active");
-        // remove background from collaborative and individual icons
-        $("#design-collaborative, #design-individual").removeClass("bg-warning-subtle");
-        // enable the design button and enable table hover
-        $("#design-button").prop("disabled", true);
-        $("#design table").addClass("table-hover");
-        // enable slider and button
-        $("#collabBelief-form button:submit").prop("disabled", false);
-        $("#collabBelief").val(50);
-        $("#collabBelief").prop("disabled", false);
-        // disable editing and remove table hover
-        $("#design-button").prop("disabled", true);
-        $("#design table").removeClass("table-hover");
-        // disable robot button
-        $("#robot-button").prop("disabled", true);
-        // reset partner collab belief value
-        if(response.showRobot) {
-            $("#robot").removeClass("d-none");
-        } else {
-            $("#robot").addClass("d-none");
-        }
-        usedRobot = false;
-        partnerCollabBelief = null;
-
-        // set the progress bar to the correct value
-        $("#design .progress").attr("aria-valuenow", response.progress);
-        $("#design .progress-bar").css("width", response.progress + "%");
-
-        // set the task label
-        $("#design .task-label").text(response.label);
-
+        console.log("Received show-design-task:", response);
+        
         // save the current design task
         currentDesignTask = response;
 
-        // update the design attributes for each option
-        $("#design tbody tr").each((index, element) => {
-            let option = response.options[index];
-            $(element).find(".design-label").html(option.label.replace(" ", "&nbsp;"));
-            $(element).find("img").attr("src", "images/" + option.image + ".png");
-            $(element).find(".design-upside").text(option.upside);
-            $(element).find(".design-downside").text(option.downside);
-        });
-    });
+        if (response.stage === 'intention') {
+            // Part 1: Show Intention Stage
+            $("#welcome, #admin, #wait, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #design").collapse("hide");
+            $("#intention").collapse("show");
+            
+            // set the progress bar
+            $("#intention .progress").attr("aria-valuenow", response.progress);
+            $("#intention .progress-bar").css("width", response.progress + "%");
+            
+            // set the task label
+            $("#intention .intention-task-label").text(response.label);
+            
+            // update the design options in the table
+            $("#intention tbody tr").each((index, element) => {
+                let option = response.options[index];
+                $(element).find(".intention-design-label").html(option.label.replace(" ", "&nbsp;"));
+                $(element).find("img").attr("src", "images/" + option.image + ".png");
+                $(element).find(".intention-design-upside").text(option.upside);
+                $(element).find(".intention-design-downside").text(option.downside);
+            });
+            
+            // set the u percentile slider (visual only)
+            $("#intention-u-percentile").val(response.uPercentile);
+            $("#intention-u-value").text(Math.round(response.uPercentile));
+            
+            // reset intention slider
+            $("#intention-slider").val(5);
+            $("#intention-value").text(5);
+            $("#intention-button").prop("disabled", false);
+            $("#intention-button .spinner-border").addClass("d-none");
+            
+        } else {
+            // Part 2: Show Choice Stage
+            $("#welcome, #admin, #wait, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
+            $("#design").collapse("show");
+            
+            // hide spinner on button and update text
+            $("#design .spinner-border").addClass("d-none");
+            $("#design .design-button-label").text("Confirm Decision");
+            
+            // remove active status from any table rows
+            $("#design tbody tr").removeClass("table-active");
+            // remove background from collaborative and individual icons
+            $("#design-collaborative, #design-individual").removeClass("bg-warning-subtle");
+            
+            // enable table hover and disable button initially
+            $("#design-button").prop("disabled", true);
+            $("#design table").addClass("table-hover");
 
+            // set the progress bar to the correct value
+            $("#design .progress").attr("aria-valuenow", response.progress);
+            $("#design .progress-bar").css("width", response.progress + "%");
 
-    // bind behavior to collabBelief slider form submissions
-    $("#collabBelief-form").on("submit", (event) => {
-        // send a socket.io collabBelief survey submit with the responses
-        socket.emit("submit-collabBelief", {
-            "collabBelief": parseInt($("#collabBelief").val()),
-        });
-        $("#collabBelief-form button:submit").prop("disabled", true);
-        //$("#collabBelief-form button:submit .spinner-border").removeClass("d-none");
-        // disable collabBelief slider after click to submission button
-        $("#collabBelief").prop("disabled", true);
-        // enable editing and remove table hover
-        $("#design-button").prop("disabled", false);
-        $("#design table").addClass("table-hover");
-        if(partnerCollabBelief !== null) {
-            // enable robot button
-            $("#robot-button").prop("disabled", false);
+            // set the task label
+            $("#design .task-label").text(response.label);
+
+            // update the design attributes for each option
+            $("#design tbody tr").each((index, element) => {
+                let option = response.options[index];
+                $(element).find(".design-label").html(option.label.replace(" ", "&nbsp;"));
+                $(element).find("img").attr("src", "images/" + option.image + ".png");
+                $(element).find(".design-upside").text(option.upside);
+                $(element).find(".design-downside").text(option.downside);
+            });
+            
+            // Set difficulty sliders
+            $("#design-u-percentile").val(response.uPercentile);
+            $("#design-u-value").text(Math.round(response.uPercentile));
+            
+            // Show/hide R percentile based on user group
+            if (userGroup === 'treatment') {
+                $("#design-r-container").show();
+                $("#design-r-percentile").val(response.rPercentile);
+                $("#design-r-value").text(Math.round(response.rPercentile));
+            } else {
+                $("#design-r-container").hide();
+            }
         }
-        // bypass the default form submission process
-        event.preventDefault();
     });
 
-    var partnerCollabBelief = null;
 
-    // bind behavior to the socket.io show design task
-    socket.on("update-collab-belief", (response) => {
-        partnerCollabBelief = response.collabBelief;
-        console.log(response.collabBelief);
-        if($("#collabBelief").prop("disabled")) {
-            // enable robot button
-            $("#robot-button").prop("disabled", false);
-        }
-    });
+
 
     // bind behavior to clicks on the logout link
     $("#next-button").on("click", () => {
@@ -354,7 +230,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show welcome screen
     socket.on("show-welcome-screen", (response) => {
         // hide the wait, design and thank you screens
-        $("#admin, #wait, #design, #thank-you, #main-survey, #main-postsurvey, #demographics-survey").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #main-survey, #main-postsurvey, #demographics-survey, #intention").collapse("hide");
         // show the welcome screen
         $("#welcome").collapse("show");
     });
@@ -362,7 +238,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show demographics survey screen
     socket.on("show-demographics-survey-screen", (response) => {
         // hide the wait, design and thank you and main survey screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #main-survey, #main-postsurvey").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #welcome, #main-survey, #main-postsurvey, #intention").collapse("hide");
         $("#demographics-survey-form input").prop("disabled", false);
         $("#demographics-survey-form button:submit").prop("disabled", false);
         $("#demographics-survey-form button:submit .spinner-border").addClass("d-none");
@@ -392,7 +268,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show survey screen
     socket.on("show-survey-screen", (response) => {
         // hide the wait, design and thank you screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #demographics-survey, #main-postsurvey").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #welcome, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
         $("#survey-form input").prop("disabled", false);
         $("#survey-form button:submit").prop("disabled", false);
         $("#survey-form button:submit .spinner-border").addClass("d-none");
@@ -424,7 +300,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io post show post survey screen
     socket.on("show-postsurvey-screen", (response) => {
         // hide the wait, design and thank you, demogragraphics and main survey screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #demographics-survey, #main-survey").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #welcome, #demographics-survey, #main-survey, #intention").collapse("hide");
         $("#postsurvey-form input").prop("disabled", false);
         $("#postsurvey-form button:submit").prop("disabled", false);
         $("#postsurvey-form button:submit .spinner-border").addClass("d-none");
@@ -458,7 +334,7 @@ $(document).ready(function() {
     socket.on("show-admin-screen", (response) => {
         console.log(response);
         // hide the wait, design and thank you screens
-        $("#welcome, #wait, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey").collapse("hide");
+        $("#welcome, #wait, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
         // show the admin screen
         $("#admin").collapse("show");
         // set the progress bar to the correct value
@@ -518,7 +394,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show wait screen
     socket.on("show-wait-screen", (response) => {
         // hide the welcome, admin, design, and thank you screens
-        $("#welcome, #admin, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey").collapse("hide");
+        $("#welcome, #admin, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
         // show the wait screen
         $("#wait").collapse("show");
     });
@@ -533,7 +409,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show thank you screen
     socket.on("show-thank-you-screen", (response) => {
         // hide the admin, wait, design and welcome screens
-        $("#admin, #wait, #design, #welcome, #main-survey, #demographics-survey, #main-postsurvey").collapse("hide");
+        $("#admin, #wait, #design, #welcome, #main-survey, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
         // show the welcome screen
         $("#thank-you").collapse("show");
     });

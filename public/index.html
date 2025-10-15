@@ -59,6 +59,110 @@
     </div>
   </div>
 
+  <!-- Part 1: Intention Stage -->
+  <div class="container collapse hide" id="intention">
+    <div class="row my-2">
+      <div class="col">
+        <h4>Progress:</h4>
+        <div class="progress" role="progressbar" aria-label="Progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-bar" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <h4 class="intention-task-label"></h4>
+        <p class="fw-bold">Please review the available options and their potential payoffs:</p>
+        <table class="table table-bordered fw-bold align-middle text-center">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Design Strategy</th>
+              <th scope="col">Car Design</th>
+              <th scope="col">Design Name</th>
+              <th scope="col">Decision</th>
+              <th scope="col">Partner chooses <span class="text-success">collaborative</span> option</th>
+              <th scope="col">Partner chooses <span class="text-danger">individual</span> option</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-strategy="collaborative">
+              <th scope="row"><span class="text-success">Collaborative Option</span></th>
+              <td><img src="" style="width:100px" /></td>
+              <td><span class="intention-design-label"></span></td>
+              <td>You choose <span class="text-success">collaborative</span> option</td>
+              <td><span class="intention-design-upside"></span></td>
+              <td><span class="intention-design-downside"></span></td>
+            </tr>
+            <tr data-strategy="collaborative">
+              <th scope="row"><span class="text-success">Collaborative Option</span></th>
+              <td><img src="" style="width:100px" /></td>
+              <td><span class="intention-design-label"></span></td>
+              <td>You choose <span class="text-success">collaborative</span> option</td>
+              <td><span class="intention-design-upside"></span></td>
+              <td><span class="intention-design-downside"></span></td>
+            </tr>
+            <tr data-strategy="collaborative">
+              <th scope="row"><span class="text-success">Collaborative Option</span></th>
+              <td><img src="" style="width:100px" /></td>
+              <td><span class="intention-design-label"></span></td>
+              <td>You choose <span class="text-success">collaborative</span> option</td>
+              <td><span class="intention-design-upside"></span></td>
+              <td><span class="intention-design-downside"></span></td>
+            </tr>
+            <tr data-strategy="individual">
+              <th scope="row"><span class="text-danger">Individual Option</span></th>
+              <td><img src="" style="width:100px" /></td>
+              <td><span class="intention-design-label"></span></td>
+              <td>You choose <span class="text-danger">individual</span> option</td>
+              <td><span class="intention-design-upside"></span></td>
+              <td><span class="intention-design-downside"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="row my-3">
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Individual Collaboration Difficulty</h5>
+            <p class="card-text">This shows how challenging collaboration is for your task:</p>
+            <div class="mx-3">
+              <label for="intention-u-percentile" class="form-label">Easier</label>
+              <label for="intention-u-percentile" class="form-label float-end">Harder</label>
+              <input type="range" class="form-range" min="0" max="100" step="1" id="intention-u-percentile" disabled />
+              <div class="text-center"><strong><span id="intention-u-value">50</span>%</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row my-3">
+      <div class="col">
+        <form id="intention-form">
+          <div class="card border-primary">
+            <div class="card-body">
+              <h5 class="card-title">What is your intention towards collaboration?</h5>
+              <p class="card-text">Please indicate your intention on a scale from 1 (definitely will not collaborate) to 10 (definitely will collaborate):</p>
+              <div class="mx-3">
+                <label for="intention-slider" class="form-label">1 - Definitely will NOT collaborate</label>
+                <label for="intention-slider" class="form-label float-end">10 - Definitely WILL collaborate</label>
+                <input type="range" class="form-range" min="1" max="10" step="1" id="intention-slider" value="5" />
+                <div class="text-center"><strong>Current value: <span id="intention-value">5</span></strong></div>
+              </div>
+            </div>
+          </div>
+          <div class="text-end mt-3">
+            <button type="submit" class="btn btn-lg btn-primary w-50" id="intention-button">
+              <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              Submit Intention
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <div class="container collapse hide text" id="demographics-survey">
     <div class="row">
       <div class="col">
@@ -438,26 +542,40 @@
     <div class="row">
       <div class="col">
         <h4 class="task-label"></h4>
-        <form class=" bg-white px-4" action="" id="collabBelief-form">
-          <p>
-            <strong>Please select your belief of collaboration success ("0" indicates certain failure whereas "100" indicates certain success of collaboration): </strong>
-          </p>
-          <div class="mx-0 w-100">
-            <label for="customRange3" class="form-label">0</label>
-            <label for="customRange3" class="form-label float-end">100</label>
-            <div class="range">
-              <input type="range" class="form-range" min="0" max="100" step="1" id="collabBelief" />
-            </div> 
-            <button class="btn btn-primary btn-sm" type= "submit" id="collabBelief-button" >
-              <span  role="status" aria-hidden="true"></span>
-              Submit
-            </button>
+        <p class="fw-bold">Please make your final decision:</p>
+        
+        <!-- Collaboration Difficulty Information -->
+        <div class="row my-3">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Individual Collaboration Difficulty</h5>
+                <p class="card-text">This shows how challenging collaboration is for your task:</p>
+                <div class="mx-2">
+                  <label for="design-u-percentile" class="form-label">Easier</label>
+                  <label for="design-u-percentile" class="form-label float-end">Harder</label>
+                  <input type="range" class="form-range" min="0" max="100" step="1" id="design-u-percentile" disabled />
+                  <div class="text-center"><strong><span id="design-u-value">50</span>%</strong></div>
+                </div>
+              </div>
+            </div>
           </div>
-        </form>
-        <div id="robot">
-          <img src="robotImage.jpg" class="img-circle" alt="robot" style="width: 150px; height: 150px;"/>
-          <button type="button" class="btn btn-primary" id="robot-button" >Click to View Info</button>   
+          <div class="col-md-6" id="design-r-container">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Paired Collaboration Difficulty</h5>
+                <p class="card-text">This shows the difficulty when you and your partner collaborate:</p>
+                <div class="mx-2">
+                  <label for="design-r-percentile" class="form-label">Easier</label>
+                  <label for="design-r-percentile" class="form-label float-end">Harder</label>
+                  <input type="range" class="form-range" min="0" max="100" step="1" id="design-r-percentile" disabled />
+                  <div class="text-center"><strong><span id="design-r-value">50</span>%</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
         <table class="table table-hover table-bordered fw-bold align-middle text-center">
           <thead class="table-light">
             <tr>
@@ -504,22 +622,6 @@
             </tr>
           </tbody>
         </table>
-      </div>
-    </div>
-    <div class="modal fade" id="robot-modal" role="dialog" aria-labelledby="robot-modal-label" aria-hidden="true">
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="robot-modal-label" >I am here to help! <img src="robotImage.jpg" class="img-circle" alt="robot" style="width: 150px; height: 150px;"/></h5> 
-            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body" ><canvas id="myChart"></canvas><p></p></div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
       </div>
     </div>
     <div class="row">
@@ -580,27 +682,9 @@
   </div>
 </div>
 
-<div class="modal fade" id="mediator-modal" role="dialog" aria-labelledby="mediator-modal-label" aria-hidden="true">
-  <div class="modal-dialog modal-sm" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="mediator-modal-label" >Mediator Information <img src="robotImage.jpg" class="img-circle" alt="robot" style="width: 150px; height: 150px;"/></h5> 
-        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body"><p></p></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script src="https://code.jquery.com/jquery-3.6.2.min.js" integrity="sha256-2krYZKh//PcchRtd+H+VyyQoZ/e3EcrkxhM8ycwASPA=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="index.js"></script>
 </body>
 </html> 
