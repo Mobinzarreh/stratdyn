@@ -39,12 +39,6 @@ module.exports = function(io) {
     let currentTaskIndex = -2; // Start at demographics survey for testing (-3 = wait, -2 = demographics, -1 = presurvey, 0+ = tasks)
     let autoAdvance = true; // Set to true for testing, false for admin-controlled sessions
 
-    // Track individual user progress
-    const userProgress = {}; // {username: taskIndex}
-    
-    // QUICK FIX: Track if user has started their surveys (prevents late joiners from skipping)
-    const userStartedSurveys = {}; // {username: boolean}
-
     let timestamp = Math.floor(new Date().getTime() / 1000);
     let sessionId = 'session1'; // Can be changed as needed
 
@@ -156,7 +150,6 @@ module.exports = function(io) {
             const userGroup = users[username] ? users[username].group : 'treatment';
             task.userGroup = userGroup;
             task.stage = stage; // 'intention' or 'choice'
-            task.taskNumber = currentTaskIndex + 1; // Send sequential task number (1-30)
             
             // compute the progress percentage
             task.progress = Math.round(100*(currentTaskIndex+1)/(experiment.tasks.length+1));
@@ -234,10 +227,6 @@ module.exports = function(io) {
             } else if (username in admins) {
                 // if admin logged in, show admin screen
                 showAdminScreen(context);
-            } else if (userStartedSurveys[username] === false) {
-                // QUICK FIX: Force new users to start at demographics regardless of currentTaskIndex
-                console.log(`${username} hasn't started surveys yet - showing demographics`);
-                showDemographicsSurveyScreen(context);
             } else if (currentTaskIndex < -2) {
                 // if not ready to start, show wait screen
                 showWaitScreen(context);
@@ -290,12 +279,6 @@ module.exports = function(io) {
                     
                     // Initialize log files for this group if not already done
                     initializeLogFiles(group);
-                    
-                    // QUICK FIX: Initialize user survey tracking if first time logging in
-                    if (!userStartedSurveys.hasOwnProperty(username)) {
-                        userStartedSurveys[username] = false;
-                        console.log(`New user ${username} - will start at demographics`);
-                    }
                     
                     // notify admins of new user
                     Object.keys(admins).forEach(admin => {
@@ -459,43 +442,8 @@ module.exports = function(io) {
                 
                 // Auto-advance to next task if enabled
                 if (autoAdvance && currentTaskIndex >= 0 && currentTaskIndex < experiment.tasks.length) {
-                    // Track that this user has completed this task
-                    userProgress[username] = currentTaskIndex;
-                    
-                    // Check if partner has also completed this task
-                    let partner = experiment.partners[username];
-                    let partnerProgress = userProgress[partner] || -3;
-                    
-                    // Only advance if BOTH users have completed the current task
-                    if (partnerProgress >= currentTaskIndex) {
-                        currentTaskIndex++;
-                        console.log(`Both ${username} and ${partner} completed task ${currentTaskIndex-1}. Advancing to task ${currentTaskIndex}`);
-                        
-                        // Show next content to both users directly (avoid race condition)
-                        setImmediate(() => {
-                            if (currentTaskIndex < experiment.tasks.length) {
-                                // Show next task Part 1 (Intention)
-                                if (users[username]) showDesignTask(users[username].socket, 'intention');
-                                if (users[partner]) showDesignTask(users[partner].socket, 'intention');
-                            } else if (currentTaskIndex === experiment.tasks.length) {
-                                // Show post-survey
-                                if (users[username]) showPostSurveyScreen(users[username].socket);
-                                if (users[partner]) showPostSurveyScreen(users[partner].socket);
-                            } else {
-                                // Show thank you
-                                if (users[username]) showThankYouScreen(users[username].socket);
-                                if (users[partner]) showThankYouScreen(users[partner].socket);
-                            }
-                        });
-                    } else {
-                        console.log(`${username} completed task ${currentTaskIndex}, waiting for ${partner}...`);
-                        // QUICK FIX: Use stored socket reference to avoid stale reference
-                        if (users[username]) {
-                            showWaitScreen(users[username].socket);
-                        } else {
-                            showWaitScreen(socket);
-                        }
-                    }
+                    currentTaskIndex++;
+                    io.emit("update-content");
                 }
             }
         });
@@ -543,10 +491,7 @@ module.exports = function(io) {
                 // Auto-advance to next stage if enabled
                 if (autoAdvance && currentTaskIndex === -1) {
                     currentTaskIndex = 0;
-                    // Give time for currentTaskIndex to update, then show content
-                    setImmediate(() => {
-                        showDesignTask(socket, 'intention');
-                    });
+                    io.emit("update-content");
                 }
             }
         });
@@ -631,17 +576,10 @@ module.exports = function(io) {
                     }
                 );
                 
-                // QUICK FIX: Mark user as having started surveys
-                userStartedSurveys[username] = true;
-                console.log(`${username} completed demographics - marked as survey started`);
-                
                 // Auto-advance to next stage if enabled
                 if (autoAdvance && currentTaskIndex === -2) {
                     currentTaskIndex = -1;
-                    // Give time for currentTaskIndex to update, then show content
-                    setImmediate(() => {
-                        showSurveyScreen(socket);
-                    });
+                    io.emit("update-content");
                 }
             }
         });
