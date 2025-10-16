@@ -39,6 +39,9 @@ module.exports = function(io) {
     let currentTaskIndex = -2; // Start at demographics survey for testing (-3 = wait, -2 = demographics, -1 = presurvey, 0+ = tasks)
     let autoAdvance = true; // Set to true for testing, false for admin-controlled sessions
 
+    // Track individual user progress
+    const userProgress = {}; // {username: taskIndex}
+
     let timestamp = Math.floor(new Date().getTime() / 1000);
     let sessionId = 'session1'; // Can be changed as needed
 
@@ -150,6 +153,7 @@ module.exports = function(io) {
             const userGroup = users[username] ? users[username].group : 'treatment';
             task.userGroup = userGroup;
             task.stage = stage; // 'intention' or 'choice'
+            task.taskNumber = currentTaskIndex + 1; // Send sequential task number (1-30)
             
             // compute the progress percentage
             task.progress = Math.round(100*(currentTaskIndex+1)/(experiment.tasks.length+1));
@@ -442,8 +446,39 @@ module.exports = function(io) {
                 
                 // Auto-advance to next task if enabled
                 if (autoAdvance && currentTaskIndex >= 0 && currentTaskIndex < experiment.tasks.length) {
-                    currentTaskIndex++;
-                    io.emit("update-content");
+                    // Track that this user has completed this task
+                    userProgress[username] = currentTaskIndex;
+                    
+                    // Check if partner has also completed this task
+                    let partner = experiment.partners[username];
+                    let partnerProgress = userProgress[partner] || -3;
+                    
+                    // Only advance if BOTH users have completed the current task
+                    if (partnerProgress >= currentTaskIndex) {
+                        currentTaskIndex++;
+                        console.log(`Both ${username} and ${partner} completed task ${currentTaskIndex-1}. Advancing to task ${currentTaskIndex}`);
+                        
+                        // Show next content to both users directly (avoid race condition)
+                        setImmediate(() => {
+                            if (currentTaskIndex < experiment.tasks.length) {
+                                // Show next task Part 1 (Intention)
+                                if (users[username]) showDesignTask(users[username].socket, 'intention');
+                                if (users[partner]) showDesignTask(users[partner].socket, 'intention');
+                            } else if (currentTaskIndex === experiment.tasks.length) {
+                                // Show post-survey
+                                if (users[username]) showPostSurveyScreen(users[username].socket);
+                                if (users[partner]) showPostSurveyScreen(users[partner].socket);
+                            } else {
+                                // Show thank you
+                                if (users[username]) showThankYouScreen(users[username].socket);
+                                if (users[partner]) showThankYouScreen(users[partner].socket);
+                            }
+                        });
+                    } else {
+                        console.log(`${username} completed task ${currentTaskIndex}, waiting for ${partner}...`);
+                        // Show wait screen to this user
+                        showWaitScreen(socket);
+                    }
                 }
             }
         });
@@ -491,7 +526,10 @@ module.exports = function(io) {
                 // Auto-advance to next stage if enabled
                 if (autoAdvance && currentTaskIndex === -1) {
                     currentTaskIndex = 0;
-                    io.emit("update-content");
+                    // Give time for currentTaskIndex to update, then show content
+                    setImmediate(() => {
+                        showDesignTask(socket, 'intention');
+                    });
                 }
             }
         });
@@ -579,7 +617,10 @@ module.exports = function(io) {
                 // Auto-advance to next stage if enabled
                 if (autoAdvance && currentTaskIndex === -2) {
                     currentTaskIndex = -1;
-                    io.emit("update-content");
+                    // Give time for currentTaskIndex to update, then show content
+                    setImmediate(() => {
+                        showSurveyScreen(socket);
+                    });
                 }
             }
         });

@@ -131,8 +131,8 @@ $(document).ready(function() {
             $("#intention .progress").attr("aria-valuenow", response.progress);
             $("#intention .progress-bar").css("width", response.progress + "%");
             
-            // set the task label
-            $("#intention .intention-task-label").text(response.label);
+            // set the task label - use sequential task number
+            $("#intention .intention-task-label").text("Task " + response.taskNumber + " of 30");
             
             // update the design options in the table
             $("#intention tbody tr").each((index, element) => {
@@ -175,8 +175,8 @@ $(document).ready(function() {
             $("#design .progress").attr("aria-valuenow", response.progress);
             $("#design .progress-bar").css("width", response.progress + "%");
 
-            // set the task label
-            $("#design .task-label").text(response.label);
+            // set the task label - use sequential task number
+            $("#design .task-label").text("Task " + response.taskNumber + " of 30");
 
             // update the design attributes for each option
             $("#design tbody tr").each((index, element) => {
