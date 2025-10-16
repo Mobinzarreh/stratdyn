@@ -36,14 +36,12 @@ module.exports = function(io) {
         });
     });
 
-    let currentTaskIndex = -2; // Start at demographics survey for testing (-3 = wait, -2 = demographics, -1 = presurvey, 0+ = tasks)
+    // INDEPENDENT USER SOLUTION: Each user tracks their own progress
     let autoAdvance = true; // Set to true for testing, false for admin-controlled sessions
-
-    // Track individual user progress
-    const userProgress = {}; // {username: taskIndex}
     
-    // QUICK FIX: Track if user has started their surveys (prevents late joiners from skipping)
-    const userStartedSurveys = {}; // {username: boolean}
+    // Per-user task index: {username: taskIndex}
+    // -2 = demographics, -1 = pre-survey, 0-29 = tasks, 30 = post-survey, 31+ = thank you
+    const userTaskIndex = {};
 
     let timestamp = Math.floor(new Date().getTime() / 1000);
     let sessionId = 'session1'; // Can be changed as needed
@@ -125,17 +123,20 @@ module.exports = function(io) {
         var username = null;
         
         function showDesignTask(context, stage = 'intention') {
+            // Get this user's current task index
+            const taskIndex = userTaskIndex[username] || 0;
+            
             // retrieve the current task and work with a cloned copy
             let task = JSON.parse(
                 JSON.stringify(
-                    experiment.tasks[experiment.assignments[username][currentTaskIndex]]
+                    experiment.tasks[experiment.assignments[username][taskIndex]]
                 )
             );
             task.partner = experiment.partners[username];
             // clone partner task to avoid circular reference
             task.partnerTask = JSON.parse(
                 JSON.stringify(
-                    experiment.tasks[experiment.assignments[task.partner][currentTaskIndex]]
+                    experiment.tasks[experiment.assignments[task.partner][taskIndex]]
                 )
             );
             
@@ -145,7 +146,7 @@ module.exports = function(io) {
             task.uValue = myUValue;
             task.uPercentile = myUPercentile;
             
-            // Calculate R and R percentile for paired tasks
+            // Calculate R and R percentile for paired tasks (INDEPENDENT - uses pre-assigned partner task)
             const partnerUValue = task.partnerTask.uValue;
             const rValue = calculateRiskDominance(myUValue, partnerUValue);
             const rPercentile = calculateRPercentile(rValue, experiment.tasks);
@@ -156,10 +157,10 @@ module.exports = function(io) {
             const userGroup = users[username] ? users[username].group : 'treatment';
             task.userGroup = userGroup;
             task.stage = stage; // 'intention' or 'choice'
-            task.taskNumber = currentTaskIndex + 1; // Send sequential task number (1-30)
+            task.taskNumber = taskIndex + 1; // Send sequential task number (1-30)
             
             // compute the progress percentage
-            task.progress = Math.round(100*(currentTaskIndex+1)/(experiment.tasks.length+1));
+            task.progress = Math.round(100*(taskIndex+1)/(experiment.tasks.length+1));
             // send a socket.io show design task
             context.emit('show-design-task', task);
         }
@@ -234,28 +235,26 @@ module.exports = function(io) {
             } else if (username in admins) {
                 // if admin logged in, show admin screen
                 showAdminScreen(context);
-            } else if (userStartedSurveys[username] === false) {
-                // QUICK FIX: Force new users to start at demographics regardless of currentTaskIndex
-                console.log(`${username} hasn't started surveys yet - showing demographics`);
-                showDemographicsSurveyScreen(context);
-            } else if (currentTaskIndex < -2) {
-                // if not ready to start, show wait screen
-                showWaitScreen(context);
-            } else if (currentTaskIndex < -1) {
-                // if not ready to start, show demographics survey screen
-                showDemographicsSurveyScreen(context);
-            } else if (currentTaskIndex < 0) {
-                // if not ready to start, show survey screen
-                showSurveyScreen(context)            
-            } else if (currentTaskIndex < experiment.tasks.length) {
-                // if incomplete, show next design task
-                showDesignTask(context);
-            } else if (currentTaskIndex == experiment.tasks.length) {
-                // if complete, show next post survey
-                showPostSurveyScreen(context);
             } else {
-                // if complete, show thank you screen
-                showThankYouScreen(context);
+                // Get this user's current task index
+                const taskIndex = userTaskIndex[username] || -2; // Default to demographics
+                
+                if (taskIndex < -1) {
+                    // Show demographics survey
+                    showDemographicsSurveyScreen(context);
+                } else if (taskIndex < 0) {
+                    // Show pre-survey
+                    showSurveyScreen(context);
+                } else if (taskIndex < experiment.tasks.length) {
+                    // Show next task
+                    showDesignTask(context);
+                } else if (taskIndex === experiment.tasks.length) {
+                    // Show post-survey
+                    showPostSurveyScreen(context);
+                } else {
+                    // Show thank you screen
+                    showThankYouScreen(context);
+                }
             }
         }
 
@@ -291,10 +290,12 @@ module.exports = function(io) {
                     // Initialize log files for this group if not already done
                     initializeLogFiles(group);
                     
-                    // QUICK FIX: Initialize user survey tracking if first time logging in
-                    if (!userStartedSurveys.hasOwnProperty(username)) {
-                        userStartedSurveys[username] = false;
-                        console.log(`New user ${username} - will start at demographics`);
+                    // Initialize user's task index if first time logging in
+                    if (!userTaskIndex.hasOwnProperty(username)) {
+                        userTaskIndex[username] = -2; // Start at demographics
+                        console.log(`New user ${username} - starting at demographics`);
+                    } else {
+                        console.log(`Returning user ${username} - resuming at index ${userTaskIndex[username]}`);
                     }
                     
                     // notify admins of new user
@@ -326,19 +327,24 @@ module.exports = function(io) {
         socket.on('submit-intention', (request) => {
             if (username != null) {
                 console.log('Intention submitted:', request);
+                
+                // Get this user's current task index
+                const taskIndex = userTaskIndex[username];
+                
                 // save the intention
-                experiment.decisions[username][currentTaskIndex].intention = request.intention;
-                experiment.decisions[username][currentTaskIndex].intentionTimestamp = Date.now();
+                experiment.decisions[username][taskIndex].intention = request.intention;
+                experiment.decisions[username][taskIndex].intentionTimestamp = Date.now();
                 
                 // Calculate and store u percentile
-                const myTask = experiment.tasks[experiment.assignments[username][currentTaskIndex]];
+                const myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
                 const uValue = myTask.uValue;
                 const uPercentile = calculateUPercentile(uValue, experiment.tasks);
-                experiment.decisions[username][currentTaskIndex].uValue = uValue;
-                experiment.decisions[username][currentTaskIndex].uPercentile = uPercentile;
+                experiment.decisions[username][taskIndex].uValue = uValue;
+                experiment.decisions[username][taskIndex].uPercentile = uPercentile;
                 
                 console.log({
                     "user": username,
+                    "taskIndex": taskIndex,
                     "intention": request.intention,
                     "uValue": uValue,
                     "uPercentile": uPercentile
@@ -352,33 +358,40 @@ module.exports = function(io) {
         socket.on('submit-decision', (request) => {
             if (username != null) {
                 console.log('Final decision submitted:', request);
+                
+                // Get this user's current task index
+                const taskIndex = userTaskIndex[username];
+                
                 // save the task decision (final choice)
-                experiment.decisions[username][currentTaskIndex].design = request.design.replace("\xa0", " ");
+                experiment.decisions[username][taskIndex].design = request.design.replace("\xa0", " ");
                 if (request.strategy) {
-                    experiment.decisions[username][currentTaskIndex].strategy = request.strategy.replace("\xa0", " ");
+                    experiment.decisions[username][taskIndex].strategy = request.strategy.replace("\xa0", " ");
                 }
                 
-                // Calculate and store R percentile
+                // Calculate and store R percentile (INDEPENDENT - uses pre-assigned partner task)
                 let partner = experiment.partners[username];
                 if (partner != null) {
-                    const myTask = experiment.tasks[experiment.assignments[username][currentTaskIndex]];
-                    const partnerTask = experiment.tasks[experiment.assignments[partner][currentTaskIndex]];
+                    const myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
+                    const partnerTask = experiment.tasks[experiment.assignments[partner][taskIndex]];
                     const myUValue = myTask.uValue;
-                    const partnerUValue = partnerTask.uValue;
+                    const partnerUValue = partnerTask.uValue; // Already known from experiment.json!
                     const rValue = calculateRiskDominance(myUValue, partnerUValue);
                     const rPercentile = calculateRPercentile(rValue, experiment.tasks);
                     
-                    experiment.decisions[username][currentTaskIndex].rValue = rValue;
-                    experiment.decisions[username][currentTaskIndex].rPercentile = rPercentile;
+                    experiment.decisions[username][taskIndex].rValue = rValue;
+                    experiment.decisions[username][taskIndex].rPercentile = rPercentile;
                 }
+                
+                // Payoff calculation - only if partner has also completed this task
+                // (This is optional - can be calculated offline later)
                 var myScore = null;
                 var partnerScore = null;
                 if (partner != null && experiment.decisions[partner]){
-                    if (experiment.decisions[partner][currentTaskIndex].design){
-                        let myDesign = experiment.decisions[username][currentTaskIndex].design.replace("\xa0", " ");
-                        let myTask = experiment.tasks[experiment.assignments[username][currentTaskIndex]];
-                        let partnerDesign = experiment.decisions[partner][currentTaskIndex].design.replace("\xa0", " ");
-                        let partnerTask = experiment.tasks[experiment.assignments[partner][currentTaskIndex]];
+                    if (experiment.decisions[partner][taskIndex] && experiment.decisions[partner][taskIndex].design){
+                        let myDesign = experiment.decisions[username][taskIndex].design.replace("\xa0", " ");
+                        let myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
+                        let partnerDesign = experiment.decisions[partner][taskIndex].design.replace("\xa0", " ");
+                        let partnerTask = experiment.tasks[experiment.assignments[partner][taskIndex]];
 
                         for (let myDesignIndex = 0; myDesignIndex < 4; myDesignIndex++) {
                             if (myDesign === myTask.options[myDesignIndex].label) {
@@ -402,18 +415,22 @@ module.exports = function(io) {
                             }
                         }
 
-                        experiment.decisions[username][currentTaskIndex].score = myScore;
-                        experiment.decisions[partner][currentTaskIndex].score = partnerScore;
+                        experiment.decisions[username][taskIndex].score = myScore;
+                        experiment.decisions[partner][taskIndex].score = partnerScore;
                     }
                 }
 
                 const userGroup = users[username] ? users[username].group : 'treatment';
                 const logFiles = getLogFiles(userGroup);
-                const decision = experiment.decisions[username][currentTaskIndex];
+                const decision = experiment.decisions[username][taskIndex];
+                
+                let task = experiment.tasks[experiment.assignments[username][taskIndex]];
                 
                 console.log({
                     "user": username,
                     "group": userGroup,
+                    "taskIndex": taskIndex,
+                    "taskLabel": task.label,
                     "intention": decision.intention,
                     "design": request.design,
                     "strategy": request.strategy,
@@ -429,8 +446,6 @@ module.exports = function(io) {
                 Object.keys(admins).forEach(admin => {
                     showAdminScreen(admins[admin]);
                 });
-                
-                let task = experiment.tasks[experiment.assignments[username][currentTaskIndex]];
                 
                 // Write to CSV with new format
                 fs.appendFile(
@@ -457,45 +472,25 @@ module.exports = function(io) {
                     }
                 );
                 
-                // Auto-advance to next task if enabled
-                if (autoAdvance && currentTaskIndex >= 0 && currentTaskIndex < experiment.tasks.length) {
-                    // Track that this user has completed this task
-                    userProgress[username] = currentTaskIndex;
+                // INDEPENDENT USER SOLUTION: Advance THIS user only (no partner synchronization!)
+                if (autoAdvance) {
+                    userTaskIndex[username]++;
+                    console.log(`${username} completed task ${taskIndex}. Advancing to index ${userTaskIndex[username]}`);
                     
-                    // Check if partner has also completed this task
-                    let partner = experiment.partners[username];
-                    let partnerProgress = userProgress[partner] || -3;
-                    
-                    // Only advance if BOTH users have completed the current task
-                    if (partnerProgress >= currentTaskIndex) {
-                        currentTaskIndex++;
-                        console.log(`Both ${username} and ${partner} completed task ${currentTaskIndex-1}. Advancing to task ${currentTaskIndex}`);
-                        
-                        // Show next content to both users directly (avoid race condition)
-                        setImmediate(() => {
-                            if (currentTaskIndex < experiment.tasks.length) {
-                                // Show next task Part 1 (Intention)
-                                if (users[username]) showDesignTask(users[username].socket, 'intention');
-                                if (users[partner]) showDesignTask(users[partner].socket, 'intention');
-                            } else if (currentTaskIndex === experiment.tasks.length) {
-                                // Show post-survey
-                                if (users[username]) showPostSurveyScreen(users[username].socket);
-                                if (users[partner]) showPostSurveyScreen(users[partner].socket);
-                            } else {
-                                // Show thank you
-                                if (users[username]) showThankYouScreen(users[username].socket);
-                                if (users[partner]) showThankYouScreen(users[partner].socket);
-                            }
-                        });
-                    } else {
-                        console.log(`${username} completed task ${currentTaskIndex}, waiting for ${partner}...`);
-                        // QUICK FIX: Use stored socket reference to avoid stale reference
-                        if (users[username]) {
-                            showWaitScreen(users[username].socket);
+                    // Show next content to this user only
+                    setImmediate(() => {
+                        const nextIndex = userTaskIndex[username];
+                        if (nextIndex < experiment.tasks.length) {
+                            // Show next task Part 1 (Intention)
+                            showDesignTask(socket, 'intention');
+                        } else if (nextIndex === experiment.tasks.length) {
+                            // Show post-survey
+                            showPostSurveyScreen(socket);
                         } else {
-                            showWaitScreen(socket);
+                            // Show thank you
+                            showThankYouScreen(socket);
                         }
-                    }
+                    });
                 }
             }
         });
@@ -541,9 +536,10 @@ module.exports = function(io) {
                 );
                 
                 // Auto-advance to next stage if enabled
-                if (autoAdvance && currentTaskIndex === -1) {
-                    currentTaskIndex = 0;
-                    // Give time for currentTaskIndex to update, then show content
+                if (autoAdvance) {
+                    userTaskIndex[username] = 0; // Move to first task
+                    console.log(`${username} completed pre-survey. Advancing to task 0`);
+                    // Give time for index to update, then show content
                     setImmediate(() => {
                         showDesignTask(socket, 'intention');
                     });
@@ -589,9 +585,12 @@ module.exports = function(io) {
                 );
                 
                 // Auto-advance to thank you screen if enabled
-                if (autoAdvance && currentTaskIndex === experiment.tasks.length) {
-                    currentTaskIndex++;
-                    io.emit("update-content");
+                if (autoAdvance) {
+                    userTaskIndex[username]++;
+                    console.log(`${username} completed post-survey. Advancing to thank you`);
+                    setImmediate(() => {
+                        showThankYouScreen(socket);
+                    });
                 }
             }
         });
@@ -631,14 +630,11 @@ module.exports = function(io) {
                     }
                 );
                 
-                // QUICK FIX: Mark user as having started surveys
-                userStartedSurveys[username] = true;
-                console.log(`${username} completed demographics - marked as survey started`);
-                
                 // Auto-advance to next stage if enabled
-                if (autoAdvance && currentTaskIndex === -2) {
-                    currentTaskIndex = -1;
-                    // Give time for currentTaskIndex to update, then show content
+                if (autoAdvance) {
+                    userTaskIndex[username] = -1; // Move to pre-survey
+                    console.log(`${username} completed demographics. Advancing to pre-survey`);
+                    // Give time for index to update, then show content
                     setImmediate(() => {
                         showSurveyScreen(socket);
                     });
