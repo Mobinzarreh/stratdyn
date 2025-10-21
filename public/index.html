@@ -286,20 +286,43 @@
     </div>
     <div class="row my-3">
       <div class="col">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Individual Collaboration Difficulty</h5>
-            <p class="card-text">This shows how challenging collaboration is for your task:</p>
-            <div class="mx-3">
-              <label for="intention-u-percentile" class="form-label">Easier</label>
-              <label for="intention-u-percentile" class="form-label float-end">Harder</label>
-              <input type="range" class="form-range" min="0" max="100" step="1" id="intention-u-percentile" disabled />
-              <div class="text-center"><strong><span id="intention-u-value">50</span>%</strong></div>
+                  <div class="card-body">
+            <h5 class="card-title">Collaboration Difficulty</h5>
+            <p class="card-text">This shows how challenging collaboration is for this task:</p>
+            
+            <!-- Unified Difficulty Slider with Two Markers -->
+            <div class="position-relative" style="padding: 10px 0 40px 0;">
+              <!-- Slider Background with Gradient -->
+              <div style="position: relative; height: 20px; background: linear-gradient(to right, #28a745 0%, #ffc107 50%, #dc3545 100%); border-radius: 10px; margin: 10px 0;">
+                <!-- Individual Marker (Black vertical line) -->
+                <div id="intention-u-marker" style="position: absolute; left: 50%; transform: translateX(-50%); width: 4px; height: 30px; background-color: #000; top: -5px; z-index: 10;"></div>
+                <!-- Paired Marker (Purple vertical line) - Only for treatment group -->
+                <div id="intention-r-marker" style="position: absolute; left: 50%; transform: translateX(-50%); width: 4px; height: 30px; background-color: #9333ea; top: -5px; z-index: 10; display: none;"></div>
+              </div>
+              
+              <!-- Labels below slider -->
+              <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px;">
+                <span>Easier (0%)</span>
+                <span>Harder (100%)</span>
+              </div>
+              
+              <!-- Legend/Values Display -->
+              <div style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                  <div style="width: 16px; height: 16px; background-color: #000; margin-right: 8px; border: 2px solid #000;"></div>
+                  <strong>Individual Collaboration Difficulty:</strong>
+                  <span style="margin-left: 8px; font-weight: bold; color: #000;" id="intention-u-value">50</span>%
+                </div>
+                <div id="intention-r-legend" style="display: none; align-items: center;">
+                  <div style="width: 16px; height: 16px; background-color: #9333ea; margin-right: 8px; border: 2px solid #9333ea;"></div>
+                  <strong style="color: #9333ea;">Paired Collaboration Difficulty:</strong>
+                  <span style="margin-left: 8px; font-weight: bold; color: #9333ea;" id="intention-r-value">50</span>%
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     <div class="row my-3">
       <div class="col">
         <form id="intention-form">
@@ -750,35 +773,44 @@
         
         <!-- Collaboration Difficulty Information -->
         <div class="row my-3">
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Individual Collaboration Difficulty</h5>
-                <p class="card-text">This shows how challenging collaboration is for your task:</p>
-                <div class="mx-2">
-                  <label for="design-u-percentile" class="form-label">Easier</label>
-                  <label for="design-u-percentile" class="form-label float-end">Harder</label>
-                  <input type="range" class="form-range" min="0" max="100" step="1" id="design-u-percentile" disabled />
-                  <div class="text-center"><strong><span id="design-u-value">50</span>%</strong></div>
+          <div class="col">
+                          <div class="card-body">
+                <h5 class="card-title">Collaboration Difficulty</h5>
+                <p class="card-text">This shows how challenging collaboration is for this task:</p>
+                
+                <!-- Unified Difficulty Slider with Two Markers -->
+                <div class="position-relative" style="padding: 10px 0 40px 0;">
+                  <!-- Slider Background with Gradient -->
+                  <div style="position: relative; height: 20px; background: linear-gradient(to right, #28a745 0%, #ffc107 50%, #dc3545 100%); border-radius: 10px; margin: 10px 0;">
+                    <!-- Individual Marker (Black vertical line) -->
+                    <div id="design-u-marker" style="position: absolute; left: 50%; transform: translateX(-50%); width: 4px; height: 30px; background-color: #000; top: -5px; z-index: 10;"></div>
+                    <!-- Paired Marker (Purple vertical line) - Only for treatment group -->
+                    <div id="design-r-marker" style="position: absolute; left: 50%; transform: translateX(-50%); width: 4px; height: 30px; background-color: #9333ea; top: -5px; z-index: 10; display: none;"></div>
+                  </div>
+                  
+                  <!-- Labels below slider -->
+                  <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px;">
+                    <span>Easier (0%)</span>
+                    <span>Harder (100%)</span>
+                  </div>
+                  
+                  <!-- Legend/Values Display -->
+                  <div style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                      <div style="width: 16px; height: 16px; background-color: #000; margin-right: 8px; border: 2px solid #000;"></div>
+                      <strong>Individual Collaboration Difficulty:</strong>
+                      <span style="margin-left: 8px; font-weight: bold; color: #000;" id="design-u-value">50</span>%
+                    </div>
+                    <div id="design-r-legend" style="display: none; align-items: center;">
+                      <div style="width: 16px; height: 16px; background-color: #9333ea; margin-right: 8px; border: 2px solid #9333ea;"></div>
+                      <strong style="color: #9333ea;">Paired Collaboration Difficulty:</strong>
+                      <span style="margin-left: 8px; font-weight: bold; color: #9333ea;" id="design-r-value">50</span>%
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="col-md-6" id="design-r-container">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Paired Collaboration Difficulty</h5>
-                <p class="card-text">This shows the difficulty when you and your partner collaborate:</p>
-                <div class="mx-2">
-                  <label for="design-r-percentile" class="form-label">Easier</label>
-                  <label for="design-r-percentile" class="form-label float-end">Harder</label>
-                  <input type="range" class="form-range" min="0" max="100" step="1" id="design-r-percentile" disabled />
-                  <div class="text-center"><strong><span id="design-r-value">50</span>%</strong></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <table class="table table-bordered fw-bold align-middle text-center">
           <thead class="table-light">

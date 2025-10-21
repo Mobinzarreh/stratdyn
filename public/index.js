@@ -248,9 +248,15 @@ $(document).ready(function() {
                 $(element).find(".intention-design-downside").text(option.downside);
             });
             
-            // set the u percentile slider (visual only)
-            $("#intention-u-percentile").val(response.uPercentile);
+            // Update the unified difficulty display with marker positions
+            // Individual difficulty (u-percentile) - always shown (black marker)
+            $("#intention-u-marker").css("left", response.uPercentile + "%");
             $("#intention-u-value").text(Math.round(response.uPercentile));
+            
+            // Paired difficulty (R-percentile) - only for treatment group in Part 2
+            // In Part 1 (intention stage), R marker stays hidden for everyone
+            $("#intention-r-marker").hide();
+            $("#intention-r-legend").hide();
             
             // reset intention slider
             $("#intention-slider").val(5);
@@ -299,17 +305,21 @@ $(document).ready(function() {
                 $(element).find(".design-downside").text(option.downside);
             });
             
-            // Set difficulty sliders
-            $("#design-u-percentile").val(response.uPercentile);
+            // Update the unified difficulty display with marker positions
+            // Individual difficulty (u-percentile) - always shown (black marker)
+            $("#design-u-marker").css("left", response.uPercentile + "%");
             $("#design-u-value").text(Math.round(response.uPercentile));
             
-            // Show/hide R percentile based on user group
+            // Show/hide R percentile marker based on user group
             if (userGroup === 'treatment') {
-                $("#design-r-container").show();
-                $("#design-r-percentile").val(response.rPercentile);
+                // Treatment group: Show purple paired difficulty marker
+                $("#design-r-marker").css("left", response.rPercentile + "%").show();
+                $("#design-r-legend").css("display", "flex"); // Use flex for proper alignment
                 $("#design-r-value").text(Math.round(response.rPercentile));
             } else {
-                $("#design-r-container").hide();
+                // Control group: Hide paired difficulty marker
+                $("#design-r-marker").hide();
+                $("#design-r-legend").hide();
             }
             
             // Start 60-second timer for choice stage
