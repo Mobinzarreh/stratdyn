@@ -42,6 +42,14 @@ module.exports = function(io) {
     // Per-user task index: {username: taskIndex}
     // -2 = demographics, -1 = pre-survey, 0-29 = tasks, 30 = post-survey, 31+ = thank you
     const userTaskIndex = {};
+    
+    // RANDOMIZATION: Store presented option order per user per task
+    // Structure: { "user01": { "0": ["B", "A", "C", "Y"], "1": [...], ... }, ... }
+    const userOptionOrder = {};
+    
+    // PARTNER SYNCHRONIZATION: Track who completed which task
+    // Structure: { "user01": 5, "user02": 4, ... } = user01 completed up to task 5
+    const userTaskCompletion = {};
 
     let timestamp = Math.floor(new Date().getTime() / 1000);
     let sessionId = 'session1'; // Can be changed as needed
@@ -67,7 +75,7 @@ module.exports = function(io) {
         // Create task log file with new headers
         fs.writeFile(
             logFiles.task, 
-            "timestamp,username,group,partner,task,intention,intentionTimestamp,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,score,partnerScore\r\n",
+            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,presentedOrder,timePenalty,score,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -117,6 +125,47 @@ module.exports = function(io) {
     const users = {};
     const admins = {};
 
+    // RANDOMIZATION FUNCTION: Shuffle collaborative options (A, B, C), keep Y last
+    function shuffleCollaborativeOptions(task, username, taskIndex) {
+        // Check if we already have a randomized order for this user+task
+        if (!userOptionOrder[username]) {
+            userOptionOrder[username] = {};
+        }
+        
+        if (userOptionOrder[username][taskIndex]) {
+            // Use existing order (consistency within task between Part 1 and Part 2)
+            const savedOrder = userOptionOrder[username][taskIndex];
+            const reorderedOptions = savedOrder.map(label => 
+                task.options.find(opt => opt.label === label)
+            );
+            task.options = reorderedOptions;
+            task.presentedOrder = savedOrder;
+            console.log(`User ${username} Task ${taskIndex}: Using saved order = ${savedOrder.join(',')}`);
+            return task;
+        }
+        
+        // First time seeing this task - create new randomization
+        // Separate collaborative (A, B, C) from individual (Y)
+        const collaborative = task.options.slice(0, 3); // A, B, C
+        const individual = task.options[3]; // Y
+        
+        // Fisher-Yates shuffle (true randomization)
+        for (let i = collaborative.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [collaborative[i], collaborative[j]] = [collaborative[j], collaborative[i]];
+        }
+        
+        // Recombine: shuffled collaborative + individual at end
+        task.options = [...collaborative, individual];
+        
+        // Store the presented order for logging and consistency
+        task.presentedOrder = task.options.map(opt => opt.label);
+        userOptionOrder[username][taskIndex] = task.presentedOrder;
+        
+        console.log(`User ${username} Task ${taskIndex}: New randomized order = ${task.presentedOrder.join(',')}`);
+        return task;
+    }
+
     // bind behavior to a new socket.io connection
     io.on('connection', (socket) => {
         // keep track of username
@@ -139,6 +188,9 @@ module.exports = function(io) {
                     experiment.tasks[experiment.assignments[task.partner][taskIndex]]
                 )
             );
+            
+            // RANDOMIZATION: Apply per-user, per-task randomization
+            task = shuffleCollaborativeOptions(task, username, taskIndex);
             
             // Calculate u percentile for this task
             const myUValue = task.uValue;
@@ -197,33 +249,76 @@ module.exports = function(io) {
 
         function showAdminScreen(context) {
             let decisions = {};
-            Object.keys(experiment.decisions).forEach((user) => {
-                let totalScore = 0;
-                for (let taskIndex = 4; taskIndex < Math.min(currentTaskIndex + 1, experiment.tasks.length); taskIndex++) {
-                    totalScore += experiment.decisions[user][taskIndex].score || 0;
-                }
-                if (currentTaskIndex >= 0 && currentTaskIndex < experiment.tasks.length) {
-                    const userGroup = users[user] ? users[user].group : 'unknown';
-                    decisions[user] = {
-                        "online": user in users,
-                        "group": userGroup,
-                        "task": experiment.tasks[experiment.assignments[user][currentTaskIndex]].label,
-                        "intention": experiment.decisions[user][currentTaskIndex].intention,
-                        "design": experiment.decisions[user][currentTaskIndex].design,
-                        "strategy": experiment.decisions[user][currentTaskIndex].strategy,
-                        "score": experiment.decisions[user][currentTaskIndex].score,
-                        "totalScore": totalScore
-                    };
+            
+            // Get all users (both online and offline)
+            let allUsers = new Set([
+                ...Object.keys(users),
+                ...Object.keys(experiment.decisions)
+            ]);
+            
+            allUsers.forEach((user) => {
+                // Get this user's current task index
+                const taskIndex = userTaskIndex[user] !== undefined ? userTaskIndex[user] : -2;
+                const userGroup = users[user] ? users[user].group : (experiment.decisions[user] ? 'unknown' : 'unknown');
+                
+                // Build task label based on user's position
+                let taskLabel = '';
+                if (taskIndex === -2) {
+                    taskLabel = 'Demographics Survey';
+                } else if (taskIndex === -1) {
+                    taskLabel = 'Pre-Survey';
+                } else if (taskIndex >= 0 && taskIndex < experiment.tasks.length) {
+                    taskLabel = experiment.tasks[experiment.assignments[user][taskIndex]].label;
+                } else if (taskIndex === experiment.tasks.length) {
+                    taskLabel = 'Post-Survey';
                 } else {
-                    decisions[user] = {
-                        "online": user in users,
-                        "group": users[user] ? users[user].group : 'unknown'
-                    };
+                    taskLabel = 'Complete';
+                }
+                
+                // Initialize user decision info
+                decisions[user] = {
+                    "online": user in users,
+                    "group": userGroup,
+                    "task": taskLabel,
+                    "intention": null,
+                    "design": null,
+                    "strategy": null,
+                    "score": null,
+                    "totalScore": 0
+                };
+                
+                // Add task-specific data if user is on a task
+                if (taskIndex >= 0 && taskIndex < experiment.tasks.length && experiment.decisions[user] && experiment.decisions[user][taskIndex]) {
+                    decisions[user].intention = experiment.decisions[user][taskIndex].intention;
+                    decisions[user].design = experiment.decisions[user][taskIndex].design;
+                    decisions[user].strategy = experiment.decisions[user][taskIndex].strategy;
+                    decisions[user].score = experiment.decisions[user][taskIndex].score;
+                }
+                
+                // Calculate total score across all completed tasks
+                if (experiment.decisions[user]) {
+                    let totalScore = 0;
+                    for (let i = 0; i < experiment.tasks.length; i++) {
+                        if (experiment.decisions[user][i] && experiment.decisions[user][i].score) {
+                            totalScore += experiment.decisions[user][i].score;
+                        }
+                    }
+                    decisions[user].totalScore = totalScore;
                 }
             });
+            
+            // Calculate overall progress (average of all users)
+            let totalProgress = 0;
+            let userCount = allUsers.size;
+            allUsers.forEach(user => {
+                const taskIndex = userTaskIndex[user] !== undefined ? userTaskIndex[user] : -2;
+                totalProgress += Math.round(100 * (taskIndex + 2) / (experiment.tasks.length + 3));
+            });
+            const avgProgress = userCount > 0 ? Math.round(totalProgress / userCount) : 0;
+            
             // send a socket.io show admin screen
             context.emit('show-admin-screen', {
-                "progress": progress = Math.round(100*(currentTaskIndex+2)/(experiment.tasks.length+3)),
+                "progress": avgProgress,
                 "decisions": decisions
             });
         }
@@ -331,9 +426,11 @@ module.exports = function(io) {
                 // Get this user's current task index
                 const taskIndex = userTaskIndex[username];
                 
-                // save the intention
+                // save the intention and timing
                 experiment.decisions[username][taskIndex].intention = request.intention;
                 experiment.decisions[username][taskIndex].intentionTimestamp = Date.now();
+                experiment.decisions[username][taskIndex].intentionTimeSpent = request.timeSpent || 0; // Time in seconds
+                experiment.decisions[username][taskIndex].intentionStartTime = request.startTime || Date.now();
                 
                 // Calculate and store u percentile
                 const myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
@@ -346,6 +443,7 @@ module.exports = function(io) {
                     "user": username,
                     "taskIndex": taskIndex,
                     "intention": request.intention,
+                    "timeSpent": request.timeSpent,
                     "uValue": uValue,
                     "uPercentile": uPercentile
                 });
@@ -361,6 +459,30 @@ module.exports = function(io) {
                 
                 // Get this user's current task index
                 const taskIndex = userTaskIndex[username];
+                
+                // Save timing information
+                const choiceTimeSpent = request.timeSpent || 0; // Time in seconds
+                experiment.decisions[username][taskIndex].choiceTimeSpent = choiceTimeSpent;
+                experiment.decisions[username][taskIndex].choiceStartTime = request.startTime || Date.now();
+                
+                // Calculate time penalty based on graduated system
+                let timePenalty = 0;
+                const TIME_LIMIT = 60; // 60 seconds for choice
+                const GRACE_PERIOD = 10; // 10 seconds grace
+                
+                if (choiceTimeSpent > TIME_LIMIT + GRACE_PERIOD) {
+                    // Over grace period - apply graduated penalty
+                    const overtime = choiceTimeSpent - (TIME_LIMIT + GRACE_PERIOD);
+                    if (overtime <= 20) {
+                        // 11-30s over: -0.5 points per second
+                        timePenalty = Math.round(overtime * 0.5 * 10) / 10; // Round to 1 decimal
+                    } else {
+                        // 30s+ over: cap at -20 points
+                        timePenalty = 20;
+                    }
+                    console.log(`⚠️ ${username} overtime: ${choiceTimeSpent}s (penalty: -${timePenalty} points)`);
+                }
+                experiment.decisions[username][taskIndex].timePenalty = timePenalty;
                 
                 // save the task decision (final choice)
                 experiment.decisions[username][taskIndex].design = request.design.replace("\xa0", " ");
@@ -383,7 +505,6 @@ module.exports = function(io) {
                 }
                 
                 // Payoff calculation - only if partner has also completed this task
-                // (This is optional - can be calculated offline later)
                 var myScore = null;
                 var partnerScore = null;
                 if (partner != null && experiment.decisions[partner]){
@@ -432,7 +553,10 @@ module.exports = function(io) {
                     "taskIndex": taskIndex,
                     "taskLabel": task.label,
                     "intention": decision.intention,
+                    "intentionTime": decision.intentionTimeSpent,
                     "design": request.design,
+                    "choiceTime": choiceTimeSpent,
+                    "timePenalty": timePenalty,
                     "strategy": request.strategy,
                     "uValue": decision.uValue,
                     "uPercentile": decision.uPercentile,
@@ -447,7 +571,7 @@ module.exports = function(io) {
                     showAdminScreen(admins[admin]);
                 });
                 
-                // Write to CSV with new format
+                // Write to CSV with enhanced format including timing and penalty
                 fs.appendFile(
                     logFiles.task, 
                     Date.now() + "," + 
@@ -457,12 +581,16 @@ module.exports = function(io) {
                     task.label + "," + 
                     (decision.intention || '') + "," + 
                     (decision.intentionTimestamp || '') + "," + 
+                    (decision.intentionTimeSpent || 0) + "," +
                     (decision.uValue || '') + "," + 
                     (decision.uPercentile || '') + "," + 
                     (decision.rValue || '') + "," + 
                     (decision.rPercentile || '') + "," + 
                     request.design + "," + 
                     Date.now() + "," + 
+                    choiceTimeSpent + "," +
+                    (userOptionOrder[username] && userOptionOrder[username][taskIndex] ? userOptionOrder[username][taskIndex].join(';') : 'A;B;C;Y') + "," +
+                    timePenalty + "," +
                     (myScore || '') + "," + 
                     (partnerScore || '') + "\r\n",
                     err => {
@@ -472,25 +600,47 @@ module.exports = function(io) {
                     }
                 );
                 
-                // INDEPENDENT USER SOLUTION: Advance THIS user only (no partner synchronization!)
+                // PARTNER SYNCHRONIZATION: Mark completion and check if partner ready
                 if (autoAdvance) {
-                    userTaskIndex[username]++;
-                    console.log(`${username} completed task ${taskIndex}. Advancing to index ${userTaskIndex[username]}`);
+                    userTaskCompletion[username] = taskIndex;
                     
-                    // Show next content to this user only
-                    setImmediate(() => {
-                        const nextIndex = userTaskIndex[username];
-                        if (nextIndex < experiment.tasks.length) {
-                            // Show next task Part 1 (Intention)
-                            showDesignTask(socket, 'intention');
-                        } else if (nextIndex === experiment.tasks.length) {
-                            // Show post-survey
-                            showPostSurveyScreen(socket);
-                        } else {
-                            // Show thank you
-                            showThankYouScreen(socket);
+                    // Check if partner has also completed this task
+                    let partnerCompleted = userTaskCompletion[partner] >= taskIndex;
+                    
+                    if (partnerCompleted) {
+                        // Both users completed - advance both
+                        userTaskIndex[username]++;
+                        userTaskIndex[partner]++;
+                        
+                        console.log(`✅ Both ${username} and ${partner} completed task ${taskIndex}. Advancing both to ${taskIndex + 1}`);
+                        
+                        // Show next content to both users
+                        setImmediate(() => {
+                            const nextIndex = userTaskIndex[username];
+                            if (nextIndex < experiment.tasks.length) {
+                                // Show next task Part 1 (Intention)
+                                if (users[username]) showDesignTask(users[username].socket, 'intention');
+                                if (users[partner]) showDesignTask(users[partner].socket, 'intention');
+                            } else if (nextIndex === experiment.tasks.length) {
+                                // Show post-survey
+                                if (users[username]) showPostSurveyScreen(users[username].socket);
+                                if (users[partner]) showPostSurveyScreen(users[partner].socket);
+                            } else {
+                                // Show thank you
+                                if (users[username]) showThankYouScreen(users[username].socket);
+                                if (users[partner]) showThankYouScreen(users[partner].socket);
+                            }
+                        });
+                    } else {
+                        // Partner not ready - show waiting screen
+                        console.log(`⏳ ${username} waiting for ${partner} to complete task ${taskIndex}...`);
+                        if (users[username]) {
+                            users[username].socket.emit('show-partner-waiting', {
+                                partner: partner,
+                                taskNumber: taskIndex + 1
+                            });
                         }
-                    });
+                    }
                 }
             }
         });
@@ -637,6 +787,65 @@ module.exports = function(io) {
                     // Give time for index to update, then show content
                     setImmediate(() => {
                         showSurveyScreen(socket);
+                    });
+                }
+            }
+        });
+
+        // Admin back-step: Move a user back by multiple steps
+        socket.on('admin-backstep-user', (request) => {
+            if (username in admins) {
+                const targetUser = request.username;
+                const stepsBack = request.stepsBack || 1;
+                
+                if (targetUser && userTaskIndex[targetUser] !== undefined) {
+                    const currentIndex = userTaskIndex[targetUser];
+                    const newIndex = Math.max(-2, currentIndex - stepsBack); // Can't go before pre-survey (-2)
+                    
+                    console.log(`🔧 Admin ${username} moving ${targetUser} from task ${currentIndex} back ${stepsBack} steps to ${newIndex}`);
+                    
+                    // Clear decisions after the new position
+                    if (experiment.decisions[targetUser]) {
+                        for (let i = newIndex + 1; i < experiment.decisions[targetUser].length; i++) {
+                            if (experiment.decisions[targetUser][i]) {
+                                console.log(`  Clearing ${targetUser} task ${i} data`);
+                                delete experiment.decisions[targetUser][i];
+                            }
+                        }
+                    }
+                    
+                    // Clear task completion tracking after new position
+                    if (userTaskCompletion[targetUser] !== undefined && userTaskCompletion[targetUser] >= newIndex) {
+                        userTaskCompletion[targetUser] = newIndex - 1;
+                    }
+                    
+                    // Update user's task index
+                    userTaskIndex[targetUser] = newIndex;
+                    
+                    // Show appropriate content to the target user
+                    if (users[targetUser]) {
+                        setImmediate(() => {
+                            if (newIndex === -2) {
+                                showPreSurveyScreen(users[targetUser].socket);
+                            } else if (newIndex === -1) {
+                                showDemographicsSurveyScreen(users[targetUser].socket);
+                            } else if (newIndex >= 0 && newIndex < experiment.tasks.length) {
+                                showDesignTask(users[targetUser].socket, 'intention');
+                            } else if (newIndex === experiment.tasks.length) {
+                                showPostSurveyScreen(users[targetUser].socket);
+                            } else {
+                                showThankYouScreen(users[targetUser].socket);
+                            }
+                        });
+                        
+                        console.log(`✅ ${targetUser} moved to position ${newIndex}`);
+                    } else {
+                        console.log(`⚠️ ${targetUser} is not currently online`);
+                    }
+                    
+                    // Notify all admins of the change
+                    Object.keys(admins).forEach(admin => {
+                        showAdminScreen(admins[admin]);
                     });
                 }
             }
