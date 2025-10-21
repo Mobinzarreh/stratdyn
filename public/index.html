@@ -49,6 +49,161 @@
     </div>
   </div>
   
+  <!-- Consent Page -->
+  <div class="container collapse hide" id="consent">
+    <div class="row">
+      <div class="col">
+        <h1 class="mb-4">Informed Consent</h1>
+        <div class="card">
+          <div class="card-body text-start">
+            <h5 class="card-title">Research Study Participation</h5>
+            <p class="card-text">
+              You are being asked to participate in a research study about collaborative decision-making 
+              in engineering design. This study is being conducted by Dr. Paul Grogan and colleagues at 
+              Stevens Institute of Technology.
+            </p>
+            
+            <h6 class="mt-3">Purpose of the Study</h6>
+            <p>
+              The purpose of this research is to understand how individuals make decisions in collaborative 
+              design environments and how information affects these decisions.
+            </p>
+            
+            <h6 class="mt-3">What You Will Do</h6>
+            <p>
+              If you agree to participate, you will complete a series of design tasks in collaboration with 
+              a partner. The session will include:
+            </p>
+            <ul>
+              <li>Demographic survey (approximately 2 minutes)</li>
+              <li>Pre-task questionnaire (approximately 3 minutes)</li>
+              <li>Training tasks to familiarize yourself with the interface (approximately 5 minutes)</li>
+              <li>Main experiment tasks (approximately 30-45 minutes)</li>
+              <li>Post-task questionnaire (approximately 3 minutes)</li>
+            </ul>
+            
+            <h6 class="mt-3">Risks and Benefits</h6>
+            <p>
+              There are no foreseeable risks to participating in this study. While you may not directly benefit 
+              from participation, your contribution will help advance understanding of collaborative design processes.
+            </p>
+            
+            <h6 class="mt-3">Confidentiality</h6>
+            <p>
+              Your responses will be kept confidential. All data will be stored securely and will only be 
+              accessible to the research team. Your name will not be associated with any publications or 
+              presentations resulting from this research.
+            </p>
+            
+            <h6 class="mt-3">Voluntary Participation</h6>
+            <p>
+              Your participation is completely voluntary. You may withdraw from the study at any time without 
+              penalty by simply closing your browser window.
+            </p>
+            
+            <h6 class="mt-3">Contact Information</h6>
+            <p>
+              If you have questions about this research, please contact Dr. Paul Grogan at 
+              <a href="mailto:pgrogan@stevens.edu">pgrogan@stevens.edu</a>.
+            </p>
+            
+            <p class="mt-4 fw-bold">
+              By clicking "I Agree" below, you acknowledge that you have read this information, have had 
+              the opportunity to ask questions, and agree to participate in this research study.
+            </p>
+          </div>
+        </div>
+        
+        <form id="consent-form" class="mt-4">
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="consent-checkbox" required>
+            <label class="form-check-label fw-bold" for="consent-checkbox">
+              I have read and understood the above information and agree to participate in this study
+            </label>
+          </div>
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="button" class="btn btn-secondary" id="consent-decline-button">Decline</button>
+            <button type="submit" class="btn btn-primary btn-lg px-5">I Agree - Continue</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Briefing Page -->
+  <div class="container collapse hide" id="briefing">
+    <div class="row">
+      <div class="col">
+        <h1 class="mb-4">Study Instructions</h1>
+        <div class="card">
+          <div class="card-body text-start">
+            <h5 class="card-title">Welcome to the Collaborative Design Experiment</h5>
+            
+            <p class="card-text">
+              In this study, you will be working with a partner to make design decisions. Each task involves 
+              choosing between different design options, some of which require collaboration with your partner.
+            </p>
+            
+            <h6 class="mt-4">Two-Stage Decision Process</h6>
+            <p>Each task consists of two stages:</p>
+            <ol>
+              <li>
+                <strong>Stage 1 - Intention:</strong> You will review the available options and indicate your 
+                intention toward collaboration on a scale from 1 (definitely will not collaborate) to 10 
+                (definitely will collaborate). You will have 30 seconds for this stage.
+              </li>
+              <li>
+                <strong>Stage 2 - Final Choice:</strong> After both you and your partner have submitted your 
+                intentions, you will make your final design choice. You will have 60 seconds for this stage.
+              </li>
+            </ol>
+            
+            <h6 class="mt-4">Design Options</h6>
+            <p>In each task, you will see:</p>
+            <ul>
+              <li>
+                <strong>Three Collaborative Options (A, B, C):</strong> These require coordination with your partner. 
+                The payoff depends on whether your partner also chooses a collaborative option.
+              </li>
+              <li>
+                <strong>One Individual Option (Y):</strong> This is a safe choice that doesn't depend on your partner's decision.
+              </li>
+            </ul>
+            
+            <h6 class="mt-4">Timing and Penalties</h6>
+            <p>
+              Please make your decisions within the allotted time:
+            </p>
+            <ul>
+              <li>You have a <strong>10-second grace period</strong> after the timer runs out with no penalty</li>
+              <li>After 10 seconds, a <strong>graduated penalty</strong> will be applied to your task score</li>
+              <li>The timer will change color: <span class="text-success">green</span> → 
+                <span class="text-warning">yellow</span> (warning) → <span class="text-danger">red</span> (overtime)</li>
+            </ul>
+            
+            <h6 class="mt-4">Practice Tasks</h6>
+            <p>
+              Before beginning the main experiment, you will complete 2 practice tasks to familiarize yourself 
+              with the interface. These practice tasks will not affect your final results.
+            </p>
+            
+            <h6 class="mt-4">Questions?</h6>
+            <p>
+              If you have any questions during the study, please ask the session proctor. Otherwise, click 
+              "Continue" below to proceed to the demographic survey.
+            </p>
+          </div>
+        </div>
+        
+        <div class="d-grid gap-2 mt-4">
+          <button type="button" class="btn btn-primary btn-lg" id="briefing-continue-button">
+            Continue to Demographics
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <div class="container collapse hide text-center" id="wait">
     <div class="row">
       <div class="col">

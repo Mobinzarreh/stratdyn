@@ -143,6 +143,30 @@ $(document).ready(function() {
         socket.emit("logout-request");
     });
 
+    // bind behavior to consent form submission
+    $("#consent-form").on("submit", (event) => {
+        event.preventDefault();
+        const agreed = $("#consent-checkbox").is(":checked");
+        // send consent response to server
+        socket.emit("submit-consent", {
+            consent: agreed ? 'agree' : 'disagree'
+        });
+    });
+
+    // bind behavior to consent decline button
+    $("#consent-decline-button").on("click", () => {
+        // send disagreement to server
+        socket.emit("submit-consent", {
+            consent: 'disagree'
+        });
+    });
+
+    // bind behavior to briefing continue button
+    $("#briefing-continue-button").on("click", () => {
+        // send briefing completion to server
+        socket.emit("submit-briefing", {});
+    });
+
     // bind behavior to intention slider changes
     $("#intention-slider").on("input", function() {
         $("#intention-value").text($(this).val());
@@ -201,15 +225,19 @@ $(document).ready(function() {
 
         if (response.stage === 'intention') {
             // Part 1: Show Intention Stage
-            $("#welcome, #admin, #wait, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #design").collapse("hide");
+            $("#welcome, #admin, #wait, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #design, #consent, #briefing").collapse("hide");
             $("#intention").collapse("show");
             
             // set the progress bar
             $("#intention .progress").attr("aria-valuenow", response.progress);
             $("#intention .progress-bar").css("width", response.progress + "%");
             
-            // set the task label - use sequential task number
-            $("#intention .intention-task-label").text("Task " + response.taskNumber + " of 30");
+            // set the task label - show "Training Task X of 2" or "Task X of 30"
+            if (response.isTraining) {
+                $("#intention .intention-task-label").text(`Training Task ${response.taskNumber} of ${response.totalTasks}`);
+            } else {
+                $("#intention .intention-task-label").text(`Task ${response.taskNumber} of ${response.totalTasks}`);
+            }
             
             // update the design options in the table
             $("#intention tbody tr").each((index, element) => {
@@ -235,7 +263,7 @@ $(document).ready(function() {
             
         } else {
             // Part 2: Show Choice Stage
-            $("#welcome, #admin, #wait, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
+            $("#welcome, #admin, #wait, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
             $("#design").collapse("show");
             
             // hide spinner on button and update text
@@ -255,8 +283,12 @@ $(document).ready(function() {
             $("#design .progress").attr("aria-valuenow", response.progress);
             $("#design .progress-bar").css("width", response.progress + "%");
 
-            // set the task label - use sequential task number
-            $("#design .task-label").text("Task " + response.taskNumber + " of 30");
+            // set the task label - show "Training Task X of 2" or "Task X of 30"
+            if (response.isTraining) {
+                $("#design .task-label").text(`Training Task ${response.taskNumber} of ${response.totalTasks}`);
+            } else {
+                $("#design .task-label").text(`Task ${response.taskNumber} of ${response.totalTasks}`);
+            }
 
             // update the design attributes for each option
             $("#design tbody tr").each((index, element) => {
@@ -338,15 +370,33 @@ $(document).ready(function() {
     // bind behavior to the socket.io show welcome screen
     socket.on("show-welcome-screen", (response) => {
         // hide the wait, design and thank you screens
-        $("#admin, #wait, #design, #thank-you, #main-survey, #main-postsurvey, #demographics-survey, #intention").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #main-survey, #main-postsurvey, #demographics-survey, #intention, #consent, #briefing").collapse("hide");
         // show the welcome screen
         $("#welcome").collapse("show");
+    });
+
+    // bind behavior to the socket.io show consent screen
+    socket.on("show-consent-screen", (response) => {
+        // hide all other screens
+        $("#admin, #wait, #design, #thank-you, #welcome, #main-survey, #main-postsurvey, #demographics-survey, #intention, #briefing").collapse("hide");
+        // reset form
+        $("#consent-checkbox").prop("checked", false);
+        // show the consent screen
+        $("#consent").collapse("show");
+    });
+
+    // bind behavior to the socket.io show briefing screen
+    socket.on("show-briefing-screen", (response) => {
+        // hide all other screens
+        $("#admin, #wait, #design, #thank-you, #welcome, #main-survey, #main-postsurvey, #demographics-survey, #intention, #consent").collapse("hide");
+        // show the briefing screen
+        $("#briefing").collapse("show");
     });
 
     // bind behavior to the socket.io show demographics survey screen
     socket.on("show-demographics-survey-screen", (response) => {
         // hide the wait, design and thank you and main survey screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #main-survey, #main-postsurvey, #intention").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #welcome, #main-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         $("#demographics-survey-form input").prop("disabled", false);
         $("#demographics-survey-form button:submit").prop("disabled", false);
         $("#demographics-survey-form button:submit .spinner-border").addClass("d-none");
@@ -376,7 +426,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show survey screen
     socket.on("show-survey-screen", (response) => {
         // hide the wait, design and thank you screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         $("#survey-form input").prop("disabled", false);
         $("#survey-form button:submit").prop("disabled", false);
         $("#survey-form button:submit .spinner-border").addClass("d-none");
@@ -408,7 +458,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io post show post survey screen
     socket.on("show-postsurvey-screen", (response) => {
         // hide the wait, design and thank you, demogragraphics and main survey screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #demographics-survey, #main-survey, #intention").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #welcome, #demographics-survey, #main-survey, #intention, #consent, #briefing").collapse("hide");
         $("#postsurvey-form input").prop("disabled", false);
         $("#postsurvey-form button:submit").prop("disabled", false);
         $("#postsurvey-form button:submit .spinner-border").addClass("d-none");
@@ -442,7 +492,7 @@ $(document).ready(function() {
     socket.on("show-admin-screen", (response) => {
         console.log(response);
         // hide the wait, design and thank you screens
-        $("#welcome, #wait, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
+        $("#welcome, #wait, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         // show the admin screen
         $("#admin").collapse("show");
         // set the progress bar to the correct value
@@ -512,7 +562,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show wait screen
     socket.on("show-wait-screen", (response) => {
         // hide the welcome, admin, design, and thank you screens
-        $("#welcome, #admin, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
+        $("#welcome, #admin, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         // show the wait screen
         $("#wait").collapse("show");
     });
@@ -521,7 +571,7 @@ $(document).ready(function() {
     socket.on("show-partner-waiting", (response) => {
         console.log("Waiting for partner:", response.partner, "to complete task", response.taskNumber);
         // hide all other screens
-        $("#welcome, #admin, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
+        $("#welcome, #admin, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         // update wait screen message
         $("#wait-message").html(`
             <div class="alert alert-info">
@@ -543,7 +593,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show thank you screen
     socket.on("show-thank-you-screen", (response) => {
         // hide the admin, wait, design and welcome screens
-        $("#admin, #wait, #design, #welcome, #main-survey, #demographics-survey, #main-postsurvey, #intention").collapse("hide");
+        $("#admin, #wait, #design, #welcome, #main-survey, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         // show the welcome screen
         $("#thank-you").collapse("show");
     });

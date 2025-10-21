@@ -40,7 +40,11 @@ module.exports = function(io) {
     let autoAdvance = true; // Set to true for testing, false for admin-controlled sessions
     
     // Per-user task index: {username: taskIndex}
-    // -2 = demographics, -1 = pre-survey, 0-29 = tasks, 30 = post-survey, 31+ = thank you
+    // NEW FLOW with Consent, Briefing, and Training Tasks:
+    // -4 = consent, -3 = briefing, -2 = demographics, -1 = pre-survey
+    // 0-1 = training tasks (2 practice tasks, not analyzed)
+    // 2-31 = main experiment (30 tasks)
+    // 32 = post-survey, 33+ = thank you
     const userTaskIndex = {};
     
     // RANDOMIZATION: Store presented option order per user per task
@@ -209,9 +213,21 @@ module.exports = function(io) {
             const userGroup = users[username] ? users[username].group : 'treatment';
             task.userGroup = userGroup;
             task.stage = stage; // 'intention' or 'choice'
-            task.taskNumber = taskIndex + 1; // Send sequential task number (1-30)
             
-            // compute the progress percentage
+            // Determine if this is a training task or main task
+            if (taskIndex === 0 || taskIndex === 1) {
+                task.isTraining = true;
+                task.taskNumber = taskIndex + 1; // Training Task 1 or 2
+                task.totalTasks = 2;
+                task.taskLabel = `Training Task ${taskIndex + 1}`;
+            } else {
+                task.isTraining = false;
+                task.taskNumber = taskIndex - 1; // Main tasks: 1-30 (for taskIndex 2-31)
+                task.totalTasks = 30;
+                task.taskLabel = `Task ${taskIndex - 1}`;
+            }
+            
+            // compute the progress percentage (include training tasks in progress)
             task.progress = Math.round(100*(taskIndex+1)/(experiment.tasks.length+1));
             // send a socket.io show design task
             context.emit('show-design-task', task);
@@ -220,6 +236,16 @@ module.exports = function(io) {
         function showWelcomeScreen(context) {
             // send a socket.io show welcome screen
             context.emit('show-welcome-screen');
+        }
+
+        function showConsentScreen(context) {
+            // send a socket.io show consent screen
+            context.emit('show-consent-screen');
+        }
+
+        function showBriefingScreen(context) {
+            // send a socket.io show briefing screen
+            context.emit('show-briefing-screen');
         }
 
         function showDemographicsSurveyScreen(context) {
@@ -263,13 +289,22 @@ module.exports = function(io) {
                 
                 // Build task label based on user's position
                 let taskLabel = '';
-                if (taskIndex === -2) {
+                if (taskIndex === -4) {
+                    taskLabel = 'Consent Page';
+                } else if (taskIndex === -3) {
+                    taskLabel = 'Briefing';
+                } else if (taskIndex === -2) {
                     taskLabel = 'Demographics Survey';
                 } else if (taskIndex === -1) {
                     taskLabel = 'Pre-Survey';
-                } else if (taskIndex >= 0 && taskIndex < experiment.tasks.length) {
-                    taskLabel = experiment.tasks[experiment.assignments[user][taskIndex]].label;
-                } else if (taskIndex === experiment.tasks.length) {
+                } else if (taskIndex === 0) {
+                    taskLabel = 'Training Task 1';
+                } else if (taskIndex === 1) {
+                    taskLabel = 'Training Task 2';
+                } else if (taskIndex >= 2 && taskIndex < experiment.tasks.length + 2) {
+                    // Main tasks: taskIndex 2-31 display as "Task 3" through "Task 32"
+                    taskLabel = `Task ${taskIndex + 1}`;
+                } else if (taskIndex === experiment.tasks.length + 2) {
                     taskLabel = 'Post-Survey';
                 } else {
                     taskLabel = 'Complete';
@@ -332,18 +367,24 @@ module.exports = function(io) {
                 showAdminScreen(context);
             } else {
                 // Get this user's current task index
-                const taskIndex = userTaskIndex[username] || -2; // Default to demographics
+                const taskIndex = userTaskIndex[username] !== undefined ? userTaskIndex[username] : -4; // Default to consent
                 
-                if (taskIndex < -1) {
+                if (taskIndex === -4) {
+                    // Show consent page
+                    showConsentScreen(context);
+                } else if (taskIndex === -3) {
+                    // Show briefing page
+                    showBriefingScreen(context);
+                } else if (taskIndex === -2) {
                     // Show demographics survey
                     showDemographicsSurveyScreen(context);
-                } else if (taskIndex < 0) {
+                } else if (taskIndex === -1) {
                     // Show pre-survey
                     showSurveyScreen(context);
-                } else if (taskIndex < experiment.tasks.length) {
-                    // Show next task
-                    showDesignTask(context);
-                } else if (taskIndex === experiment.tasks.length) {
+                } else if (taskIndex < experiment.tasks.length + 2) {
+                    // Show task (0-1 = training, 2-31 = main experiment)
+                    showDesignTask(context, 'intention');
+                } else if (taskIndex === experiment.tasks.length + 2) {
                     // Show post-survey
                     showPostSurveyScreen(context);
                 } else {
@@ -387,8 +428,8 @@ module.exports = function(io) {
                     
                     // Initialize user's task index if first time logging in
                     if (!userTaskIndex.hasOwnProperty(username)) {
-                        userTaskIndex[username] = -2; // Start at demographics
-                        console.log(`New user ${username} - starting at demographics`);
+                        userTaskIndex[username] = -4; // Start at consent page
+                        console.log(`New user ${username} - starting at consent page`);
                     } else {
                         console.log(`Returning user ${username} - resuming at index ${userTaskIndex[username]}`);
                     }
@@ -745,6 +786,42 @@ module.exports = function(io) {
             }
         });
 
+        // Consent form submission
+        socket.on('submit-consent', (request) => {
+            if (username != null) {
+                console.log(`${username} submitted consent: ${request.consent}`);
+                
+                // Auto-advance to briefing page
+                if (autoAdvance && request.consent === 'agree') {
+                    userTaskIndex[username] = -3; // Move to briefing
+                    console.log(`${username} consented. Advancing to briefing`);
+                    setImmediate(() => {
+                        showBriefingScreen(socket);
+                    });
+                } else if (request.consent !== 'agree') {
+                    // User did not consent - show thank you/exit
+                    console.log(`${username} did not consent. Ending session.`);
+                    showThankYouScreen(socket);
+                }
+            }
+        });
+
+        // Briefing page submission
+        socket.on('submit-briefing', (request) => {
+            if (username != null) {
+                console.log(`${username} completed briefing`);
+                
+                // Auto-advance to demographics
+                if (autoAdvance) {
+                    userTaskIndex[username] = -2; // Move to demographics
+                    console.log(`${username} completed briefing. Advancing to demographics`);
+                    setImmediate(() => {
+                        showDemographicsSurveyScreen(socket);
+                    });
+                }
+            }
+        });
+
         socket.on('submit-demographics-survey', (request) => {
             if (username != null) {
                 console.log({
@@ -800,7 +877,7 @@ module.exports = function(io) {
                 
                 if (targetUser && userTaskIndex[targetUser] !== undefined) {
                     const currentIndex = userTaskIndex[targetUser];
-                    const newIndex = Math.max(-2, currentIndex - stepsBack); // Can't go before pre-survey (-2)
+                    const newIndex = Math.max(-4, currentIndex - stepsBack); // Can't go before consent (-4)
                     
                     console.log(`🔧 Admin ${username} moving ${targetUser} from task ${currentIndex} back ${stepsBack} steps to ${newIndex}`);
                     
@@ -825,13 +902,17 @@ module.exports = function(io) {
                     // Show appropriate content to the target user
                     if (users[targetUser]) {
                         setImmediate(() => {
-                            if (newIndex === -2) {
-                                showPreSurveyScreen(users[targetUser].socket);
-                            } else if (newIndex === -1) {
+                            if (newIndex === -4) {
+                                showConsentScreen(users[targetUser].socket);
+                            } else if (newIndex === -3) {
+                                showBriefingScreen(users[targetUser].socket);
+                            } else if (newIndex === -2) {
                                 showDemographicsSurveyScreen(users[targetUser].socket);
-                            } else if (newIndex >= 0 && newIndex < experiment.tasks.length) {
+                            } else if (newIndex === -1) {
+                                showSurveyScreen(users[targetUser].socket);
+                            } else if (newIndex >= 0 && newIndex < experiment.tasks.length + 2) {
                                 showDesignTask(users[targetUser].socket, 'intention');
-                            } else if (newIndex === experiment.tasks.length) {
+                            } else if (newIndex === experiment.tasks.length + 2) {
                                 showPostSurveyScreen(users[targetUser].socket);
                             } else {
                                 showThankYouScreen(users[targetUser].socket);
