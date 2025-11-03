@@ -79,7 +79,7 @@ module.exports = function(io) {
         // Create task log file with new headers
         fs.writeFile(
             logFiles.task, 
-            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,presentedOrder,timePenalty,score,partnerScore\r\n",
+            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,timePenalty,score,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -502,26 +502,28 @@ module.exports = function(io) {
                 const taskIndex = userTaskIndex[username];
                 
                 // Save timing information
-                const choiceTimeSpent = request.timeSpent || 0; // Time in seconds
+                const choiceTimeSpent = request.timeSpent || 0; // Time in choice stage only
+                const totalTimeSpent = request.totalTimeSpent || choiceTimeSpent; // Total time for entire task
                 experiment.decisions[username][taskIndex].choiceTimeSpent = choiceTimeSpent;
+                experiment.decisions[username][taskIndex].totalTimeSpent = totalTimeSpent;
                 experiment.decisions[username][taskIndex].choiceStartTime = request.startTime || Date.now();
                 
-                // Calculate time penalty based on graduated system
+                // Calculate time penalty based on NEW POOLED TIMER SYSTEM
+                // - 90 seconds total for entire task (intention + choice)
+                // - First 10 seconds overtime = no penalty (grace period)
+                // - After grace period: 1 point per second penalty
                 let timePenalty = 0;
-                const TIME_LIMIT = 60; // 60 seconds for choice
-                const GRACE_PERIOD = 10; // 10 seconds grace
+                const TOTAL_TIME_LIMIT = 90; // 90 seconds total for entire task
+                const GRACE_PERIOD = 10; // 10 seconds grace period
                 
-                if (choiceTimeSpent > TIME_LIMIT + GRACE_PERIOD) {
-                    // Over grace period - apply graduated penalty
-                    const overtime = choiceTimeSpent - (TIME_LIMIT + GRACE_PERIOD);
-                    if (overtime <= 20) {
-                        // 11-30s over: -0.5 points per second
-                        timePenalty = Math.round(overtime * 0.5 * 10) / 10; // Round to 1 decimal
-                    } else {
-                        // 30s+ over: cap at -20 points
-                        timePenalty = 20;
-                    }
-                    console.log(`⚠️ ${username} overtime: ${choiceTimeSpent}s (penalty: -${timePenalty} points)`);
+                if (totalTimeSpent > TOTAL_TIME_LIMIT + GRACE_PERIOD) {
+                    // Over grace period - apply 1 point per second penalty
+                    const overtime = totalTimeSpent - (TOTAL_TIME_LIMIT + GRACE_PERIOD);
+                    timePenalty = Math.round(overtime); // 1 point per second, rounded
+                    console.log(`⚠️ ${username} overtime: ${totalTimeSpent.toFixed(1)}s total (penalty: -${timePenalty} points)`);
+                } else if (totalTimeSpent > TOTAL_TIME_LIMIT) {
+                    // Within grace period - no penalty but log it
+                    console.log(`ℹ️ ${username} in grace period: ${totalTimeSpent.toFixed(1)}s total (no penalty)`);
                 }
                 experiment.decisions[username][taskIndex].timePenalty = timePenalty;
                 
@@ -630,6 +632,7 @@ module.exports = function(io) {
                     request.design + "," + 
                     Date.now() + "," + 
                     choiceTimeSpent + "," +
+                    (totalTimeSpent || choiceTimeSpent) + "," +
                     (userOptionOrder[username] && userOptionOrder[username][taskIndex] ? userOptionOrder[username][taskIndex].join(';') : 'A;B;C;Y') + "," +
                     timePenalty + "," +
                     (myScore || '') + "," + 

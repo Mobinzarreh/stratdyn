@@ -5,11 +5,15 @@ $(document).ready(function() {
     // store user group (treatment/control)
     var userGroup = null;
     
-    // Timer variables
+    // Timer variables - POOLED TIMER SYSTEM (90 seconds total)
     var timerInterval = null;
-    var timerStartTime = null;
-    var timerDuration = 0; // in seconds
+    var taskStartTime = null; // Start time for the entire task (both stages)
+    var intentionEndTime = null; // When intention stage ended
+    var timerDuration = 0; // in seconds (for display purposes)
     var currentStage = null; // 'intention' or 'choice'
+    
+    const TOTAL_TASK_TIME = 90; // Total pooled time for both stages
+    const INTENTION_DISPLAY_TIME = 30; // Show only 30 seconds for intention stage
 
     // Timer functions
     function startTimer(duration, stage) {
@@ -19,8 +23,18 @@ $(document).ready(function() {
         }
         
         timerDuration = duration;
-        timerStartTime = Date.now();
         currentStage = stage;
+        
+        if (stage === 'intention') {
+            // Start of task - initialize task start time
+            taskStartTime = Date.now();
+            intentionEndTime = null;
+        } else if (stage === 'choice') {
+            // Record when intention stage ended
+            if (!intentionEndTime) {
+                intentionEndTime = Date.now();
+            }
+        }
         
         // Update timer display immediately
         updateTimerDisplay();
@@ -36,37 +50,74 @@ $(document).ready(function() {
         }
     }
     
-    function getElapsedTime() {
-        if (!timerStartTime) return 0;
-        return (Date.now() - timerStartTime) / 1000; // in seconds
+    function getTotalElapsedTime() {
+        // Get total time elapsed since task started
+        if (!taskStartTime) return 0;
+        return (Date.now() - taskStartTime) / 1000; // in seconds
+    }
+    
+    function getStageElapsedTime() {
+        // Get time elapsed in current stage only
+        if (currentStage === 'intention') {
+            return getTotalElapsedTime();
+        } else if (currentStage === 'choice') {
+            if (!intentionEndTime) return 0;
+            return (Date.now() - intentionEndTime) / 1000;
+        }
+        return 0;
     }
     
     function updateTimerDisplay() {
-        const elapsed = getElapsedTime();
-        const remaining = Math.max(0, timerDuration - elapsed);
-        const overtime = Math.max(0, elapsed - timerDuration);
-        
-        const minutes = Math.floor(remaining / 60);
-        const seconds = Math.floor(remaining % 60);
-        const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        const totalElapsed = getTotalElapsedTime();
+        const totalRemaining = Math.max(0, TOTAL_TASK_TIME - totalElapsed);
         
         // Determine which timer element to update
         const timerElement = currentStage === 'intention' ? $("#intention-timer") : $("#design-timer");
         const containerElement = currentStage === 'intention' ? $("#intention-timer-container") : $("#design-timer-container");
         
-        if (remaining > 5) {
-            // Normal time - green
-            timerElement.html(`<i class="bi-clock"></i> Time: ${timeString}`);
-            containerElement.removeClass("alert-warning alert-danger").addClass("alert-success");
-        } else if (remaining > 0) {
-            // Warning time (5s or less) - yellow with pulsing
-            timerElement.html(`<i class="bi-exclamation-triangle"></i> <strong>Warning:</strong> ${timeString} remaining!`);
-            containerElement.removeClass("alert-success alert-danger").addClass("alert-warning");
+        if (currentStage === 'intention') {
+            // Intention stage: Show only first 30 seconds countdown
+            const stageElapsed = getStageElapsedTime();
+            const stageRemaining = Math.max(0, INTENTION_DISPLAY_TIME - stageElapsed);
+            
+            const minutes = Math.floor(stageRemaining / 60);
+            const seconds = Math.floor(stageRemaining % 60);
+            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (stageRemaining > 5) {
+                // Normal time - green
+                timerElement.html(`<i class="bi-clock"></i> Time: ${timeString}`);
+                containerElement.removeClass("alert-warning alert-danger").addClass("alert-success");
+            } else if (stageRemaining > 0) {
+                // Warning time (5s or less) - yellow
+                timerElement.html(`<i class="bi-exclamation-triangle"></i> <strong>Warning:</strong> ${timeString} remaining!`);
+                containerElement.removeClass("alert-success alert-danger").addClass("alert-warning");
+            } else {
+                // Time expired for intention display - show 0:00 (but no penalty)
+                timerElement.html(`<i class="bi-clock"></i> Time: 0:00`);
+                containerElement.removeClass("alert-success alert-warning").addClass("alert-danger");
+            }
         } else {
-            // Overtime - red
-            const overtimeStr = `${Math.floor(overtime / 60)}:${Math.floor(overtime % 60).toString().padStart(2, '0')}`;
-            timerElement.html(`<i class="bi-alarm"></i> <strong>Over Time:</strong> +${overtimeStr}`);
-            containerElement.removeClass("alert-success alert-warning").addClass("alert-danger");
+            // Choice stage: Show remaining time from total 90-second pool
+            const minutes = Math.floor(totalRemaining / 60);
+            const seconds = Math.floor(totalRemaining % 60);
+            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (totalRemaining > 5) {
+                // Normal time - green
+                timerElement.html(`<i class="bi-clock"></i> Time: ${timeString}`);
+                containerElement.removeClass("alert-warning alert-danger").addClass("alert-success");
+            } else if (totalRemaining > 0) {
+                // Warning time (5s or less) - yellow
+                timerElement.html(`<i class="bi-exclamation-triangle"></i> <strong>Warning:</strong> ${timeString} remaining!`);
+                containerElement.removeClass("alert-success alert-danger").addClass("alert-warning");
+            } else {
+                // Overtime - red (penalties apply after 10s grace)
+                const overtime = totalElapsed - TOTAL_TASK_TIME;
+                const overtimeStr = `${Math.floor(overtime / 60)}:${Math.floor(overtime % 60).toString().padStart(2, '0')}`;
+                timerElement.html(`<i class="bi-alarm"></i> <strong>Over Time:</strong> +${overtimeStr}`);
+                containerElement.removeClass("alert-success alert-warning").addClass("alert-danger");
+            }
         }
     }
 
@@ -175,9 +226,9 @@ $(document).ready(function() {
     // bind behavior to intention form submission
     $("#intention-form").on("submit", (event) => {
         event.preventDefault();
-        // Stop timer and get elapsed time
+        // Stop timer and get elapsed time from intention stage
         stopTimer();
-        const timeSpent = getElapsedTime();
+        const intentionTimeSpent = getStageElapsedTime(); // Time spent in intention stage only
         
         // show spinner and disable button
         $("#intention-button .spinner-border").removeClass("d-none");
@@ -185,16 +236,17 @@ $(document).ready(function() {
         // send intention to server with timing data
         socket.emit("submit-intention", {
             intention: parseInt($("#intention-slider").val()),
-            timeSpent: timeSpent,
-            startTime: timerStartTime
+            timeSpent: intentionTimeSpent,
+            startTime: taskStartTime // Send task start time for record keeping
         });
     });
 
     // bind behavior to clicks on the design button
     $("#design-button").on("click", () => {
-        // Stop timer and get elapsed time
+        // Stop timer and get TOTAL elapsed time (from start of task)
         stopTimer();
-        const timeSpent = getElapsedTime();
+        const totalTimeSpent = getTotalElapsedTime(); // Total time for entire task
+        const choiceTimeSpent = getStageElapsedTime(); // Time spent in choice stage only
         
         // show spinner on button and update text
         $("#design .spinner-border").removeClass("d-none");
@@ -209,8 +261,9 @@ $(document).ready(function() {
             "strategy": $("#design .table-active").data("strategy"),
             "upside": parseInt($("#design .table-active .design-upside").text()),
             "downside": parseInt($("#design .table-active .design-downside").text()),
-            "timeSpent": timeSpent,
-            "startTime": timerStartTime
+            "timeSpent": choiceTimeSpent, // Time spent in choice stage
+            "totalTimeSpent": totalTimeSpent, // Total time for penalty calculation
+            "startTime": taskStartTime
         });
     });
 
