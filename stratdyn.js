@@ -123,6 +123,15 @@ module.exports = function(io) {
         createdLogFiles.add(group);
     }
 
+    // Initialize decline and reschedule log files
+    if (!fs.existsSync('decline_log.csv')) {
+        fs.writeFileSync('decline_log.csv', 'timestamp,username,group,event\n');
+        console.log('Created decline_log.csv');
+    }
+    if (!fs.existsSync('reschedule_log.csv')) {
+        fs.writeFileSync('reschedule_log.csv', 'timestamp,username,group,action,email,phone\n');
+        console.log('Created reschedule_log.csv');
+    }
 
     // keep track of logged-in users and admins
     // users structure: {username: {socket: socket, group: 'treatment'|'control'}}
@@ -820,11 +829,69 @@ module.exports = function(io) {
                     setImmediate(() => {
                         showBriefingScreen(socket);
                     });
+                } else if (request.consent === 'decline') {
+                    // User declined after warning - handle partner notification
+                    console.log(`*** CONSENT DECLINED: ${username} declined participation ***`);
+                    
+                    // Log decline event to file
+                    const userGroup = users[username] ? users[username].group : 'unknown';
+                    const declineLogEntry = `${new Date().toISOString()},${username},${userGroup},DECLINED_CONSENT\n`;
+                    fs.appendFile('decline_log.csv', declineLogEntry, (err) => {
+                        if (err) console.error('Error logging decline:', err);
+                    });
+                    
+                    // Find partner if exists
+                    const partner = experiment.partners[username];
+                    if (partner && users[partner]) {
+                        console.log(`Notifying partner ${partner} of decline`);
+                        // Notify partner
+                        users[partner].socket.emit('partner-declined', {
+                            decliningUser: username
+                        });
+                    } else {
+                        console.log(`No active partner found for ${username}`);
+                        // If no partner, just end for this user
+                        socket.emit('experiment-ended', {
+                            reason: 'user-declined'
+                        });
+                    }
                 } else if (request.consent !== 'agree') {
-                    // User did not consent - show thank you/exit
+                    // User did not consent (old flow for backward compatibility)
                     console.log(`${username} did not consent. Ending session.`);
                     showThankYouScreen(socket);
                 }
+            }
+        });
+
+        // Handle reschedule info submission from non-declining partner
+        socket.on('submit-reschedule-info', (request) => {
+            if (username != null) {
+                const userGroup = users[username] ? users[username].group : 'unknown';
+                
+                if (request.wantsReschedule && request.contactInfo) {
+                    console.log(`*** RESCHEDULE REQUEST: ${username} wants to reschedule ***`);
+                    console.log(`Contact: ${request.contactInfo.email} ${request.contactInfo.phone || '(no phone)'}`);
+                    
+                    // Log reschedule request
+                    const rescheduleEntry = `${new Date().toISOString()},${username},${userGroup},WANTS_RESCHEDULE,${request.contactInfo.email},${request.contactInfo.phone || 'N/A'}\n`;
+                    fs.appendFile('reschedule_log.csv', rescheduleEntry, (err) => {
+                        if (err) console.error('Error logging reschedule:', err);
+                    });
+                } else {
+                    console.log(`*** ${username} declined reschedule opportunity ***`);
+                    
+                    // Log no-reschedule decision
+                    const noRescheduleEntry = `${new Date().toISOString()},${username},${userGroup},NO_RESCHEDULE,N/A,N/A\n`;
+                    fs.appendFile('reschedule_log.csv', noRescheduleEntry, (err) => {
+                        if (err) console.error('Error logging no-reschedule:', err);
+                    });
+                }
+                
+                // End experiment for this user with compensation message
+                socket.emit('experiment-ended', {
+                    reason: 'partner-declined',
+                    compensation: 5
+                });
             }
         });
 

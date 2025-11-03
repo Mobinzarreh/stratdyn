@@ -206,16 +206,54 @@ $(document).ready(function() {
 
     // bind behavior to consent decline button
     $("#consent-decline-button").on("click", () => {
-        // send disagreement to server
+        // Show warning modal instead of directly declining
+        const declineModal = new bootstrap.Modal(document.getElementById('decline-warning-modal'));
+        declineModal.show();
+    });
+
+    // bind behavior to confirm decline button in modal
+    $("#confirm-decline-button").on("click", () => {
+        // User confirmed decline after warning
         socket.emit("submit-consent", {
-            consent: 'disagree'
+            consent: 'decline'
         });
+        // Close the modal
+        const declineModal = bootstrap.Modal.getInstance(document.getElementById('decline-warning-modal'));
+        declineModal.hide();
     });
 
     // bind behavior to briefing continue button
     $("#briefing-continue-button").on("click", () => {
         // send briefing completion to server
         socket.emit("submit-briefing", {});
+    });
+
+    // Handle reschedule option change (show/hide contact info)
+    $("input[name='reschedule-option']").on("change", function() {
+        if ($(this).val() === "yes") {
+            $("#contact-info-section").show();
+        } else {
+            $("#contact-info-section").hide();
+        }
+    });
+
+    // Handle reschedule form submission
+    $("#submit-reschedule-button").on("click", () => {
+        const wantsReschedule = $("input[name='reschedule-option']:checked").val() === "yes";
+        const contactInfo = wantsReschedule ? {
+            email: $("#contact-email").val().trim(),
+            phone: $("#contact-phone").val().trim()
+        } : null;
+
+        // Send reschedule response to server
+        socket.emit("submit-reschedule-info", {
+            wantsReschedule: wantsReschedule,
+            contactInfo: contactInfo
+        });
+
+        // Close modal and show thank you message
+        const rescheduleModal = bootstrap.Modal.getInstance(document.getElementById('reschedule-modal'));
+        rescheduleModal.hide();
     });
 
     // bind behavior to intention slider changes
@@ -658,6 +696,50 @@ $(document).ready(function() {
         // hide the admin, wait, design and welcome screens
         $("#admin, #wait, #design, #welcome, #main-survey, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         // show the welcome screen
+        $("#thank-you").collapse("show");
+    });
+
+    // Handle partner declined notification
+    socket.on("partner-declined", (response) => {
+        console.log("Partner declined participation");
+        // Show reschedule modal to non-declining partner
+        const rescheduleModal = new bootstrap.Modal(document.getElementById('reschedule-modal'));
+        rescheduleModal.show();
+    });
+
+    // Handle experiment ended (after decline confirmed)
+    socket.on("experiment-ended", (response) => {
+        console.log("Experiment ended:", response.reason);
+        // Hide all screens and show thank you
+        $("#admin, #wait, #design, #welcome, #main-survey, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
+        
+        // Customize thank you message based on who declined
+        if (response.reason === "user-declined") {
+            $("#thank-you").html(`
+                <div class="container">
+                    <div class="row">
+                        <div class="col">
+                            <h1>Thank You</h1>
+                            <p>Thank you for your time. You may now close this page.</p>
+                        </div>
+                    </div>
+                </div>
+            `);
+        } else if (response.reason === "partner-declined") {
+            $("#thank-you").html(`
+                <div class="container">
+                    <div class="row">
+                        <div class="col">
+                            <h1>Experiment Session Ended</h1>
+                            <p>Your compensation of $5 will be processed shortly.</p>
+                            <p>If you indicated interest in rescheduling, we will contact you soon.</p>
+                            <p>Thank you for your understanding. You may now close this page.</p>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+        
         $("#thank-you").collapse("show");
     });
 });
