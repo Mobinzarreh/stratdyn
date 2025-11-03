@@ -79,7 +79,7 @@ module.exports = function(io) {
         // Create task log file with new headers
         fs.writeFile(
             logFiles.task, 
-            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,timePenalty,score,partnerScore\r\n",
+            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -525,7 +525,10 @@ module.exports = function(io) {
                     // Within grace period - no penalty but log it
                     console.log(`ℹ️ ${username} in grace period: ${totalTimeSpent.toFixed(1)}s total (no penalty)`);
                 }
-                experiment.decisions[username][taskIndex].timePenalty = timePenalty;
+                
+                // Store penalty separately for statistical analysis
+                experiment.decisions[username][taskIndex].pointsLostPenalty = timePenalty;
+                experiment.decisions[username][taskIndex].timePenalty = timePenalty; // Keep for backwards compatibility
                 
                 // save the task decision (final choice)
                 experiment.decisions[username][taskIndex].design = request.design.replace("\xa0", " ");
@@ -579,6 +582,11 @@ module.exports = function(io) {
                             }
                         }
 
+                        // Store earned points (before penalty) separately for statistical analysis
+                        experiment.decisions[username][taskIndex].pointsEarned = myScore;
+                        experiment.decisions[partner][taskIndex].pointsEarned = partnerScore;
+                        
+                        // score field will be updated to net score (earned - penalty) after penalty calculation
                         experiment.decisions[username][taskIndex].score = myScore;
                         experiment.decisions[partner][taskIndex].score = partnerScore;
                     }
@@ -587,6 +595,14 @@ module.exports = function(io) {
                 const userGroup = users[username] ? users[username].group : 'treatment';
                 const logFiles = getLogFiles(userGroup);
                 const decision = experiment.decisions[username][taskIndex];
+                
+                // Calculate net score (earned points - penalty) for payoff/ranking
+                const pointsEarned = decision.pointsEarned || 0;
+                const pointsLostPenalty = timePenalty;
+                const netScore = pointsEarned - pointsLostPenalty;
+                
+                // Update score field to net score (for ranking and compensation)
+                experiment.decisions[username][taskIndex].score = netScore;
                 
                 let task = experiment.tasks[experiment.assignments[username][taskIndex]];
                 
@@ -599,13 +615,15 @@ module.exports = function(io) {
                     "intentionTime": decision.intentionTimeSpent,
                     "design": request.design,
                     "choiceTime": choiceTimeSpent,
-                    "timePenalty": timePenalty,
+                    "totalTime": totalTimeSpent,
                     "strategy": request.strategy,
                     "uValue": decision.uValue,
                     "uPercentile": decision.uPercentile,
                     "rValue": decision.rValue,
                     "rPercentile": decision.rPercentile,
-                    "score": myScore,
+                    "points_earned": pointsEarned,
+                    "points_lost_penalty": pointsLostPenalty,
+                    "score_net": netScore,
                     "partnerScore": partnerScore
                 });
                 
@@ -614,7 +632,7 @@ module.exports = function(io) {
                     showAdminScreen(admins[admin]);
                 });
                 
-                // Write to CSV with enhanced format including timing and penalty
+                // Write to CSV with separated earned points and penalties for statistical analysis
                 fs.appendFile(
                     logFiles.task, 
                     Date.now() + "," + 
@@ -634,8 +652,9 @@ module.exports = function(io) {
                     choiceTimeSpent + "," +
                     (totalTimeSpent || choiceTimeSpent) + "," +
                     (userOptionOrder[username] && userOptionOrder[username][taskIndex] ? userOptionOrder[username][taskIndex].join(';') : 'A;B;C;Y') + "," +
-                    timePenalty + "," +
-                    (myScore || '') + "," + 
+                    pointsEarned + "," +
+                    pointsLostPenalty + "," +
+                    netScore + "," + 
                     (partnerScore || '') + "\r\n",
                     err => {
                         if (err) {
