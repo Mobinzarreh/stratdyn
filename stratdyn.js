@@ -62,6 +62,7 @@ module.exports = function(io) {
     function getLogFiles(group) {
         return {
             task: `task_${group}_${sessionId}.csv`,
+            trainingTask: `training_task_${group}_${sessionId}.csv`, // Separate file for training data
             presurvey: `presurvey_${group}_${sessionId}.csv`,
             postsurvey: `postsurvey_${group}_${sessionId}.csv`,
             demographics: `demographics_survey_${group}_${sessionId}.csv`
@@ -76,9 +77,20 @@ module.exports = function(io) {
         
         const logFiles = getLogFiles(group);
         
-        // Create task log file with new headers
+        // Create main task log file with new headers
         fs.writeFile(
             logFiles.task, 
+            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            err => {
+                if (err) {
+                    console.error(err);
+                }
+            }
+        );
+
+        // Create training task log file (separate from main analysis)
+        fs.writeFile(
+            logFiles.trainingTask, 
             "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
@@ -518,21 +530,24 @@ module.exports = function(io) {
                 experiment.decisions[username][taskIndex].choiceStartTime = request.startTime || Date.now();
                 
                 // Calculate time penalty based on NEW POOLED TIMER SYSTEM
-                // - 90 seconds total for entire task (intention + choice)
+                // - 90 seconds for main tasks, 180 seconds for training tasks
                 // - First 10 seconds overtime = no penalty (grace period)
                 // - After grace period: 1 point per second penalty
                 let timePenalty = 0;
-                const TOTAL_TIME_LIMIT = 90; // 90 seconds total for entire task
+                
+                // Determine if this is a training task (indices 0-1)
+                const isTrainingTask = (taskIndex === 0 || taskIndex === 1);
+                const TOTAL_TIME_LIMIT = isTrainingTask ? 180 : 90; // 3 minutes for training, 90s for main
                 const GRACE_PERIOD = 10; // 10 seconds grace period
                 
                 if (totalTimeSpent > TOTAL_TIME_LIMIT + GRACE_PERIOD) {
                     // Over grace period - apply 1 point per second penalty
                     const overtime = totalTimeSpent - (TOTAL_TIME_LIMIT + GRACE_PERIOD);
                     timePenalty = Math.round(overtime); // 1 point per second, rounded
-                    console.log(`⚠️ ${username} overtime: ${totalTimeSpent.toFixed(1)}s total (penalty: -${timePenalty} points)`);
+                    console.log(`⚠️ ${username} overtime: ${totalTimeSpent.toFixed(1)}s total (limit: ${TOTAL_TIME_LIMIT}s, penalty: -${timePenalty} points)`);
                 } else if (totalTimeSpent > TOTAL_TIME_LIMIT) {
                     // Within grace period - no penalty but log it
-                    console.log(`ℹ️ ${username} in grace period: ${totalTimeSpent.toFixed(1)}s total (no penalty)`);
+                    console.log(`ℹ️ ${username} in grace period: ${totalTimeSpent.toFixed(1)}s total (limit: ${TOTAL_TIME_LIMIT}s, no penalty)`);
                 }
                 
                 // Store penalty separately for statistical analysis
@@ -615,6 +630,9 @@ module.exports = function(io) {
                 
                 let task = experiment.tasks[experiment.assignments[username][taskIndex]];
                 
+                // Determine which log file to use (training vs main tasks)
+                const logFile = isTrainingTask ? logFiles.trainingTask : logFiles.task;
+                
                 console.log({
                     "user": username,
                     "group": userGroup,
@@ -642,8 +660,9 @@ module.exports = function(io) {
                 });
                 
                 // Write to CSV with separated earned points and penalties for statistical analysis
+                // Use training log file for training tasks (indices 0-1), main log file for analysis tasks
                 fs.appendFile(
-                    logFiles.task, 
+                    logFile, 
                     Date.now() + "," + 
                     username + "," + 
                     userGroup + "," + 

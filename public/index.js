@@ -5,15 +5,17 @@ $(document).ready(function() {
     // store user group (treatment/control)
     var userGroup = null;
     
-    // Timer variables - POOLED TIMER SYSTEM (90 seconds total)
+    // Timer variables - POOLED TIMER SYSTEM (90 seconds total, 180 for training)
     var timerInterval = null;
     var taskStartTime = null; // Start time for the entire task (both stages)
     var intentionEndTime = null; // When intention stage ended
     var timerDuration = 0; // in seconds (for display purposes)
     var currentStage = null; // 'intention' or 'choice'
+    var isTrainingTask = false; // Track if current task is training
     
-    const TOTAL_TASK_TIME = 90; // Total pooled time for both stages
-    const INTENTION_DISPLAY_TIME = 30; // Show only 30 seconds for intention stage
+    // Timer constants - will be set dynamically based on task type
+    var TOTAL_TASK_TIME = 90; // Default for main tasks, 180 for training
+    var INTENTION_DISPLAY_TIME = 30; // Default for main tasks, 60 for training
 
     // Timer functions
     function startTimer(duration, stage) {
@@ -313,6 +315,17 @@ $(document).ready(function() {
         
         // save the current design task
         currentDesignTask = response;
+        
+        // Set timer durations based on whether this is a training task
+        isTrainingTask = response.isTraining || false;
+        if (isTrainingTask) {
+            TOTAL_TASK_TIME = 180; // 3 minutes for training tasks
+            INTENTION_DISPLAY_TIME = 60; // 1 minute shown for intention stage
+            console.log("Training task detected - using 180s total time (60s intention display)");
+        } else {
+            TOTAL_TASK_TIME = 90; // 90 seconds for main tasks
+            INTENTION_DISPLAY_TIME = 30; // 30 seconds shown for intention stage
+        }
 
         if (response.stage === 'intention') {
             // Part 1: Show Intention Stage
@@ -355,8 +368,8 @@ $(document).ready(function() {
             $("#intention-button").prop("disabled", false);
             $("#intention-button .spinner-border").addClass("d-none");
             
-            // Start 30-second timer for intention stage
-            startTimer(30, 'intention');
+            // Start timer for intention stage (dynamic: 60s for training, 30s for main)
+            startTimer(INTENTION_DISPLAY_TIME, 'intention');
             
         } else {
             // Part 2: Show Choice Stage
@@ -413,8 +426,9 @@ $(document).ready(function() {
                 $("#design-r-legend").hide();
             }
             
-            // Start 60-second timer for choice stage
-            startTimer(60, 'choice');
+            // Start timer for choice stage (dynamic: 120s remaining for training, 60s for main)
+            const choiceDisplayTime = TOTAL_TASK_TIME - INTENTION_DISPLAY_TIME;
+            startTimer(choiceDisplayTime, 'choice');
         }
     });
 
