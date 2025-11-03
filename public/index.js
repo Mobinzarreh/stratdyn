@@ -261,6 +261,8 @@ $(document).ready(function() {
     // bind behavior to intention slider changes
     $("#intention-slider").on("input", function() {
         $("#intention-value").text($(this).val());
+        // Enable submit button once slider is moved from default position
+        $("#intention-button").prop("disabled", false);
     });
 
     // bind behavior to intention form submission
@@ -362,10 +364,10 @@ $(document).ready(function() {
             $("#intention-r-marker").hide();
             $("#intention-r-legend").hide();
             
-            // reset intention slider
+            // reset intention slider and button state
             $("#intention-slider").val(5);
             $("#intention-value").text(5);
-            $("#intention-button").prop("disabled", false);
+            $("#intention-button").prop("disabled", true); // Start disabled - requires slider interaction
             $("#intention-button .spinner-border").addClass("d-none");
             
             // Start timer for intention stage (dynamic: 60s for training, 30s for main)
