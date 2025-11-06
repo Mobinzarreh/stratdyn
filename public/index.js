@@ -365,9 +365,9 @@ $(document).ready(function() {
             $("#intention-r-marker").hide();
             $("#intention-r-legend").hide();
             
-            // reset intention slider and button state
-            $("#intention-slider").val(5);
-            $("#intention-value").text(5);
+            // reset intention slider and button state (0-100 scale, default 50)
+            $("#intention-slider").val(50);
+            $("#intention-value").text(50);
             $("#intention-button").prop("disabled", true); // Start disabled - requires slider interaction
             $("#intention-button .spinner-border").addClass("d-none");
             

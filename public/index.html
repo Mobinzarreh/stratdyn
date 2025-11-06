@@ -336,14 +336,33 @@
       <div class="col">
         <form id="intention-form">
           <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Your Collaboration Intention</h5>
+            </div>
             <div class="card-body">
-              <h5 class="card-title">What is your intention towards collaboration?</h5>
-              <p class="card-text">Please indicate your intention on a scale from 1 (definitely will not collaborate) to 10 (definitely will collaborate):</p>
-              <div class="mx-3">
-                <label for="intention-slider" class="form-label">1 - Definitely will NOT collaborate</label>
-                <label for="intention-slider" class="form-label float-end">10 - Definitely WILL collaborate</label>
-                <input type="range" class="form-range" min="1" max="10" step="1" id="intention-slider" value="5" />
-                <div class="text-center"><strong>Current value: <span id="intention-value">5</span></strong></div>
+              <p class="card-text mb-4">On a scale from 0 to 100, how likely are you to collaborate?</p>
+              <div class="mx-3 p-3 border rounded">
+                <div class="d-flex justify-content-between mb-2 small">
+                  <span class="text-danger fw-bold">0 - Definitely will NOT collaborate</span>
+                  <span class="text-success fw-bold">100 - Definitely WILL collaborate</span>
+                </div>
+                <input type="range" class="form-range" min="0" max="100" step="10" id="intention-slider" value="50" />
+                <div class="text-center mt-3">
+                  <span class="fs-5">Current Selection: <strong id="intention-value" class="fs-4 text-primary">50</strong></span>
+                </div>
+                <div class="d-flex justify-content-between mt-2 small text-muted">
+                  <span>0</span>
+                  <span>10</span>
+                  <span>20</span>
+                  <span>30</span>
+                  <span>40</span>
+                  <span>50</span>
+                  <span>60</span>
+                  <span>70</span>
+                  <span>80</span>
+                  <span>90</span>
+                  <span>100</span>
+                </div>
               </div>
             </div>
           </div>

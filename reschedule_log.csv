@@ -1,0 +1,4 @@
+timestamp,username,group,action,email,phone
+2025-11-03T18:49:19.532Z,user01,treatment,WANTS_RESCHEDULE,,N/A
+2025-11-04T22:16:56.660Z,user02,treatment,WANTS_RESCHEDULE,,N/A
+2025-11-04T22:17:06.625Z,user02,treatment,WANTS_RESCHEDULE,,N/A
