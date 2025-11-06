@@ -358,6 +358,7 @@ $(document).ready(function() {
             // Individual difficulty (u-percentile) - always shown (black marker)
             $("#intention-u-marker").css("left", response.uPercentile + "%");
             $("#intention-u-value").text(Math.round(response.uPercentile));
+            $("#intention-u-label").text(Math.round(response.uPercentile) + "%");
             
             // Paired difficulty (R-percentile) - only for treatment group in Part 2
             // In Part 1 (intention stage), R marker stays hidden for everyone
@@ -415,6 +416,7 @@ $(document).ready(function() {
             // Individual difficulty (u-percentile) - always shown (black marker)
             $("#design-u-marker").css("left", response.uPercentile + "%");
             $("#design-u-value").text(Math.round(response.uPercentile));
+            $("#design-u-label").text(Math.round(response.uPercentile) + "%");
             
             // Show/hide R percentile marker based on user group
             if (userGroup === 'treatment') {
@@ -422,6 +424,7 @@ $(document).ready(function() {
                 $("#design-r-marker").css("left", response.rPercentile + "%").show();
                 $("#design-r-legend").css("display", "flex"); // Use flex for proper alignment
                 $("#design-r-value").text(Math.round(response.rPercentile));
+                $("#design-r-label").text(Math.round(response.rPercentile) + "%");
             } else {
                 // Control group: Hide paired difficulty marker
                 $("#design-r-marker").hide();
