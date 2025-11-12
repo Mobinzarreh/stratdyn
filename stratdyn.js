@@ -58,14 +58,21 @@ module.exports = function(io) {
     let timestamp = Math.floor(new Date().getTime() / 1000);
     let sessionId = 'session1'; // Can be changed as needed
 
+    // Ensure logs directory exists
+    const logsDir = './logs';
+    if (!fs.existsSync(logsDir)) {
+        fs.mkdirSync(logsDir, { recursive: true });
+        console.log('Created logs directory');
+    }
+
     // Helper function to get log files based on user group
     function getLogFiles(group) {
         return {
-            task: `task_${group}_${sessionId}.csv`,
-            trainingTask: `training_task_${group}_${sessionId}.csv`, // Separate file for training data
-            presurvey: `presurvey_${group}_${sessionId}.csv`,
-            postsurvey: `postsurvey_${group}_${sessionId}.csv`,
-            demographics: `demographics_survey_${group}_${sessionId}.csv`
+            task: `${logsDir}/task_${group}_${sessionId}.csv`,
+            trainingTask: `${logsDir}/training_task_${group}_${sessionId}.csv`, // Separate file for training data
+            presurvey: `${logsDir}/presurvey_${group}_${sessionId}.csv`,
+            postsurvey: `${logsDir}/postsurvey_${group}_${sessionId}.csv`,
+            demographics: `${logsDir}/demographics_survey_${group}_${sessionId}.csv`
         };
     }
 
@@ -135,14 +142,17 @@ module.exports = function(io) {
         createdLogFiles.add(group);
     }
 
-    // Initialize decline and reschedule log files
-    if (!fs.existsSync('decline_log.csv')) {
-        fs.writeFileSync('decline_log.csv', 'timestamp,username,group,event\n');
-        console.log('Created decline_log.csv');
+    // Initialize decline and reschedule log files in logs directory
+    const declineLogPath = `${logsDir}/decline_log.csv`;
+    const rescheduleLogPath = `${logsDir}/reschedule_log.csv`;
+    
+    if (!fs.existsSync(declineLogPath)) {
+        fs.writeFileSync(declineLogPath, 'timestamp,username,group,event\n');
+        console.log('Created decline_log.csv in logs directory');
     }
-    if (!fs.existsSync('reschedule_log.csv')) {
-        fs.writeFileSync('reschedule_log.csv', 'timestamp,username,group,action,email,phone\n');
-        console.log('Created reschedule_log.csv');
+    if (!fs.existsSync(rescheduleLogPath)) {
+        fs.writeFileSync(rescheduleLogPath, 'timestamp,username,group,email,phone,preferredTime\n');
+        console.log('Created reschedule_log.csv in logs directory');
     }
 
     // keep track of logged-in users and admins
@@ -855,7 +865,7 @@ module.exports = function(io) {
                     // Log decline event to file
                     const userGroup = users[username] ? users[username].group : 'unknown';
                     const declineLogEntry = `${new Date().toISOString()},${username},${userGroup},DECLINED_CONSENT\n`;
-                    fs.appendFile('decline_log.csv', declineLogEntry, (err) => {
+                    fs.appendFile(declineLogPath, declineLogEntry, (err) => {
                         if (err) console.error('Error logging decline:', err);
                     });
                     
@@ -893,7 +903,7 @@ module.exports = function(io) {
                     
                     // Log reschedule request
                     const rescheduleEntry = `${new Date().toISOString()},${username},${userGroup},WANTS_RESCHEDULE,${request.contactInfo.email},${request.contactInfo.phone || 'N/A'}\n`;
-                    fs.appendFile('reschedule_log.csv', rescheduleEntry, (err) => {
+                    fs.appendFile(rescheduleLogPath, rescheduleEntry, (err) => {
                         if (err) console.error('Error logging reschedule:', err);
                     });
                 } else {
@@ -901,7 +911,7 @@ module.exports = function(io) {
                     
                     // Log no-reschedule decision
                     const noRescheduleEntry = `${new Date().toISOString()},${username},${userGroup},NO_RESCHEDULE,N/A,N/A\n`;
-                    fs.appendFile('reschedule_log.csv', noRescheduleEntry, (err) => {
+                    fs.appendFile(rescheduleLogPath, noRescheduleEntry, (err) => {
                         if (err) console.error('Error logging no-reschedule:', err);
                     });
                 }
