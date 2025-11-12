@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  stratdyn:
+    build: .
+    container_name: stratdyn-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      # Mount data directory to persist experiment data
+      - ./data:/app/data
+      # Mount logs directory to persist CSV logs
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - stratdyn-network
+
+networks:
+  stratdyn-network:
+    driver: bridge
