@@ -1,48 +1,38 @@
-version: '3.8'
-
 services:
   # Traefik reverse proxy - handles HTTPS and routing
-  # Comment out this entire service if deploying without Traefik
   traefik:
-    image: traefik:v2.10
-    container_name: traefik
-    command:
-      # Enable Docker provider
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      # Enable dashboard (optional, for monitoring)
-      - "--api.dashboard=true"
-      # HTTP entrypoint on port 80
-      - "--entrypoints.web.address=:80"
-      # HTTPS entrypoint on port 443
-      - "--entrypoints.websecure.address=:443"
-      # Enable Let's Encrypt for automatic SSL
-      - "--certificatesresolvers.letsencrypt.acme.email=your-email@example.com"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      # Redirect HTTP to HTTPS
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    image: traefik:v3
+    container_name: stratdyn-reverse-proxy
     ports:
-      - "80:80"
-      - "443:443"
-      # Dashboard (optional, comment out for production)
-      # - "8080:8080"
+      - 80:80
+      - 443:443
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./letsencrypt:/letsencrypt"
+      - /var/run/docker.sock:/var/run/docker.sock
+      - letsencrypt:/letsencrypt
+    command:
+      - --log.level=INFO
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entryPoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.asDefault=true
+      - --entrypoints.websecure.http.tls.certresolver=myresolver
+      - --certificatesresolvers.myresolver.acme.tlschallenge=true
+      # - --certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.myresolver.acme.email=paul.grogan@asu.edu
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+    labels:
+      - traefik.enable=false
+    restart: unless-stopped
     networks:
       - stratdyn-network
-    restart: unless-stopped
 
   stratdyn:
     build: .
     container_name: stratdyn-app
-    # Remove direct port exposure when using Traefik
-    # ports:
-    #   - "3000:3000"
-    expose:
-      - "3000"
+    restart: unless-stopped
     environment:
       - NODE_ENV=production
     volumes:
@@ -50,19 +40,16 @@ services:
       - ./data:/app/data
       # Mount logs directory to persist CSV logs
       - ./logs:/app/logs
-    restart: unless-stopped
     networks:
       - stratdyn-network
     labels:
-      # Enable Traefik for this container
-      - "traefik.enable=true"
-      # Route requests from game.code-lab.org to this container
-      - "traefik.http.routers.stratdyn.rule=Host(`game.code-lab.org`)"
-      - "traefik.http.routers.stratdyn.entrypoints=websecure"
-      - "traefik.http.routers.stratdyn.tls.certresolver=letsencrypt"
-      # Tell Traefik which port the app uses
-      - "traefik.http.services.stratdyn.loadbalancer.server.port=3000"
+      - traefik.enable=true
+      - traefik.http.routers.stratdyn.rule=Host(`game.code-lab.org`)
+      - traefik.http.services.stratdyn.loadbalancer.server.port=3000
 
 networks:
   stratdyn-network:
     driver: bridge
+
+volumes:
+  letsencrypt:
