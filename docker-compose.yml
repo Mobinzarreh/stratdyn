@@ -4,8 +4,8 @@ services:
     image: traefik:v3
     container_name: stratdyn-reverse-proxy
     ports:
-      - 80:80
-      - 443:443
+      - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - letsencrypt:/letsencrypt
@@ -21,7 +21,7 @@ services:
       - --entrypoints.websecure.http.tls.certresolver=myresolver
       - --certificatesresolvers.myresolver.acme.tlschallenge=true
       # - --certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
-      - --certificatesresolvers.myresolver.acme.email=paul.grogan@asu.edu
+      - --certificatesresolvers.myresolver.acme.email=mzarreh@asu.edu
       - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
     labels:
       - traefik.enable=false
@@ -30,7 +30,7 @@ services:
       - stratdyn-network
 
   stratdyn:
-    build: .
+    image: stratdyn-app:latest
     container_name: stratdyn-app
     restart: unless-stopped
     environment:
