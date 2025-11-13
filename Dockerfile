@@ -14,7 +14,7 @@ RUN npm install --production
 COPY . .
 
 # Create directory for CSV log files with proper permissions
-RUN mkdir -p /app/logs
+RUN mkdir -p /app/logs && chmod 777 /app/logs
 
 # Create a non-root user to run the application (security best practice)
 RUN addgroup -g 1001 -S nodejs && \
