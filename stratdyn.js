@@ -427,6 +427,8 @@ module.exports = function(io) {
 
         // bind behavior to a socket.io login request
         socket.on('login-request', (request) => {
+            console.log(`Login attempt: username=${request.username}, passcode=${request.passcode}`);
+            console.log(`Available users: ${Object.keys(userCredentials).join(', ')}`);
             // check if username and passcode patch admin or user credential
             if (
                 request.hasOwnProperty('username') 
@@ -438,6 +440,7 @@ module.exports = function(io) {
                 username = request.username;
                 // register admin socket
                 admins[username] = socket;
+                console.log(`Admin login successful: ${username}`);
             } else if (
                 request.hasOwnProperty('username') 
                 && request.username in userCredentials
@@ -447,6 +450,7 @@ module.exports = function(io) {
                 const userCred = userCredentials[request.username];
                 const passcode = typeof userCred === 'string' ? userCred : userCred.passcode;
                 const group = typeof userCred === 'string' ? 'treatment' : userCred.group;
+                console.log(`User credentials check - username=${request.username}, expected passcode=${passcode}, received passcode=${request.passcode}`);
                 
                 if (request.passcode == passcode) {
                     // authentication successful; update the authenticated username
@@ -471,10 +475,12 @@ module.exports = function(io) {
                     });
                 } else {
                     // authentication NOT successful
+                    console.log(`User login failed: ${request.username} - passcode mismatch`);
                     username = null;
                 }
             } else {
                 // authentication NOT successful
+                console.log(`Login failed: username not found or missing fields`);
                 username = null;
             }
             // send a socket.io login response message with group info
