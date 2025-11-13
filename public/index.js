@@ -477,6 +477,26 @@ $(document).ready(function() {
         }
     });
 
+    // bind behavior to confirm checkbox for reset all
+    $("#admin-reset-confirm-check").on("change", () => {
+        const isChecked = $("#admin-reset-confirm-check").prop("checked");
+        $("#admin-reset-all-button").prop("disabled", !isChecked);
+    });
+
+    // bind behavior to reset all button
+    $("#admin-reset-all-button").on("click", () => {
+        if (!$("#admin-reset-confirm-check").prop("checked")) {
+            alert("Please confirm that you understand the consequences of resetting all data.");
+            return;
+        }
+        
+        // Final confirmation
+        if (confirm("⚠️ FINAL WARNING: This will permanently delete ALL experiment data, logs, and user decisions. This cannot be undone. Are you absolutely sure?")) {
+            console.log("Admin resetting all users and deleting data");
+            socket.emit("admin-reset-all", {});
+        }
+    });
+
     // bind behavior to the socket.io logout response
     socket.on("logout-response", () => {
         // show the login button
@@ -760,6 +780,19 @@ $(document).ready(function() {
         }
         
         $("#thank-you").collapse("show");
+    });
+
+    // bind behavior to force reload (when admin resets all)
+    socket.on("force-reload", (response) => {
+        console.log("Force reload signal received from server:", response.message);
+        
+        // Show alert
+        alert("⚠️ " + response.message);
+        
+        // Reload page after a short delay
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
     });
 });
 

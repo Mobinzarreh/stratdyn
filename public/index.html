@@ -752,6 +752,34 @@
         </div>
       </div>
     </div>
+
+    <!-- Admin Reset All Control -->
+    <div class="row my-3">
+      <div class="col">
+        <div class="card border-danger">
+          <div class="card-header bg-danger">
+            <h5 class="mb-0"><i class="bi-arrow-clockwise"></i> Admin Controls: Reset All Users</h5>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-danger mb-3">
+              <strong><i class="bi-exclamation-triangle"></i> WARNING:</strong> This will completely reset ALL users and DELETE ALL experiment data, logs, and decisions. This action cannot be undone!
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="admin-reset-confirm-check" />
+              <label class="form-check-label" for="admin-reset-confirm-check">
+                I understand this will permanently delete all data. I want to proceed.
+              </label>
+            </div>
+            <button class="btn btn-danger w-100" id="admin-reset-all-button" disabled>
+              <i class="bi-arrow-clockwise"></i> Reset All Users & Delete Data
+            </button>
+            <div class="alert alert-info mt-2 mb-0">
+              <small><i class="bi-info-circle"></i> After reset, all users will be returned to the consent screen and can log in fresh. All saved data will be permanently deleted.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <div class="row">
       <div class="col">

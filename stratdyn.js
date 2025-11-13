@@ -1056,6 +1056,60 @@ module.exports = function(io) {
             }
         });
 
+        // bind behavior to admin reset all request
+        socket.on('admin-reset-all', () => {
+            if (username in admins) {
+                console.log(`🔴 ADMIN RESET: Admin ${username} initiated complete reset of all users and data`);
+                
+                // Reset all user state
+                userTaskIndex = {};
+                userTaskCompletion = {};
+                users = {};
+                admins[username] = socket; // Keep the requesting admin connected
+                
+                // Clear experiment decisions
+                experiment.decisions = {};
+                
+                // Reinitialize experiment.json to fresh state
+                experiment = initializeExperiment();
+                
+                // Save clean experiment state to file
+                try {
+                    fs.writeFileSync(
+                        './data/experiment.json',
+                        JSON.stringify(experiment, null, 2)
+                    );
+                    console.log(`✅ Experiment data reset and saved to experiment.json`);
+                } catch (err) {
+                    console.error(`❌ Error saving reset experiment data: ${err}`);
+                }
+                
+                // Clear CSV log files
+                try {
+                    fs.writeFileSync(
+                        declineLogPath,
+                        'timestamp,username,group,task_index,reason,timestamp_iso\n'
+                    );
+                    fs.writeFileSync(
+                        rescheduleLogPath,
+                        'timestamp,username,group,task_index,reason,timestamp_iso\n'
+                    );
+                    console.log(`✅ CSV log files cleared`);
+                } catch (err) {
+                    console.error(`❌ Error clearing log files: ${err}`);
+                }
+                
+                // Broadcast reload to all connected clients
+                io.emit('force-reload', {
+                    message: 'The experiment has been reset by an administrator. Please refresh the page.'
+                });
+                
+                console.log(`🔄 All users reset, all data deleted, clients notified`);
+            } else {
+                console.warn(`⚠️ Non-admin ${username} attempted to reset all users`);
+            }
+        });
+
         // bind behavior to a socket.io logout request
         socket.on('logout-request', () => {
             if (username in users) {
