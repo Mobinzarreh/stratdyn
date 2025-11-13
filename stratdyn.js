@@ -1096,5 +1096,29 @@ module.exports = function(io) {
                 io.emit("update-content");
             }
         });
+
+        // bind behavior to socket.io disconnect
+        socket.on('disconnect', () => {
+            if (username) {
+                console.log(`⚠️ User ${username} disconnected`);
+                
+                // Remove user from active users
+                if (username in users) {
+                    delete users[username];
+                    console.log(`Removed ${username} from active users`);
+                }
+                
+                // Remove admin from active admins
+                if (username in admins) {
+                    delete admins[username];
+                    console.log(`Removed admin ${username} from active admins`);
+                }
+                
+                // Notify remaining admins of the disconnection
+                Object.keys(admins).forEach(admin => {
+                    showAdminScreen(admins[admin]);
+                });
+            }
+        });
     });
 };
