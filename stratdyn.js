@@ -443,7 +443,7 @@ module.exports = function(io) {
                     showSurveyScreen(context);
                 } else if (taskIndex < experiment.tasks.length + 2) {
                     // Show task (0-1 = training, 2-31 = main experiment)
-                    showDesignTask(context, 'intention');
+                    showDesignTask(context, 'intention', username);
                 } else if (taskIndex === experiment.tasks.length + 2) {
                     // Show post-survey
                     showPostSurveyScreen(context);
@@ -552,8 +552,8 @@ module.exports = function(io) {
                 console.log(`    U-Value: ${uValue}, U-Percentile: ${uPercentile}%`);
                 console.log(`>>> Now transitioning to CHOICE stage...\n`);
                 
-                // Now show Part 2 (choice stage)
-                showDesignTask(socket, 'choice');
+                // Now show Part 2 (choice stage) - MUST pass username explicitly
+                showDesignTask(socket, 'choice', username);
             }
         });
 
@@ -752,8 +752,8 @@ module.exports = function(io) {
                             const nextIndex = userTaskIndex[username];
                             if (nextIndex < experiment.tasks.length) {
                                 // Show next task Part 1 (Intention)
-                                if (users[username]) showDesignTask(users[username].socket, 'intention');
-                                if (users[partner]) showDesignTask(users[partner].socket, 'intention');
+                                if (users[username]) showDesignTask(users[username].socket, 'intention', username);
+                                if (users[partner]) showDesignTask(users[partner].socket, 'intention', partner);
                             } else if (nextIndex === experiment.tasks.length) {
                                 // Show post-survey
                                 if (users[username]) showPostSurveyScreen(users[username].socket);
@@ -824,7 +824,7 @@ module.exports = function(io) {
                     console.log(`${username} completed pre-survey. Advancing to task 0`);
                     // Give time for index to update, then show content
                     setImmediate(() => {
-                        showDesignTask(socket, 'intention');
+                        showDesignTask(socket, 'intention', username);
                     });
                 }
             }
