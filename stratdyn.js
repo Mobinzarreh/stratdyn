@@ -244,18 +244,35 @@ module.exports = function(io) {
             
             // Calculate u percentile for this task
             const myUValue = task.uValue;
-            const myUPercentile = calculateUPercentile(myUValue, experiment.tasks);
-            task.uValue = myUValue;
-            task.uPercentile = myUPercentile;
-            
-            console.log(`  [${stage.toUpperCase()}] U-Value: ${myUValue}, U-Percentile: ${myUPercentile}%`);
+            let myUPercentile = calculateUPercentile(myUValue, experiment.tasks);
             
             // Calculate R and R percentile for paired tasks (INDEPENDENT - uses pre-assigned partner task)
             const partnerUValue = task.partnerTask.uValue;
             const rValue = calculateRiskDominance(myUValue, partnerUValue);
-            const rPercentile = calculateRPercentile(rValue, experiment.tasks);
+            let rPercentile = calculateRPercentile(rValue, experiment.tasks);
+            
+            // TRAINING TASK 1: Use informative example values instead of 0%
+            // This helps participants understand u-percentile vs R-percentile
+            if (taskIndex === 0) {
+                // Use realistic example values that differ between pairs
+                // User01/User02 get one set, User03/User04 get another, etc.
+                const pairNumber = parseInt(activeUsername.replace(/\D/g, '')) || 1;
+                if (pairNumber % 2 === 1) { // Odd users (user01, user03, etc.)
+                    myUPercentile = 35; // Individual: 35% (moderately easy)
+                    rPercentile = 65;   // Paired: 65% (moderately hard)
+                } else { // Even users (user02, user04, etc.)
+                    myUPercentile = 40; // Individual: 40% (moderately easy)
+                    rPercentile = 60;   // Paired: 60% (moderately hard)
+                }
+                console.log(`  [TRAINING TASK 1] Using example values: U=${myUPercentile}%, R=${rPercentile}%`);
+            }
+            
+            task.uValue = myUValue;
+            task.uPercentile = myUPercentile;
             task.rValue = rValue;
             task.rPercentile = rPercentile;
+            
+            console.log(`  [${stage.toUpperCase()}] U-Value: ${myUValue}, U-Percentile: ${myUPercentile}%`);
             
             // Get user group
             const userGroup = users[activeUsername] ? users[activeUsername].group : 'treatment';
