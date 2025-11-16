@@ -459,27 +459,95 @@ $(document).ready(function() {
         socket.emit("return-prev");
     });
     
-    // bind behavior to admin back-step button
-    $("#admin-backstep-button").on("click", () => {
-        const targetUser = $("#admin-backstep-user").val();
-        const stepsBack = parseInt($("#admin-backstep-amount").val());
+    // Quick select buttons for user selection
+    $("#select-all-users").on("click", () => {
+        $("#admin-move-users option").prop("selected", true);
+    });
+    
+    $("#select-no-users").on("click", () => {
+        $("#admin-move-users option").prop("selected", false);
+    });
+    
+    $("#select-online-users").on("click", () => {
+        $("#admin-move-users option").prop("selected", false);
+        $("#admin-move-users option[data-online='true']").prop("selected", true);
+    });
+    
+    $("#select-pairs").on("click", () => {
+        // Select users in pairs (user01+user02, user03+user04, etc.)
+        $("#admin-move-users option").prop("selected", false);
+        $("#admin-move-users option").each(function() {
+            const username = $(this).val();
+            const userNum = parseInt(username.replace(/\D/g, ''));
+            // Select pairs: 1-2, 3-4, 5-6, etc.
+            if (userNum % 2 === 1 || userNum % 2 === 0) {
+                $(this).prop("selected", true);
+            }
+        });
+    });
+    
+    $("#select-treatment").on("click", () => {
+        $("#admin-move-users option").prop("selected", false);
+        $("#admin-move-users option[data-group='treatment']").prop("selected", true);
+    });
+    
+    $("#select-control").on("click", () => {
+        $("#admin-move-users option").prop("selected", false);
+        $("#admin-move-users option[data-group='control']").prop("selected", true);
+    });
+    
+    // bind behavior to admin advance button
+    $("#admin-advance-button").on("click", () => {
+        const selectedUsers = $("#admin-move-users").val();
+        const steps = parseInt($("#admin-move-steps").val());
         
-        if (!targetUser) {
-            alert("Please select a user to move back.");
+        if (!selectedUsers || selectedUsers.length === 0) {
+            alert("Please select at least one user to advance.");
             return;
         }
         
-        if (!stepsBack || stepsBack < 1) {
+        if (!steps || steps < 1) {
             alert("Please enter a valid number of steps (minimum 1).");
             return;
         }
         
+        const userList = selectedUsers.join(", ");
+        const userText = selectedUsers.length === 1 ? "user" : `${selectedUsers.length} users`;
+        
         // Confirm action
-        if (confirm(`Move ${targetUser} back ${stepsBack} step(s)? This will clear their responses after the new position.`)) {
-            console.log(`Admin moving ${targetUser} back ${stepsBack} steps`);
-            socket.emit("admin-backstep-user", {
-                username: targetUser,
-                stepsBack: stepsBack
+        if (confirm(`Advance ${userText} (${userList}) forward by ${steps} step(s)?`)) {
+            console.log(`Admin advancing ${selectedUsers.length} users forward ${steps} steps`);
+            socket.emit("admin-move-users", {
+                usernames: selectedUsers,
+                steps: steps
+            });
+        }
+    });
+    
+    // bind behavior to admin back-step button
+    $("#admin-backstep-button").on("click", () => {
+        const selectedUsers = $("#admin-move-users").val();
+        const steps = parseInt($("#admin-move-steps").val());
+        
+        if (!selectedUsers || selectedUsers.length === 0) {
+            alert("Please select at least one user to move back.");
+            return;
+        }
+        
+        if (!steps || steps < 1) {
+            alert("Please enter a valid number of steps (minimum 1).");
+            return;
+        }
+        
+        const userList = selectedUsers.join(", ");
+        const userText = selectedUsers.length === 1 ? "user" : `${selectedUsers.length} users`;
+        
+        // Confirm action
+        if (confirm(`Move ${userText} (${userList}) back by ${steps} step(s)? This will clear their responses after the new position.`)) {
+            console.log(`Admin moving ${selectedUsers.length} users back ${steps} steps`);
+            socket.emit("admin-move-users", {
+                usernames: selectedUsers,
+                steps: -steps // Negative for backward
             });
         }
     });
@@ -651,8 +719,8 @@ $(document).ready(function() {
         $("#prev-button").prop("disabled", response.progress <= -1);
         $("#next-button").prop("disabled", response.progress >= 100);
         
-        // Populate user dropdown for back-step control
-        $("#admin-backstep-user").empty().append($("<option>").val("").text("-- Select User --"));
+        // Populate user multi-select for move controls
+        $("#admin-move-users").empty();
         
         // update user status table
         let users = Object.keys(response.decisions);
@@ -661,9 +729,17 @@ $(document).ready(function() {
             console.log(response.decisions[user]);
             console.log(response.decisions[user].online);
             
-            // Add user to backstep dropdown
-            $("#admin-backstep-user").append(
-                $("<option>").val(user).text(user + " (Task: " + response.decisions[user].task + ")")
+            // Add user to move multi-select with data attributes for filtering
+            const isOnline = response.decisions[user].online;
+            const group = response.decisions[user].group || 'unknown';
+            const task = response.decisions[user].task;
+            
+            $("#admin-move-users").append(
+                $("<option>")
+                    .val(user)
+                    .text(user + " - " + task + (isOnline ? " 🟢" : " 🔴"))
+                    .attr("data-online", isOnline)
+                    .attr("data-group", group)
             );
             
             let row = (

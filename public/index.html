@@ -725,33 +725,51 @@
       </div>
     </div>
     
-    <!-- Admin Back-Step Controls -->
+    <!-- Admin Move Users Controls -->
     <div class="row my-3">
       <div class="col">
-        <div class="card border-warning">
-          <div class="card-header bg-warning">
-            <h5 class="mb-0"><i class="bi-arrow-counterclockwise"></i> Admin Controls: Move User Back</h5>
+        <div class="card border-primary">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi-arrow-left-right"></i> Admin Controls: Move Users</h5>
           </div>
           <div class="card-body">
-            <div class="row">
-              <div class="col-md-4">
-                <label for="admin-backstep-user" class="form-label">Select User:</label>
-                <select class="form-select" id="admin-backstep-user">
-                  <option value="">-- Select User --</option>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="admin-move-users" class="form-label">Select User(s):</label>
+                <select class="form-select" id="admin-move-users" multiple size="8">
+                  <!-- Users will be populated dynamically -->
                 </select>
+                <small class="text-muted"><i class="bi-info-circle"></i> Hold Ctrl/Cmd to select multiple users</small>
               </div>
-              <div class="col-md-4">
-                <label for="admin-backstep-amount" class="form-label">Steps Back:</label>
-                <input type="number" class="form-control" id="admin-backstep-amount" min="1" max="30" value="1" />
-              </div>
-              <div class="col-md-4 d-flex align-items-end">
-                <button class="btn btn-warning w-100" id="admin-backstep-button">
-                  <i class="bi-arrow-counterclockwise"></i> Move User Back
-                </button>
+              <div class="col-md-6">
+                <label class="form-label">Quick Select:</label>
+                <div class="btn-group w-100 mb-2" role="group">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="select-all-users">All Users</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="select-no-users">Clear</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="select-online-users">Online Only</button>
+                </div>
+                <div class="btn-group w-100 mb-3" role="group">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="select-pairs">Pairs</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="select-treatment">Treatment</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="select-control">Control</button>
+                </div>
+                
+                <label for="admin-move-steps" class="form-label">Number of Steps:</label>
+                <input type="number" class="form-control mb-2" id="admin-move-steps" min="1" max="35" value="1" />
+                <small class="text-muted">Positive = forward, Negative = back</small>
+                
+                <div class="d-grid gap-2 mt-3">
+                  <button class="btn btn-success" id="admin-advance-button">
+                    <i class="bi-arrow-right"></i> Advance Forward
+                  </button>
+                  <button class="btn btn-warning" id="admin-backstep-button">
+                    <i class="bi-arrow-left"></i> Move Back
+                  </button>
+                </div>
               </div>
             </div>
-            <div class="alert alert-info mt-2 mb-0">
-              <small><i class="bi-info-circle"></i> This will move the selected user back by the specified number of tasks. Their responses after the new position will be cleared.</small>
+            <div class="alert alert-info mb-0">
+              <small><i class="bi-info-circle"></i> <strong>Move users forward or backward in the experiment.</strong> Moving back will clear their responses after the new position. You can select individual users or use quick select buttons for pairs/groups.</small>
             </div>
           </div>
         </div>

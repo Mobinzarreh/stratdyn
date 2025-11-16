@@ -1035,55 +1035,74 @@ module.exports = function(io) {
             }
         });
 
-        // Admin back-step: Move a user back by multiple steps
-        socket.on('admin-backstep-user', (request) => {
+        // Admin move users: Move multiple users forward or back
+        socket.on('admin-move-users', (request) => {
             if (username in admins) {
-                const targetUser = request.username;
-                const stepsBack = request.stepsBack || 1;
+                const targetUsers = request.usernames || [];
+                const steps = request.steps || 0; // Positive = forward, negative = back
                 
-                if (targetUser && userTaskIndex[targetUser] !== undefined) {
-                    const currentIndex = userTaskIndex[targetUser];
-                    const newIndex = Math.max(-4, currentIndex - stepsBack); // Can't go before consent (-4)
-                    
-                    console.log(`🔧 Admin ${username} moving ${targetUser} from task ${currentIndex} back ${stepsBack} steps to ${newIndex}`);
-                    
-                    // Clear decisions after the new position and reinitialize
-                    if (experiment.decisions[targetUser]) {
-                        for (let i = newIndex + 1; i < experiment.decisions[targetUser].length; i++) {
-                            console.log(`  Clearing ${targetUser} task ${i} data`);
-                            experiment.decisions[targetUser][i] = {
-                                "intention": null,
-                                "intentionTimestamp": null,
-                                "design": null,
-                                "strategy": null,
-                                "uValue": null,
-                                "uPercentile": null,
-                                "rValue": null,
-                                "rPercentile": null,
-                                "score": null
-                            };
-                        }
+                if (targetUsers.length === 0) {
+                    console.log(`⚠️ Admin ${username} attempted to move users but none selected`);
+                    return;
+                }
+                
+                const direction = steps > 0 ? 'forward' : 'back';
+                const absSteps = Math.abs(steps);
+                console.log(`🔧 Admin ${username} moving ${targetUsers.length} users ${direction} by ${absSteps} steps: ${targetUsers.join(', ')}`);
+                
+                targetUsers.forEach((targetUser) => {
+                    if (userTaskIndex[targetUser] === undefined) {
+                        console.log(`⚠️ User ${targetUser} not found, skipping`);
+                        return;
                     }
                     
-                    // Clear cached option orders after the new position (FIX for consistent displays)
-                    if (userOptionOrder[targetUser]) {
-                        for (let i = newIndex + 1; i < experiment.tasks.length; i++) {
-                            if (userOptionOrder[targetUser][i]) {
-                                console.log(`  Clearing ${targetUser} task ${i} option order cache`);
-                                delete userOptionOrder[targetUser][i];
+                    const currentIndex = userTaskIndex[targetUser];
+                    const newIndex = Math.max(-4, Math.min(experiment.tasks.length + 3, currentIndex + steps));
+                    
+                    if (newIndex === currentIndex) {
+                        console.log(`  ${targetUser}: Already at boundary, no change`);
+                        return;
+                    }
+                    
+                    console.log(`  ${targetUser}: ${currentIndex} → ${newIndex}`);
+                    
+                    // If moving backward, clear decisions after the new position
+                    if (steps < 0) {
+                        if (experiment.decisions[targetUser]) {
+                            for (let i = newIndex + 1; i < experiment.decisions[targetUser].length; i++) {
+                                experiment.decisions[targetUser][i] = {
+                                    "intention": null,
+                                    "intentionTimestamp": null,
+                                    "design": null,
+                                    "strategy": null,
+                                    "uValue": null,
+                                    "uPercentile": null,
+                                    "rValue": null,
+                                    "rPercentile": null,
+                                    "score": null
+                                };
                             }
                         }
-                    }
-                    
-                    // Clear task completion tracking after new position
-                    if (userTaskCompletion[targetUser] !== undefined && userTaskCompletion[targetUser] >= newIndex) {
-                        userTaskCompletion[targetUser] = newIndex - 1;
+                        
+                        // Clear cached option orders after the new position
+                        if (userOptionOrder[targetUser]) {
+                            for (let i = newIndex + 1; i < experiment.tasks.length; i++) {
+                                if (userOptionOrder[targetUser][i]) {
+                                    delete userOptionOrder[targetUser][i];
+                                }
+                            }
+                        }
+                        
+                        // Clear task completion tracking
+                        if (userTaskCompletion[targetUser] !== undefined && userTaskCompletion[targetUser] >= newIndex) {
+                            userTaskCompletion[targetUser] = newIndex - 1;
+                        }
                     }
                     
                     // Update user's task index
                     userTaskIndex[targetUser] = newIndex;
                     
-                    // Show appropriate content to the target user
+                    // Show appropriate content to the target user if online
                     if (users[targetUser]) {
                         setImmediate(() => {
                             if (newIndex === -4) {
@@ -1100,15 +1119,29 @@ module.exports = function(io) {
                                 showThankYouScreen(users[targetUser].socket);
                             }
                         });
-                        
-                        console.log(`✅ ${targetUser} moved to position ${newIndex}`);
-                    } else {
-                        console.log(`⚠️ ${targetUser} is not currently online`);
                     }
-                    
-                    // Notify all admins of the change
-                    Object.keys(admins).forEach(admin => {
-                        showAdminScreen(admins[admin]);
+                });
+                
+                console.log(`✅ Moved ${targetUsers.length} users ${direction} by ${absSteps} steps`);
+                
+                // Notify all admins of the changes
+                Object.keys(admins).forEach(admin => {
+                    showAdminScreen(admins[admin]);
+                });
+            }
+        });
+        
+        // Admin back-step: Move a user back by multiple steps (LEGACY - keeping for compatibility)
+        socket.on('admin-backstep-user', (request) => {
+            if (username in admins) {
+                const targetUser = request.username;
+                const stepsBack = request.stepsBack || 1;
+                
+                if (targetUser && userTaskIndex[targetUser] !== undefined) {
+                    // Use the new admin-move-users handler
+                    socket.emit('admin-move-users', {
+                        usernames: [targetUser],
+                        steps: -stepsBack
                     });
                 }
             }
