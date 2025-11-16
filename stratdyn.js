@@ -278,8 +278,16 @@ module.exports = function(io) {
             // compute the progress percentage (include training tasks in progress)
             task.progress = Math.round(100*(taskIndex+1)/(experiment.tasks.length+1));
             
-            // DEBUG: Log final task being sent
-            console.log(`  SENDING TO CLIENT - Stage: ${stage}, U%: ${task.uPercentile}%, Options: ${task.options.map(o => o.label).join(',')}\n`);
+            // DEBUG: Log final task being sent with DETAILED info
+            console.log(`  ╔═══════════════════════════════════════════════════════════`);
+            console.log(`  ║ SENDING TO CLIENT - ${activeUsername}`);
+            console.log(`  ║ Stage: ${stage.toUpperCase()}`);
+            console.log(`  ║ TaskIndex: ${taskIndex}, AssignmentIndex: ${assignmentIndex}`);
+            console.log(`  ║ Task Label: ${task.label}`);
+            console.log(`  ║ U-Value: ${task.uValue}, U-Percentile: ${task.uPercentile}%`);
+            console.log(`  ║ R-Value: ${task.rValue ? task.rValue.toFixed(3) : 'N/A'}, R-Percentile: ${task.rPercentile}%`);
+            console.log(`  ║ Options: ${task.options.map(o => `${o.label}(${o.upside}/${o.downside})`).join(', ')}`);
+            console.log(`  ╚═══════════════════════════════════════════════════════════\n`);
             
             // send a socket.io show design task
             context.emit('show-design-task', task);
@@ -538,14 +546,11 @@ module.exports = function(io) {
                 experiment.decisions[username][taskIndex].uValue = uValue;
                 experiment.decisions[username][taskIndex].uPercentile = uPercentile;
                 
-                console.log({
-                    "user": username,
-                    "taskIndex": taskIndex,
-                    "intention": request.intention,
-                    "timeSpent": request.timeSpent,
-                    "uValue": uValue,
-                    "uPercentile": uPercentile
-                });
+                console.log(`\n>>> INTENTION SAVED for ${username}:`);
+                console.log(`    TaskIndex: ${taskIndex}, AssignmentIndex: ${experiment.assignments[username][taskIndex]}`);
+                console.log(`    Intention: ${request.intention}, TimeSpent: ${request.timeSpent}s`);
+                console.log(`    U-Value: ${uValue}, U-Percentile: ${uPercentile}%`);
+                console.log(`>>> Now transitioning to CHOICE stage...\n`);
                 
                 // Now show Part 2 (choice stage)
                 showDesignTask(socket, 'choice');
