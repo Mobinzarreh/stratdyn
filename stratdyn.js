@@ -686,6 +686,7 @@ module.exports = function(io) {
                 let task = experiment.tasks[experiment.assignments[username][taskIndex]];
                 
                 // Determine which log file to use (training vs main tasks)
+                const isTrainingTask = (taskIndex === 0 || taskIndex === 1); // Training tasks at indices 0-1
                 const logFile = isTrainingTask ? logFiles.trainingTask : logFiles.task;
                 
                 console.log({
