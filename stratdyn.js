@@ -206,13 +206,15 @@ module.exports = function(io) {
         // keep track of username
         var username = null;
         
-        function showDesignTask(context, stage = 'intention') {
+        function showDesignTask(context, stage = 'intention', targetUsername = null) {
+            // Use targetUsername if provided (for admin operations), otherwise use current username
+            const activeUsername = targetUsername || username;
             // Get this user's current task index
-            const taskIndex = userTaskIndex[username] || 0;
+            const taskIndex = userTaskIndex[activeUsername] || 0;
             
             // DEBUG: Log what we're retrieving
-            const assignmentIndex = experiment.assignments[username][taskIndex];
-            console.log(`showDesignTask [${stage}] - User: ${username}, TaskIndex: ${taskIndex}, AssignmentIndex: ${assignmentIndex}`);
+            const assignmentIndex = experiment.assignments[activeUsername][taskIndex];
+            console.log(`showDesignTask [${stage}] - User: ${activeUsername}, TaskIndex: ${taskIndex}, AssignmentIndex: ${assignmentIndex}`);
             
             // retrieve the current task and work with a cloned copy
             let task = JSON.parse(
@@ -225,7 +227,7 @@ module.exports = function(io) {
             console.log(`  Task Label: ${task.label}, u-Value: ${task.uValue}`);
             console.log(`  Original Options:`, task.options.map(o => `${o.label}(${o.upside}/${o.downside})`).join(', '));
             
-            task.partner = experiment.partners[username];
+            task.partner = experiment.partners[activeUsername];
             // clone partner task to avoid circular reference
             task.partnerTask = JSON.parse(
                 JSON.stringify(
@@ -233,10 +235,12 @@ module.exports = function(io) {
                 )
             );
             
-            // RANDOMIZATION: Apply per-user, per-task randomization
-            task = shuffleCollaborativeOptions(task, username, taskIndex);
-            
-            console.log(`  After shuffle Options:`, task.options.map(o => `${o.label}(${o.upside}/${o.downside})`).join(', '));
+            // RANDOMIZATION: Ensure consistent option order between intention and choice stages
+            // The shuffleCollaborativeOptions function handles saving/restoring order
+            // It only creates a NEW random order on first call (intention stage)
+            // On subsequent calls (choice stage), it restores the SAME saved order
+            task = shuffleCollaborativeOptions(task, activeUsername, taskIndex);
+            console.log(`  [${stage.toUpperCase()}] Options:`, task.options.map(o => `${o.label}(${o.upside}/${o.downside})`).join(', '));
             
             // Calculate u percentile for this task
             const myUValue = task.uValue;
@@ -244,7 +248,7 @@ module.exports = function(io) {
             task.uValue = myUValue;
             task.uPercentile = myUPercentile;
             
-            console.log(`  U-Percentile: ${myUPercentile}%`);
+            console.log(`  [${stage.toUpperCase()}] U-Value: ${myUValue}, U-Percentile: ${myUPercentile}%`);
             
             // Calculate R and R percentile for paired tasks (INDEPENDENT - uses pre-assigned partner task)
             const partnerUValue = task.partnerTask.uValue;
@@ -254,7 +258,7 @@ module.exports = function(io) {
             task.rPercentile = rPercentile;
             
             // Get user group
-            const userGroup = users[username] ? users[username].group : 'treatment';
+            const userGroup = users[activeUsername] ? users[activeUsername].group : 'treatment';
             task.userGroup = userGroup;
             task.stage = stage; // 'intention' or 'choice'
             
@@ -1022,12 +1026,30 @@ module.exports = function(io) {
                     
                     console.log(`🔧 Admin ${username} moving ${targetUser} from task ${currentIndex} back ${stepsBack} steps to ${newIndex}`);
                     
-                    // Clear decisions after the new position
+                    // Clear decisions after the new position and reinitialize
                     if (experiment.decisions[targetUser]) {
                         for (let i = newIndex + 1; i < experiment.decisions[targetUser].length; i++) {
-                            if (experiment.decisions[targetUser][i]) {
-                                console.log(`  Clearing ${targetUser} task ${i} data`);
-                                delete experiment.decisions[targetUser][i];
+                            console.log(`  Clearing ${targetUser} task ${i} data`);
+                            experiment.decisions[targetUser][i] = {
+                                "intention": null,
+                                "intentionTimestamp": null,
+                                "design": null,
+                                "strategy": null,
+                                "uValue": null,
+                                "uPercentile": null,
+                                "rValue": null,
+                                "rPercentile": null,
+                                "score": null
+                            };
+                        }
+                    }
+                    
+                    // Clear cached option orders after the new position (FIX for consistent displays)
+                    if (userOptionOrder[targetUser]) {
+                        for (let i = newIndex + 1; i < experiment.tasks.length; i++) {
+                            if (userOptionOrder[targetUser][i]) {
+                                console.log(`  Clearing ${targetUser} task ${i} option order cache`);
+                                delete userOptionOrder[targetUser][i];
                             }
                         }
                     }
@@ -1052,7 +1074,7 @@ module.exports = function(io) {
                             } else if (newIndex === -1) {
                                 showSurveyScreen(users[targetUser].socket);
                             } else if (newIndex >= 0 && newIndex < experiment.tasks.length + 2) {
-                                showDesignTask(users[targetUser].socket, 'intention');
+                                showDesignTask(users[targetUser].socket, 'intention', targetUser);
                             } else if (newIndex === experiment.tasks.length + 2) {
                                 showPostSurveyScreen(users[targetUser].socket);
                             } else {
