@@ -30,6 +30,9 @@ services:
       - stratdyn-network
 
   stratdyn:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: stratdyn-app:latest
     container_name: stratdyn-app
     restart: unless-stopped
