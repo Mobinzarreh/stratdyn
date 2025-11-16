@@ -210,12 +210,21 @@ module.exports = function(io) {
             // Get this user's current task index
             const taskIndex = userTaskIndex[username] || 0;
             
+            // DEBUG: Log what we're retrieving
+            const assignmentIndex = experiment.assignments[username][taskIndex];
+            console.log(`showDesignTask [${stage}] - User: ${username}, TaskIndex: ${taskIndex}, AssignmentIndex: ${assignmentIndex}`);
+            
             // retrieve the current task and work with a cloned copy
             let task = JSON.parse(
                 JSON.stringify(
-                    experiment.tasks[experiment.assignments[username][taskIndex]]
+                    experiment.tasks[assignmentIndex]
                 )
             );
+            
+            // DEBUG: Log task data
+            console.log(`  Task Label: ${task.label}, u-Value: ${task.uValue}`);
+            console.log(`  Original Options:`, task.options.map(o => `${o.label}(${o.upside}/${o.downside})`).join(', '));
+            
             task.partner = experiment.partners[username];
             // clone partner task to avoid circular reference
             task.partnerTask = JSON.parse(
@@ -227,11 +236,15 @@ module.exports = function(io) {
             // RANDOMIZATION: Apply per-user, per-task randomization
             task = shuffleCollaborativeOptions(task, username, taskIndex);
             
+            console.log(`  After shuffle Options:`, task.options.map(o => `${o.label}(${o.upside}/${o.downside})`).join(', '));
+            
             // Calculate u percentile for this task
             const myUValue = task.uValue;
             const myUPercentile = calculateUPercentile(myUValue, experiment.tasks);
             task.uValue = myUValue;
             task.uPercentile = myUPercentile;
+            
+            console.log(`  U-Percentile: ${myUPercentile}%`);
             
             // Calculate R and R percentile for paired tasks (INDEPENDENT - uses pre-assigned partner task)
             const partnerUValue = task.partnerTask.uValue;
@@ -260,6 +273,10 @@ module.exports = function(io) {
             
             // compute the progress percentage (include training tasks in progress)
             task.progress = Math.round(100*(taskIndex+1)/(experiment.tasks.length+1));
+            
+            // DEBUG: Log final task being sent
+            console.log(`  SENDING TO CLIENT - Stage: ${stage}, U%: ${task.uPercentile}%, Options: ${task.options.map(o => o.label).join(',')}\n`);
+            
             // send a socket.io show design task
             context.emit('show-design-task', task);
         }

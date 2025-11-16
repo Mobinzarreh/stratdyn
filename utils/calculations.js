@@ -4,19 +4,26 @@
 
 /**
  * Calculate u percentile (0-100) based on task's u value relative to all tasks
+ * EXCLUDES training tasks (indices 0-1) from the percentile pool
+ * Pool includes: main/focal tasks (2-26) and distraction tasks (27-31)
  * @param {number} uValue - The u value of the current task (e.g., 0.62, 0.67, etc.)
  * @param {array} allTasks - Array of all task objects with uValue property
  * @returns {number} - Percentile from 0 to 100
  */
 function calculateUPercentile(uValue, allTasks) {
-    // Get all u values from tasks
-    const allUValues = allTasks.map(task => task.uValue);
+    // EXCLUDE training tasks (indices 0-1) from percentile calculation
+    // Include only: main/focal tasks (2-26) and distraction tasks (27+)
+    const nonTrainingTasks = allTasks.slice(2);
     
-    // Count how many tasks have u value less than or equal to current u
-    const countLessOrEqual = allUValues.filter(u => u <= uValue).length;
+    // Get all UNIQUE u values from non-training tasks
+    const uniqueUValues = [...new Set(nonTrainingTasks.map(task => task.uValue))].sort((a, b) => a - b);
+    
+    // Count how many UNIQUE u values are less than or equal to current u
+    const countLessOrEqual = uniqueUValues.filter(u => u <= uValue).length;
     
     // Calculate percentile (0 = easiest, 100 = hardest)
-    const percentile = ((countLessOrEqual - 1) / (allUValues.length - 1)) * 100;
+    // Using unique u values for the calculation, not total task count
+    const percentile = ((countLessOrEqual - 1) / (uniqueUValues.length - 1)) * 100;
     
     return Math.round(percentile);
 }
@@ -43,13 +50,17 @@ function calculateRiskDominance(u1, u2) {
 
 /**
  * Calculate R percentile based on all possible R values in the experiment
+ * EXCLUDES training tasks from the u-value pool used to calculate R values
  * @param {number} rValue - The R value for the current pair
  * @param {array} allTasks - Array of all task objects
  * @returns {number} - Percentile from 0 to 100
  */
 function calculateRPercentile(rValue, allTasks) {
-    // Get all unique u values
-    const uniqueUValues = [...new Set(allTasks.map(task => task.uValue))];
+    // EXCLUDE training tasks (indices 0-1) from R-value pool
+    const nonTrainingTasks = allTasks.slice(2);
+    
+    // Get all unique u values from non-training tasks
+    const uniqueUValues = [...new Set(nonTrainingTasks.map(task => task.uValue))];
     
     // Calculate all possible R values from pairings
     const allRValues = [];
