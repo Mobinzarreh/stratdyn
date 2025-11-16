@@ -355,8 +355,17 @@ $(document).ready(function() {
             // update the design options in the table
             $("#intention tbody tr").each((index, element) => {
                 let option = response.options[index];
-                $(element).find(".intention-design-label").html(option.label.replace(" ", "&nbsp;"));
-                $(element).find("img").attr("src", "images/" + option.image + ".png");
+                // Set image path based on option label and task number
+                let imagePath = "";
+                if (option.label === "Y") {
+                    imagePath = "Design_images/Y/Individual.png";
+                } else {
+                    // For A, B, C - use task-specific images
+                    // taskNumber is 1-32 (includes training tasks)
+                    const taskNum = response.taskNumber + (response.isTraining ? 0 : 2); // Training tasks 1-2, Main tasks start at 3
+                    imagePath = `Design_images/${option.label}/${option.label} (${taskNum}).png`;
+                }
+                $(element).find(".intention-design-image").attr("src", imagePath);
                 $(element).find(".intention-design-upside").text(option.upside);
                 $(element).find(".intention-design-downside").text(option.downside);
             });
@@ -413,8 +422,17 @@ $(document).ready(function() {
             // update the design attributes for each option
             $("#design tbody tr").each((index, element) => {
                 let option = response.options[index];
-                $(element).find(".design-label").html(option.label.replace(" ", "&nbsp;"));
-                $(element).find("img").attr("src", "images/" + option.image + ".png");
+                // Set image path based on option label and task number
+                let imagePath = "";
+                if (option.label === "Y") {
+                    imagePath = "Design_images/Y/Individual.png";
+                } else {
+                    // For A, B, C - use task-specific images
+                    // taskNumber is 1-32 (includes training tasks)
+                    const taskNum = response.taskNumber + (response.isTraining ? 0 : 2); // Training tasks 1-2, Main tasks start at 3
+                    imagePath = `Design_images/${option.label}/${option.label} (${taskNum}).png`;
+                }
+                $(element).find(".design-image").attr("src", imagePath);
                 $(element).find(".design-upside").text(option.upside);
                 $(element).find(".design-downside").text(option.downside);
             });
