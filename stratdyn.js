@@ -41,7 +41,7 @@ module.exports = function(io) {
     
     // Per-user task index: {username: taskIndex}
     // NEW FLOW with Consent, Briefing, and Training Tasks:
-    // -4 = consent, -3 = briefing, -2 = demographics, -1 = pre-survey
+    // -4 = consent, -3 = briefing, -2 = demographics
     // 0-1 = training tasks (2 practice tasks, not analyzed)
     // 2-31 = main experiment (30 tasks)
     // 32 = post-survey, 33+ = thank you
@@ -355,8 +355,6 @@ module.exports = function(io) {
                     taskLabel = 'Briefing';
                 } else if (taskIndex === -2) {
                     taskLabel = 'Demographics Survey';
-                } else if (taskIndex === -1) {
-                    taskLabel = 'Pre-Survey';
                 } else if (taskIndex === 0) {
                     taskLabel = 'Training Task 1';
                 } else if (taskIndex === 1) {
@@ -438,9 +436,6 @@ module.exports = function(io) {
                 } else if (taskIndex === -2) {
                     // Show demographics survey
                     showDemographicsSurveyScreen(context);
-                } else if (taskIndex === -1) {
-                    // Show pre-survey
-                    showSurveyScreen(context);
                 } else if (taskIndex < experiment.tasks.length + 2) {
                     // Show task (0-1 = training, 2-31 = main experiment)
                     showDesignTask(context, 'intention', username);
@@ -781,54 +776,56 @@ module.exports = function(io) {
         // Removed submit-collabBelief handler - replaced by submit-intention
 
         
-        socket.on('submit-survey', (request) => {
-            if (username != null) {
-                console.log({
-                    "user": username,
-                    "results": request
-                });
-                console.log(request)
-                // TODO change to log file
-                console.log(
-                    username + "\t" 
-                    + request["q1t2"] + "\t" 
-                    + request["q2r3"] + "\t"
-                    + request["q3c1"] + "\t"
-                    + request["q4r2"] + "\t"
-                    + request["q5t1"] + "\t"
-                    + request["q6r1"] + "\t"
-                    + request["q7c3"] + "\t"
-                    + request["q8t3"] + "\t"
-                    + request["q9c2"]
-                );
+        // PRE-SURVEY REMOVED - No longer part of experiment flow
+        // Participants go directly from demographics survey to first training task
+        // socket.on('submit-survey', (request) => {
+        //     if (username != null) {
+        //         console.log({
+        //             "user": username,
+        //             "results": request
+        //         });
+        //         console.log(request)
+        //         // TODO change to log file
+        //         console.log(
+        //             username + "\t" 
+        //             + request["q1t2"] + "\t" 
+        //             + request["q2r3"] + "\t"
+        //             + request["q3c1"] + "\t"
+        //             + request["q4r2"] + "\t"
+        //             + request["q5t1"] + "\t"
+        //             + request["q6r1"] + "\t"
+        //             + request["q7c3"] + "\t"
+        //             + request["q8t3"] + "\t"
+        //             + request["q9c2"]
+        //         );
 
-                const userGroup = users[username] ? users[username].group : 'treatment';
-                const logFiles = getLogFiles(userGroup);
-                
-                fs.appendFile(
-                    logFiles.presurvey, 
-                    Date.now() + "," + username + "," + userGroup + "," + request["q1t2"] + "," + request["q2r3"] + 
-                    "," +  request["q3c1"] + "," +request["q4r2"] + "," + request["q5t1"] + "," + 
-                    request["q6r1"] + "," + request["q7c3"] + "," + request["q8t3"]  + "," + 
-                    request["q9c2"] +  "\r\n",
-                    err => {
-                        if (err) {
-                          console.error(err);
-                        }
-                    }
-                );
-                
-                // Auto-advance to next stage if enabled
-                if (autoAdvance) {
-                    userTaskIndex[username] = 0; // Move to first task
-                    console.log(`${username} completed pre-survey. Advancing to task 0`);
-                    // Give time for index to update, then show content
-                    setImmediate(() => {
-                        showDesignTask(socket, 'intention', username);
-                    });
-                }
-            }
-        });
+        //         const userGroup = users[username] ? users[username].group : 'treatment';
+        //         const logFiles = getLogFiles(userGroup);
+        //         
+        //         fs.appendFile(
+        //             logFiles.presurvey, 
+        //             Date.now() + "," + username + "," + userGroup + "," + request["q1t2"] + "," + request["q2r3"] + 
+        //             "," +  request["q3c1"] + "," +request["q4r2"] + "," + request["q5t1"] + "," + 
+        //             request["q6r1"] + "," + request["q7c3"] + "," + request["q8t3"]  + "," + 
+        //             request["q9c2"] +  "\r\n",
+        //             err => {
+        //                 if (err) {
+        //                   console.error(err);
+        //                 }
+        //             }
+        //         );
+        //         
+        //         // Auto-advance to next stage if enabled
+        //         if (autoAdvance) {
+        //             userTaskIndex[username] = 0; // Move to first task
+        //             console.log(`${username} completed pre-survey. Advancing to task 0`);
+        //             // Give time for index to update, then show content
+        //             setImmediate(() => {
+        //                 showDesignTask(socket, 'intention', username);
+        //             });
+        //         }
+        //     }
+        // });
 
 
         socket.on('submit-postsurvey', (request) => {
@@ -1009,11 +1006,11 @@ module.exports = function(io) {
                 
                 // Auto-advance to next stage if enabled
                 if (autoAdvance) {
-                    userTaskIndex[username] = -1; // Move to pre-survey
-                    console.log(`${username} completed demographics. Advancing to pre-survey`);
+                    userTaskIndex[username] = 0; // Move directly to first training task
+                    console.log(`${username} completed demographics. Advancing to first training task`);
                     // Give time for index to update, then show content
                     setImmediate(() => {
-                        showSurveyScreen(socket);
+                        showDesignTask(socket, 'intention', username);
                     });
                 }
             }
@@ -1076,8 +1073,6 @@ module.exports = function(io) {
                                 showBriefingScreen(users[targetUser].socket);
                             } else if (newIndex === -2) {
                                 showDemographicsSurveyScreen(users[targetUser].socket);
-                            } else if (newIndex === -1) {
-                                showSurveyScreen(users[targetUser].socket);
                             } else if (newIndex >= 0 && newIndex < experiment.tasks.length + 2) {
                                 showDesignTask(users[targetUser].socket, 'intention', targetUser);
                             } else if (newIndex === experiment.tasks.length + 2) {
