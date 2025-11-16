@@ -318,15 +318,22 @@ $(document).ready(function() {
         // save the current design task
         currentDesignTask = response;
         
-        // Set timer durations based on whether this is a training task
+        // Set timer durations based on task type
         isTrainingTask = response.isTraining || false;
-        if (isTrainingTask) {
-            TOTAL_TASK_TIME = 180; // 3 minutes for training tasks
+        const taskNumber = response.taskNumber || 0;
+        
+        if (isTrainingTask && taskNumber === 1) {
+            // Training Task 1: Extended time to learn UI and interface
+            TOTAL_TASK_TIME = 180; // 3 minutes for learning
             INTENTION_DISPLAY_TIME = 60; // 1 minute shown for intention stage
-            console.log("Training task detected - using 180s total time (60s intention display)");
+            console.log("Training Task 1 - using 180s total time (60s intention display) for UI learning");
         } else {
-            TOTAL_TASK_TIME = 90; // 90 seconds for main tasks
+            // Training Task 2 and all main tasks: Standard timing
+            TOTAL_TASK_TIME = 90; // 90 seconds
             INTENTION_DISPLAY_TIME = 30; // 30 seconds shown for intention stage
+            if (isTrainingTask && taskNumber === 2) {
+                console.log("Training Task 2 - using 90s total time (30s intention display) - same as main tasks");
+            }
         }
 
         if (response.stage === 'intention') {

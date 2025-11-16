@@ -1,0 +1,82 @@
+=================================================================
+EXPERIMENT DATA ACCESS GUIDE
+=================================================================
+
+SESSION ID: session1 (configured in stratdyn.js line 59)
+
+DATA FILES LOCATION: /home/mzarreh/projects2/stratdyn/
+
+=================================================================
+MAIN DATA FILES (For Analysis)
+=================================================================
+
+1. MAIN EXPERIMENT TASKS (Tasks 1-30, excluding training)
+   - task_treatment_session1.csv  (Treatment group)
+   - task_control_session1.csv    (Control group)
+   
+   Columns:
+   - timestamp, username, group, partner, task
+   - intention (0-100 scale)
+   - intentionTimestamp, intentionTimeSpent
+   - uValue, uPercentile (Individual difficulty)
+   - rValue, rPercentile (Paired difficulty)
+   - finalChoice (A/B/C/Y)
+   - finalChoiceTimestamp, choiceTimeSpent, totalTimeSpent
+   - presentedOrder (how options were randomized)
+   - pointsEarned, pointsLostPenalty, scoreNet
+   - partnerScore
+
+2. TRAINING TASKS (Practice tasks 1-2, not for analysis)
+   - training_task_treatment_session1.csv
+   - training_task_control_session1.csv
+   
+   Same columns as main tasks
+
+3. DEMOGRAPHICS SURVEY
+   - demographics_survey_treatment_session1.csv
+   - demographics_survey_control_session1.csv
+   
+   Columns: timestamp, username, group, q1-q7
+
+4. POST-SURVEY (After all tasks)
+   - postsurvey_treatment_session1.csv
+   - postsurvey_control_session1.csv
+   
+   Columns: timestamp, username, group, q1c2-q9r3
+
+5. DECLINE LOG (When participants decline consent)
+   - decline_log.csv
+
+=================================================================
+HOW TO VIEW THE DATA
+=================================================================
+
+# View task data with formatted columns
+cat task_treatment_session1.csv | column -t -s','
+
+# Count number of completed tasks
+wc -l task_treatment_session1.csv
+
+# View specific user's data
+grep "user01" task_treatment_session1.csv
+
+# Export all data to Excel-friendly format
+# The CSV files can be opened directly in Excel, LibreOffice, or any spreadsheet tool
+
+# View demographics
+cat demographics_survey_treatment_session1.csv | column -t -s','
+
+# Check training task completion
+cat training_task_treatment_session1.csv | column -t -s','
+
+=================================================================
+DATA COLLECTION NOTES
+=================================================================
+
+- Treatment group: Sees both u-percentile AND R-percentile in choice stage
+- Control group: Only sees u-percentile (individual difficulty)
+- Training tasks (0-1) are logged separately from main tasks (2-31)
+- Each task has TWO stages: intention (Part 1) and choice (Part 2)
+- Penalties applied only after 100 seconds total (90s + 10s grace)
+
+=================================================================

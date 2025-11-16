@@ -567,14 +567,15 @@ module.exports = function(io) {
                 experiment.decisions[username][taskIndex].choiceStartTime = request.startTime || Date.now();
                 
                 // Calculate time penalty based on NEW POOLED TIMER SYSTEM
-                // - 90 seconds for main tasks, 180 seconds for training tasks
+                // - Training Task 1: 180 seconds (for learning UI)
+                // - Training Task 2 & Main tasks: 90 seconds (standard timing)
                 // - First 10 seconds overtime = no penalty (grace period)
                 // - After grace period: 1 point per second penalty
                 let timePenalty = 0;
                 
-                // Determine if this is a training task (indices 0-1)
-                const isTrainingTask = (taskIndex === 0 || taskIndex === 1);
-                const TOTAL_TIME_LIMIT = isTrainingTask ? 180 : 90; // 3 minutes for training, 90s for main
+                // Determine time limit based on task type
+                const isTrainingTask1 = (taskIndex === 0); // Training Task 1 only
+                const TOTAL_TIME_LIMIT = isTrainingTask1 ? 180 : 90; // 3 min for training task 1, 90s for others
                 const GRACE_PERIOD = 10; // 10 seconds grace period
                 
                 if (totalTimeSpent > TOTAL_TIME_LIMIT + GRACE_PERIOD) {
