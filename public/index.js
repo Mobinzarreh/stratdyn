@@ -311,6 +311,67 @@ $(document).ready(function() {
 
     var currentDesignTask = null;
 
+    // Function to animate percentile markers from center to final position
+    function animatePercentileMarker(markerId, labelId, valueId, finalPercentile, delay = 0) {
+        const $marker = $(markerId);
+        const $label = $(labelId);
+        const $value = $(valueId);
+        
+        // Show loading state
+        $marker.addClass("computing");
+        $label.html('<i class="spinner-border spinner-border-sm"></i>');
+        $value.html('<i class="spinner-border spinner-border-sm"></i>');
+        
+        setTimeout(() => {
+            // Remove loading state
+            $marker.removeClass("computing");
+            
+            // Start from center (50%)
+            $marker.css({
+                "left": "50%",
+                "transition": "none"
+            });
+            
+            // Small delay to ensure start position is set
+            setTimeout(() => {
+                // Animate to final position with smooth transition
+                $marker.css({
+                    "left": finalPercentile + "%",
+                    "transition": "left 1.5s ease-in-out"
+                });
+                
+                // Animate the number counting up/down
+                const startVal = 50;
+                const endVal = Math.round(finalPercentile);
+                const duration = 1500; // 1.5 seconds
+                const startTime = Date.now();
+                
+                const animateNumber = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Ease-in-out function
+                    const easeProgress = progress < 0.5 
+                        ? 2 * progress * progress 
+                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                    
+                    const currentVal = Math.round(startVal + (endVal - startVal) * easeProgress);
+                    $label.text(currentVal + "%");
+                    $value.text(currentVal);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animateNumber);
+                    } else {
+                        $label.text(endVal + "%");
+                        $value.text(endVal);
+                    }
+                };
+                
+                animateNumber();
+            }, 50);
+        }, delay);
+    }
+
     // bind behavior to the socket.io show design task
     socket.on("show-design-task", (response) => {
         console.log("Received show-design-task:", response);
@@ -372,9 +433,14 @@ $(document).ready(function() {
             
             // Update the unified difficulty display with marker positions
             // Individual difficulty (u-percentile) - always shown (black marker)
-            $("#intention-u-marker").css("left", response.uPercentile + "%");
-            $("#intention-u-value").text(Math.round(response.uPercentile));
-            $("#intention-u-label").text(Math.round(response.uPercentile) + "%");
+            // Animate the marker from center to final position
+            animatePercentileMarker(
+                "#intention-u-marker",
+                "#intention-u-label", 
+                "#intention-u-value",
+                response.uPercentile,
+                500 // 500ms delay before starting animation
+            );
             
             // Paired difficulty (R-percentile) - only for treatment group in Part 2
             // In Part 1 (intention stage), R marker stays hidden for everyone
@@ -439,17 +505,29 @@ $(document).ready(function() {
             
             // Update the unified difficulty display with marker positions
             // Individual difficulty (u-percentile) - always shown (black marker)
-            $("#design-u-marker").css("left", response.uPercentile + "%");
-            $("#design-u-value").text(Math.round(response.uPercentile));
-            $("#design-u-label").text(Math.round(response.uPercentile) + "%");
+            // Animate the marker from center to final position
+            animatePercentileMarker(
+                "#design-u-marker",
+                "#design-u-label", 
+                "#design-u-value",
+                response.uPercentile,
+                500 // 500ms delay before starting animation
+            );
             
             // Show/hide R percentile marker based on user group
             if (userGroup === 'treatment') {
-                // Treatment group: Show purple paired difficulty marker
-                $("#design-r-marker").css("left", response.rPercentile + "%").show();
+                // Treatment group: Show purple paired difficulty marker with animation
+                $("#design-r-marker").show();
                 $("#design-r-legend").css("display", "flex"); // Use flex for proper alignment
-                $("#design-r-value").text(Math.round(response.rPercentile));
-                $("#design-r-label").text(Math.round(response.rPercentile) + "%");
+                
+                // Animate R marker with slight delay after U marker
+                animatePercentileMarker(
+                    "#design-r-marker",
+                    "#design-r-label", 
+                    "#design-r-value",
+                    response.rPercentile,
+                    1200 // 1200ms delay (starts after u-marker animation begins)
+                );
             } else {
                 // Control group: Hide paired difficulty marker
                 $("#design-r-marker").hide();
