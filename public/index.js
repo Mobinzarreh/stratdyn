@@ -639,20 +639,36 @@ $(document).ready(function() {
 
     // bind behavior to demographics survey form submissions
     $("#demographics-survey-form").on("submit", (event) => {
+        event.preventDefault();
+        
+        // Validate all required fields are filled
+        const q1 = $("input:radio[name=demographics-survey-q1]:checked").val();
+        const q2 = $("#demographics-survey-q2").val();
+        const q3 = $("#demographics-survey-q3").val();
+        const q4 = $("#demographics-survey-q4").val();
+        const q5 = $("#demographics-survey-q5").val();
+        const q6 = $("input:radio[name=demographics-survey-q6]:checked").val();
+        const q7 = $("input:radio[name=demographics-survey-q7]:checked").val();
+        const q8 = $("input:radio[name=demographics-survey-q8]:checked").val();
+        
+        if (!q1 || !q2 || !q3 || !q4 || !q5 || !q6 || !q7 || !q8) {
+            alert("Please answer all questions before submitting.");
+            return;
+        }
+        
         // send a socket.io demographics survey submit with the responses
         socket.emit("submit-demographics-survey", {
-            "demographics-survey-q1": $("input:radio[name=demographics-survey-q1]:checked").val(),
-            "demographics-survey-q2": $("#demographics-survey-q2").val(),
-            "demographics-survey-q3": $("#demographics-survey-q3").val(),
-            "demographics-survey-q4": $("#demographics-survey-q3").val(),
-            "demographics-survey-q5": $("#demographics-survey-q3").val(),
-            "demographics-survey-q6": $("input:radio[name=demographics-survey-q6]:checked").val(),
-            "demographics-survey-q7": $("input:radio[name=demographics-survey-q7]:checked").val()
+            "demographics-survey-q1": q1,
+            "demographics-survey-q2": q2,
+            "demographics-survey-q3": q3,
+            "demographics-survey-q4": q4,
+            "demographics-survey-q5": q5,
+            "demographics-survey-q6": q6,
+            "demographics-survey-q7": q7,
+            "demographics-survey-q8": q8
         });
         $("#demographics-survey-form button:submit").prop("disabled", true);
         $("#demographics-survey-form button:submit .spinner-border").removeClass("d-none");
-        // bypass the default form submission process
-        event.preventDefault();
     });
 
 
@@ -701,23 +717,39 @@ $(document).ready(function() {
 
     // bind behavior to post survey form submissions
     $("#postsurvey-form").on("submit", (event) => {
+        event.preventDefault();
+        
+        // Validate all sliders have been moved from default position
+        const q1 = $("#postsurvey-q1c2").val();
+        const q2 = $("#postsurvey-q2r1").val();
+        const q3 = $("#postsurvey-q3t3").val();
+        const q4 = $("#postsurvey-q4r2").val();
+        const q5 = $("#postsurvey-q5t1").val();
+        const q6 = $("#postsurvey-q6c3").val();
+        const q7 = $("#postsurvey-q7t2").val();
+        const q8 = $("#postsurvey-q8c1").val();
+        const q9 = $("#postsurvey-q9r3").val();
+        
+        if (!q1 || !q2 || !q3 || !q4 || !q5 || !q6 || !q7 || !q8 || !q9) {
+            alert("Please answer all 9 questions before submitting.");
+            return;
+        }
+        
         // send a socket.io post survey submit with the responses
         socket.emit("submit-postsurvey", {
-            "q1c2": parseInt($("#postsurvey-q1c2").val()),
-            "q2r1": parseInt($("#postsurvey-q2r1").val()),
-            "q3t3": parseInt($("#postsurvey-q3t3").val()),
-            "q4r2": parseInt($("#postsurvey-q4r2").val()),
-            "q5t1": parseInt($("#postsurvey-q5t1").val()),
-            "q6c3": parseInt($("#postsurvey-q6c3").val()),
-            "q7t2": parseInt($("#postsurvey-q7t2").val()),
-            "q8c1": parseInt($("#postsurvey-q8c1").val()),
-            "q9r3": parseInt($("#postsurvey-q9r3").val())
+            "q1c2": parseInt(q1),
+            "q2r1": parseInt(q2),
+            "q3t3": parseInt(q3),
+            "q4r2": parseInt(q4),
+            "q5t1": parseInt(q5),
+            "q6c3": parseInt(q6),
+            "q7t2": parseInt(q7),
+            "q8c1": parseInt(q8),
+            "q9r3": parseInt(q9)
         });
         $("#postsurvey-form input").prop("disabled", true);
         $("#postsurvey-form button:submit").prop("disabled", true);
         $("#postsurvey-form button:submit .spinner-border").removeClass("d-none");
-        // bypass the default form submission process
-        event.preventDefault();
     });
     
 

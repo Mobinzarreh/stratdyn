@@ -131,7 +131,7 @@ module.exports = function(io) {
         // Create demographics survey log file
         fs.writeFile(
             logFiles.demographics, 
-            "timestamp,username,group,demographics-survey-q1,demographics-survey-q2,demographics-survey-q3,demographics-survey-q4,demographics-survey-q5,demographics-survey-q6,demographics-survey-q7\r\n",
+            "timestamp,username,group,demographics-survey-q1,demographics-survey-q2,demographics-survey-q3,demographics-survey-q4,demographics-survey-q5,demographics-survey-q6,demographics-survey-q7,demographics-survey-q8\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -1004,7 +1004,8 @@ module.exports = function(io) {
                     + request["demographics-survey-q4"] + "\t"
                     + request["demographics-survey-q5"] + "\t"
                     + request["demographics-survey-q6"] + "\t"
-                    + request["demographics-survey-q7"] 
+                    + request["demographics-survey-q7"] + "\t"
+                    + request["demographics-survey-q8"]
                 );
                 const userGroup = users[username] ? users[username].group : 'treatment';
                 const logFiles = getLogFiles(userGroup);
@@ -1014,7 +1015,8 @@ module.exports = function(io) {
                     Date.now() + "," + username + "," + userGroup + "," + request["demographics-survey-q1"] + "," + 
                     request["demographics-survey-q2"] + "," +  request["demographics-survey-q3"] + 
                     "," +request["demographics-survey-q4"] + "," + request["demographics-survey-q5"] + 
-                    ","  + request["demographics-survey-q6"] + "," + request["demographics-survey-q7"]  +  
+                    ","  + request["demographics-survey-q6"] + "," + request["demographics-survey-q7"] + 
+                    "," + request["demographics-survey-q8"] +
                     "\r\n",
                     err => {
                         if (err) {
