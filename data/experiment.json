@@ -7,21 +7,29 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
+                    "designName": "K",
                     "upside": "100",
                     "downside": "0"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
+                    "designName": "M",
                     "upside": "80",
                     "downside": "30"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
+                    "designName": "L",
                     "upside": "90",
                     "downside": "10"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -34,21 +42,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "95",
                     "downside": "-10"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "85",
                     "downside": "15"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "75",
                     "downside": "25"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -60,21 +72,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "90",
                     "downside": "-15"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "70",
                     "downside": "17"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "80",
                     "downside": "1"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -86,21 +102,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "88",
                     "downside": "-11"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "68",
                     "downside": "21"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "77",
                     "downside": "6"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -112,21 +132,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "86",
                     "downside": "-9"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "66",
                     "downside": "24"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "75",
                     "downside": "9"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -138,21 +162,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "85",
                     "downside": "-7"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "65",
                     "downside": "26"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "74",
                     "downside": "11"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -164,21 +192,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "83",
                     "downside": "-4"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "64",
                     "downside": "27"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "71",
                     "downside": "16"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -190,21 +222,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "90",
                     "downside": "-32"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "70",
                     "downside": "9"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "80",
                     "downside": "-11"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -216,21 +252,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "88",
                     "downside": "-28"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "68",
                     "downside": "13"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "77",
                     "downside": "-6"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -242,21 +282,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "86",
                     "downside": "-24"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "66",
                     "downside": "17"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "75",
                     "downside": "-1"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -268,21 +312,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "85",
                     "downside": "-22"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "65",
                     "downside": "19"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "74",
                     "downside": "1"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -294,21 +342,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "83",
                     "downside": "-18"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "64",
                     "downside": "21"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "71",
                     "downside": "7"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -320,21 +372,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "90",
                     "downside": "-53"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "70",
                     "downside": "-2"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "80",
                     "downside": "-28"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -346,21 +402,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "88",
                     "downside": "-48"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "68",
                     "downside": "3"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "77",
                     "downside": "-21"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -372,21 +432,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "86",
                     "downside": "-44"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "66",
                     "downside": "8"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "75",
                     "downside": "-15"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -398,21 +462,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "85",
                     "downside": "-40"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "65",
                     "downside": "11"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "74",
                     "downside": "-12"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -424,21 +492,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "83",
                     "downside": "-36"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "64",
                     "downside": "14"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "71",
                     "downside": "-5"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -450,21 +522,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "90",
                     "downside": "-85"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "70",
                     "downside": "-18"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "80",
                     "downside": "-52"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -476,21 +552,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "88",
                     "downside": "-79"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "68",
                     "downside": "-11"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "77",
                     "downside": "-41"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -502,21 +582,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "86",
                     "downside": "-71"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "66",
                     "downside": "-4"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "75",
                     "downside": "-35"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -528,21 +612,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "85",
                     "downside": "-68"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "65",
                     "downside": "-1"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "74",
                     "downside": "-31"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -554,21 +642,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "83",
                     "downside": "-63"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "64",
                     "downside": "3"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "71",
                     "downside": "-21"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -580,21 +672,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "90",
                     "downside": "-133"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "70",
                     "downside": "-42"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "80",
                     "downside": "-88"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -606,21 +702,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "88",
                     "downside": "-125"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "68",
                     "downside": "-33"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "77",
                     "downside": "-76"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -632,21 +732,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "86",
                     "downside": "-118"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "66",
                     "downside": "-24"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "75",
                     "downside": "-66"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -658,21 +762,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "85",
                     "downside": "-110"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "65",
                     "downside": "-19"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "74",
                     "downside": "-60"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -684,21 +792,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "83",
                     "downside": "-101"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "64",
                     "downside": "-14"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "71",
                     "downside": "-48"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -711,21 +823,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "80",
                     "downside": "20"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "75",
                     "downside": "25"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "70",
                     "downside": "30"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -738,21 +854,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "85",
                     "downside": "15"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "78",
                     "downside": "22"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "72",
                     "downside": "28"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -765,21 +885,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "88",
                     "downside": "10"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "80",
                     "downside": "18"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "74",
                     "downside": "24"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -792,21 +916,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "90",
                     "downside": "5"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "82",
                     "downside": "15"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "76",
                     "downside": "20"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }
@@ -819,21 +947,25 @@
             "options": [
                 {
                     "label": "A",
+                    "designName": "K",
                     "upside": "87",
                     "downside": "0"
                 },
                 {
                     "label": "B",
+                    "designName": "M",
                     "upside": "79",
                     "downside": "10"
                 },
                 {
                     "label": "C",
+                    "designName": "L",
                     "upside": "73",
                     "downside": "15"
                 },
                 {
                     "label": "Y",
+                    "designName": "Y",
                     "upside": "50",
                     "downside": "50"
                 }

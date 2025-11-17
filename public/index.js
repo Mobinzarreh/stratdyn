@@ -300,6 +300,7 @@ $(document).ready(function() {
         socket.emit("submit-decision", {
             "task": $("#design .task-label").text(),
             "design": $("#design .table-active .design-label").text(),
+            "designName": $("#design .table-active .design-name").text(),
             "strategy": $("#design .table-active").data("strategy"),
             "upside": parseInt($("#design .table-active .design-upside").text()),
             "downside": parseInt($("#design .table-active .design-downside").text()),
@@ -427,6 +428,7 @@ $(document).ready(function() {
                     imagePath = `Design_images/${option.label}/${option.label} (${taskNum}).png`;
                 }
                 $(element).find(".intention-design-image").attr("src", imagePath);
+                $(element).find(".intention-design-name").text(option.designName || option.label);
                 $(element).find(".intention-design-upside").text(option.upside);
                 $(element).find(".intention-design-downside").text(option.downside);
             });
@@ -499,6 +501,7 @@ $(document).ready(function() {
                     imagePath = `Design_images/${option.label}/${option.label} (${taskNum}).png`;
                 }
                 $(element).find(".design-image").attr("src", imagePath);
+                $(element).find(".design-name").text(option.designName || option.label);
                 $(element).find(".design-upside").text(option.upside);
                 $(element).find(".design-downside").text(option.downside);
             });

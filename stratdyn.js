@@ -87,7 +87,7 @@ module.exports = function(io) {
         // Create main task log file with new headers
         fs.writeFile(
             logFiles.task, 
-            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,designName,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -732,6 +732,7 @@ module.exports = function(io) {
                     (decision.rValue || '') + "," + 
                     (decision.rPercentile || '') + "," + 
                     request.design + "," + 
+                    (request.designName || '') + "," + 
                     Date.now() + "," + 
                     choiceTimeSpent + "," +
                     (totalTimeSpent || choiceTimeSpent) + "," +
