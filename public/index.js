@@ -905,7 +905,8 @@ $(document).ready(function() {
                         response.decisions[user].score ?
                         (
                             response.decisions[user].score 
-                            + " (" + response.decisions[user].totalScore + ")"
+                            + " (Total: " + response.decisions[user].totalScore 
+                            + " | No Penalty: " + (response.decisions[user].totalScoreNoPenalty || response.decisions[user].totalScore) + ")"
                         ) : ""
                     ) + "</td>"
                 );
