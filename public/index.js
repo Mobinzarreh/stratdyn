@@ -299,7 +299,7 @@ $(document).ready(function() {
         // send a socket.io request to submit the design with timing data
         socket.emit("submit-decision", {
             "task": $("#design .task-label").text(),
-            "design": $("#design .table-active .design-label").text(),
+            "design": $("#design .table-active").attr("data-label"), // Send label (A/B/C/Y) for backend matching
             "designName": $("#design .table-active .design-name").text(),
             "strategy": $("#design .table-active").data("strategy"),
             "upside": parseInt($("#design .table-active .design-upside").text()),
@@ -417,6 +417,8 @@ $(document).ready(function() {
             // update the design options in the table
             $("#intention tbody tr").each((index, element) => {
                 let option = response.options[index];
+                // Store the label (A, B, C, or Y) in data attribute for later use
+                $(element).attr("data-label", option.label);
                 // Set image path based on option label and task number
                 let imagePath = "";
                 if (option.label === "Y") {
@@ -490,6 +492,8 @@ $(document).ready(function() {
             // update the design attributes for each option
             $("#design tbody tr").each((index, element) => {
                 let option = response.options[index];
+                // Store the label (A, B, C, or Y) in data attribute for later use
+                $(element).attr("data-label", option.label);
                 // Set image path based on option label and task number
                 let imagePath = "";
                 if (option.label === "Y") {
