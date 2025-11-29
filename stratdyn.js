@@ -632,8 +632,11 @@ module.exports = function(io) {
                 // Payoff calculation - only if partner has also completed this task
                 var myScore = null;
                 var partnerScore = null;
+                let partnerHasSubmitted = false;
+                
                 if (partner != null && experiment.decisions[partner]){
                     if (experiment.decisions[partner][taskIndex] && experiment.decisions[partner][taskIndex].design){
+                        partnerHasSubmitted = true;
                         let myDesign = experiment.decisions[username][taskIndex].design.replace("\xa0", " ");
                         let myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
                         let partnerDesign = experiment.decisions[partner][taskIndex].design.replace("\xa0", " ");
@@ -715,38 +718,72 @@ module.exports = function(io) {
                     showAdminScreen(admins[admin]);
                 });
                 
-                // Write to CSV with separated earned points and penalties for statistical analysis
-                // Use training log file for training tasks (indices 0-1), main log file for analysis tasks
-                fs.appendFile(
-                    logFile, 
-                    Date.now() + "," + 
-                    username + "," + 
-                    userGroup + "," + 
-                    experiment.partners[username] + "," + 
-                    task.label + "," + 
-                    (decision.intention || '') + "," + 
-                    (decision.intentionTimestamp || '') + "," + 
-                    (decision.intentionTimeSpent || 0) + "," +
-                    (decision.uValue || '') + "," + 
-                    (decision.uPercentile || '') + "," + 
-                    (decision.rValue || '') + "," + 
-                    (decision.rPercentile || '') + "," + 
-                    request.design + "," + 
-                    (request.designName || '') + "," + 
-                    Date.now() + "," + 
-                    choiceTimeSpent + "," +
-                    (totalTimeSpent || choiceTimeSpent) + "," +
-                    (userOptionOrder[username] && userOptionOrder[username][taskIndex] ? userOptionOrder[username][taskIndex].join(';') : 'A;B;C;Y') + "," +
-                    pointsEarned + "," +
-                    pointsLostPenalty + "," +
-                    netScore + "," + 
-                    (partnerScore || '') + "\r\n",
-                    err => {
-                        if (err) {
-                          console.error(err);
+                // Helper function to write a user's decision to CSV
+                function writeUserToCSV(user, partnerUser, userScore, partnerUserScore) {
+                    const userDecision = experiment.decisions[user][taskIndex];
+                    const userTask = experiment.tasks[experiment.assignments[user][taskIndex]];
+                    const csvUserGroup = users[user] ? users[user].group : 'treatment';
+                    const csvLogFiles = getLogFiles(csvUserGroup);
+                    const csvLogFile = isTrainingTask ? csvLogFiles.trainingTask : csvLogFiles.task;
+                    
+                    // Calculate net score for this user
+                    const csvPointsEarned = userScore || 0;
+                    const csvPenalty = userDecision.pointsLostPenalty || 0;
+                    const csvNetScore = csvPointsEarned - csvPenalty;
+                    
+                    // Update the decision object with final scores
+                    userDecision.pointsEarned = csvPointsEarned;
+                    userDecision.score = csvNetScore;
+                    
+                    console.log(`📝 Writing CSV for ${user}: Task ${userTask.label}, Earned=${csvPointsEarned}, Penalty=${csvPenalty}, Net=${csvNetScore}, PartnerScore=${partnerUserScore || ''}`);
+                    
+                    fs.appendFile(
+                        csvLogFile, 
+                        Date.now() + "," + 
+                        user + "," + 
+                        csvUserGroup + "," + 
+                        experiment.partners[user] + "," + 
+                        userTask.label + "," + 
+                        (userDecision.intention || '') + "," + 
+                        (userDecision.intentionTimestamp || '') + "," + 
+                        (userDecision.intentionTimeSpent || 0) + "," +
+                        (userDecision.uValue || '') + "," + 
+                        (userDecision.uPercentile || '') + "," + 
+                        (userDecision.rValue || '') + "," + 
+                        (userDecision.rPercentile || '') + "," + 
+                        userDecision.design + "," + 
+                        (userDecision.designName || '') + "," + 
+                        Date.now() + "," + 
+                        (userDecision.choiceTimeSpent || 0) + "," +
+                        (userDecision.totalTimeSpent || userDecision.choiceTimeSpent || 0) + "," +
+                        (userOptionOrder[user] && userOptionOrder[user][taskIndex] ? userOptionOrder[user][taskIndex].join(';') : 'A;B;C;Y') + "," +
+                        csvPointsEarned + "," +
+                        csvPenalty + "," +
+                        csvNetScore + "," + 
+                        (partnerUserScore || '') + "\r\n",
+                        err => {
+                            if (err) {
+                              console.error(err);
+                            }
                         }
-                    }
-                );
+                    );
+                }
+                
+                // DEFERRED CSV WRITING: Only write CSV when BOTH users have submitted
+                // This ensures scores are calculated correctly for both users
+                if (partnerHasSubmitted) {
+                    // This is the SECOND user to submit - write BOTH users' data now
+                    console.log(`✅ Both ${username} and ${partner} have submitted for task ${taskIndex}. Writing CSV for both.`);
+                    
+                    // Write current user's data (the second submitter)
+                    writeUserToCSV(username, partner, myScore, partnerScore);
+                    
+                    // Write partner's data (the first submitter - their data was deferred)
+                    writeUserToCSV(partner, username, partnerScore, myScore);
+                } else {
+                    // This is the FIRST user to submit - defer CSV writing until partner submits
+                    console.log(`⏳ ${username} submitted first for task ${taskIndex}. Deferring CSV write until partner ${partner} submits.`);
+                }
                 
                 // PARTNER SYNCHRONIZATION: Mark completion and check if partner ready
                 if (autoAdvance) {
