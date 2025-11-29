@@ -711,21 +711,37 @@ $(document).ready(function() {
         $("#briefing").collapse("show");
     });
 
-    // bind behavior to the socket.io show demographics survey screen
-    socket.on("show-demographics-survey-screen", (response) => {
-        // hide the wait, design and thank you and main survey screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #main-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
-        
-        // Clear all form inputs to prevent browser auto-fill from showing previous data
-        $("#demographics-survey-form input[type='radio']").prop("checked", false);
-        $("#demographics-survey-form input[type='text']").val("");
-        $("#demographics-survey-form textarea").val("");
-        
-        $("#demographics-survey-form input").prop("disabled", false);
-        $("#demographics-survey-form button:submit").prop("disabled", false);
-        $("#demographics-survey-form button:submit .spinner-border").addClass("d-none");
-        // show the demographics survey screen
-        $("#demographics-survey").collapse("show");
+    // Handle "Prefer not to answer" checkboxes for demographics survey text inputs
+    $("#demographics-survey-q2-prefer-not").on("change", function() {
+        const isChecked = $(this).is(":checked");
+        $("#demographics-survey-q2").prop("disabled", isChecked);
+        if (isChecked) {
+            $("#demographics-survey-q2").val("");
+        }
+    });
+    
+    $("#demographics-survey-q3-prefer-not").on("change", function() {
+        const isChecked = $(this).is(":checked");
+        $("#demographics-survey-q3").prop("disabled", isChecked);
+        if (isChecked) {
+            $("#demographics-survey-q3").val("");
+        }
+    });
+    
+    $("#demographics-survey-q4-prefer-not").on("change", function() {
+        const isChecked = $(this).is(":checked");
+        $("#demographics-survey-q4").prop("disabled", isChecked);
+        if (isChecked) {
+            $("#demographics-survey-q4").val("");
+        }
+    });
+    
+    $("#demographics-survey-q5-prefer-not").on("change", function() {
+        const isChecked = $(this).is(":checked");
+        $("#demographics-survey-q5").prop("disabled", isChecked);
+        if (isChecked) {
+            $("#demographics-survey-q5").val("");
+        }
     });
 
     // bind behavior to demographics survey form submissions
@@ -735,14 +751,18 @@ $(document).ready(function() {
         // Validate all required fields are filled
         const q1 = $("input:radio[name=demographics-survey-q1]:checked").val();
         const q2 = $("#demographics-survey-q2").val();
+        const q2PreferNot = $("#demographics-survey-q2-prefer-not").is(":checked");
         const q3 = $("#demographics-survey-q3").val();
+        const q3PreferNot = $("#demographics-survey-q3-prefer-not").is(":checked");
         const q4 = $("#demographics-survey-q4").val();
+        const q4PreferNot = $("#demographics-survey-q4-prefer-not").is(":checked");
         const q5 = $("#demographics-survey-q5").val();
+        const q5PreferNot = $("#demographics-survey-q5-prefer-not").is(":checked");
         const q6 = $("input:radio[name=demographics-survey-q6]:checked").val();
         const q7 = $("input:radio[name=demographics-survey-q7]:checked").val();
         const q8 = $("input:radio[name=demographics-survey-q8]:checked").val();
         
-        if (!q1 || !q2 || !q3 || !q4 || !q5 || !q6 || !q7 || !q8) {
+        if (!q1 || (!q2 && !q2PreferNot) || (!q3 && !q3PreferNot) || (!q4 && !q4PreferNot) || (!q5 && !q5PreferNot) || !q6 || !q7 || !q8) {
             alert("Please answer all questions before submitting.");
             return;
         }
@@ -750,10 +770,10 @@ $(document).ready(function() {
         // send a socket.io demographics survey submit with the responses
         socket.emit("submit-demographics-survey", {
             "demographics-survey-q1": q1,
-            "demographics-survey-q2": q2,
-            "demographics-survey-q3": q3,
-            "demographics-survey-q4": q4,
-            "demographics-survey-q5": q5,
+            "demographics-survey-q2": q2PreferNot ? "Prefer not to answer" : q2,
+            "demographics-survey-q3": q3PreferNot ? "Prefer not to answer" : q3,
+            "demographics-survey-q4": q4PreferNot ? "Prefer not to answer" : q4,
+            "demographics-survey-q5": q5PreferNot ? "Prefer not to answer" : q5,
             "demographics-survey-q6": q6,
             "demographics-survey-q7": q7,
             "demographics-survey-q8": q8
