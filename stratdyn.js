@@ -87,7 +87,7 @@ module.exports = function(io) {
         // Create main task log file with new headers
         fs.writeFile(
             logFiles.task, 
-            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,designName,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,roundNumber,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,designName,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -98,7 +98,7 @@ module.exports = function(io) {
         // Create training task log file (separate from main analysis)
         fs.writeFile(
             logFiles.trainingTask, 
-            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,roundNumber,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -726,6 +726,10 @@ module.exports = function(io) {
                     const csvLogFiles = getLogFiles(csvUserGroup);
                     const csvLogFile = isTrainingTask ? csvLogFiles.trainingTask : csvLogFiles.task;
                     
+                    
+                    // Calculate round number (users progression order, not task definition order)
+                    // taskIndex 0-1 = Training rounds 1-2, taskIndex 2+ = Main rounds 1-30
+                    const roundNumber = isTrainingTask ? (taskIndex + 1) : (taskIndex - 1);
                     // Calculate net score for this user
                     const csvPointsEarned = userScore || 0;
                     const csvPenalty = userDecision.pointsLostPenalty || 0;
@@ -743,7 +747,8 @@ module.exports = function(io) {
                         user + "," + 
                         csvUserGroup + "," + 
                         experiment.partners[user] + "," + 
-                        userTask.label + "," + 
+                        userTask.label + "," +
+                        roundNumber + "," + 
                         (userDecision.intention || '') + "," + 
                         (userDecision.intentionTimestamp || '') + "," + 
                         (userDecision.intentionTimeSpent || 0) + "," +
