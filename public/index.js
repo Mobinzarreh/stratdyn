@@ -711,6 +711,27 @@ $(document).ready(function() {
         $("#briefing").collapse("show");
     });
 
+    // bind behavior to the socket.io show demographics survey screen
+    socket.on("show-demographics-survey-screen", (response) => {
+        // hide the wait, design and thank you and main survey screens
+        $("#admin, #wait, #design, #thank-you, #welcome, #main-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
+        
+        // Clear all form inputs to prevent browser auto-fill from showing previous data
+        $("#demographics-survey-form input[type='radio']").prop("checked", false);
+        $("#demographics-survey-form input[type='text']").val("");
+        $("#demographics-survey-form textarea").val("");
+        $("#demographics-survey-form input[type='checkbox']").prop("checked", false);
+        
+        // Re-enable all text inputs (in case they were disabled from previous "prefer not to answer")
+        $("#demographics-survey-q2, #demographics-survey-q3, #demographics-survey-q4, #demographics-survey-q5").prop("disabled", false);
+        
+        $("#demographics-survey-form input").prop("disabled", false);
+        $("#demographics-survey-form button:submit").prop("disabled", false);
+        $("#demographics-survey-form button:submit .spinner-border").addClass("d-none");
+        // show the demographics survey screen
+        $("#demographics-survey").collapse("show");
+    });
+
     // Handle "Prefer not to answer" checkboxes for demographics survey text inputs
     $("#demographics-survey-q2-prefer-not").on("change", function() {
         const isChecked = $(this).is(":checked");
