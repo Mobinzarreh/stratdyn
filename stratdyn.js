@@ -245,11 +245,13 @@ module.exports = function(io) {
             // Calculate u percentile for this task
             const myUValue = task.uValue;
             let myUPercentile = calculateUPercentile(myUValue, experiment.tasks);
+            console.log(`  [DEBUG] Calculated U-Percentile: uValue=${myUValue} -> ${myUPercentile}%`);
             
             // Calculate R and R percentile for paired tasks (INDEPENDENT - uses pre-assigned partner task)
             const partnerUValue = task.partnerTask.uValue;
             const rValue = calculateRiskDominance(myUValue, partnerUValue);
             let rPercentile = calculateRPercentile(rValue, experiment.tasks);
+            console.log(`  [DEBUG] Calculated R-Percentile: R=${rValue?.toFixed(3)} -> ${rPercentile}%`);
             
             // TRAINING TASK 1: Use informative example values instead of 0%
             // This helps participants understand u-percentile vs R-percentile
@@ -287,9 +289,19 @@ module.exports = function(io) {
                 task.taskLabel = `Training Task ${taskIndex + 1}`;
             } else {
                 task.isTraining = false;
-                task.taskNumber = taskIndex - 1; // Main tasks: 1-30 (for taskIndex 2-31)
-                task.totalTasks = 30;
-                task.taskLabel = `Task ${taskIndex - 1}`;
+                // Count how many focal tasks (non-training, non-distraction) user has completed
+                // Look at all tasks up to current position in assignment array
+                let focalTaskCount = 0;
+                for (let i = 2; i <= taskIndex; i++) { // Start from 2 (skip training tasks)
+                    const assignIndex = experiment.assignments[activeUsername][i];
+                    const t = experiment.tasks[assignIndex];
+                    if (!t.isTraining && !t.isDistraction) {
+                        focalTaskCount++;
+                    }
+                }
+                task.taskNumber = focalTaskCount; // This is the Nth focal task
+                task.totalTasks = 25; // 25 focal tasks (Tasks 1-25 in experiment.json)
+                task.taskLabel = `Task ${focalTaskCount}`;
             }
             
             // compute the progress percentage (include training tasks in progress)
@@ -405,15 +417,25 @@ module.exports = function(io) {
                     decisions[user].score = experiment.decisions[user][taskIndex].score;
                 }
                 
-                // Calculate total score across all completed tasks
+                // Calculate total scores across completed MAIN tasks only (exclude training tasks at indices 0-1)
                 if (experiment.decisions[user]) {
-                    let totalScore = 0;
-                    for (let i = 0; i < experiment.tasks.length; i++) {
-                        if (experiment.decisions[user][i] && experiment.decisions[user][i].score) {
-                            totalScore += experiment.decisions[user][i].score;
+                    let totalScoreWithPenalty = 0;  // Net score (for ranking and compensation)
+                    let totalScoreNoPenalty = 0;    // Earned points only (for analysis)
+                    
+                    for (let i = 2; i < experiment.tasks.length; i++) { // Start from index 2 to skip training tasks
+                        if (experiment.decisions[user][i]) {
+                            // Add net score (with penalty) for compensation/ranking
+                            if (experiment.decisions[user][i].score) {
+                                totalScoreWithPenalty += experiment.decisions[user][i].score;
+                            }
+                            // Add earned points (without penalty) for analysis
+                            if (experiment.decisions[user][i].pointsEarned) {
+                                totalScoreNoPenalty += experiment.decisions[user][i].pointsEarned;
+                            }
                         }
                     }
-                    decisions[user].totalScore = totalScore;
+                    decisions[user].totalScore = totalScoreWithPenalty; // Used for ranking/compensation
+                    decisions[user].totalScoreNoPenalty = totalScoreNoPenalty; // Used for analysis
                 }
             });
             
@@ -722,33 +744,28 @@ module.exports = function(io) {
                 function writeUserToCSV(user, partnerUser, userScore, partnerUserScore) {
                     const userDecision = experiment.decisions[user][taskIndex];
                     const userTask = experiment.tasks[experiment.assignments[user][taskIndex]];
-                    const csvUserGroup = users[user] ? users[user].group : 'treatment';
-                    const csvLogFiles = getLogFiles(csvUserGroup);
-                    const csvLogFile = isTrainingTask ? csvLogFiles.trainingTask : csvLogFiles.task;
+                    const userGroup = users[user] ? users[user].group : 'treatment';
+                    const userLogFiles = getLogFiles(userGroup);
+                    const userLogFile = isTrainingTask ? userLogFiles.trainingTask : userLogFiles.task;
                     
-                    
-                    // Calculate round number (users progression order, not task definition order)
-                    // taskIndex 0-1 = Training rounds 1-2, taskIndex 2+ = Main rounds 1-30
-                    const roundNumber = isTrainingTask ? (taskIndex + 1) : (taskIndex - 1);
                     // Calculate net score for this user
-                    const csvPointsEarned = userScore || 0;
-                    const csvPenalty = userDecision.pointsLostPenalty || 0;
-                    const csvNetScore = csvPointsEarned - csvPenalty;
+                    const userPointsEarned = userScore || 0;
+                    const userPenalty = userDecision.pointsLostPenalty || 0;
+                    const userNetScore = userPointsEarned - userPenalty;
                     
                     // Update the decision object with final scores
-                    userDecision.pointsEarned = csvPointsEarned;
-                    userDecision.score = csvNetScore;
+                    userDecision.pointsEarned = userPointsEarned;
+                    userDecision.score = userNetScore;
                     
-                    console.log(`📝 Writing CSV for ${user}: Task ${userTask.label}, Earned=${csvPointsEarned}, Penalty=${csvPenalty}, Net=${csvNetScore}, PartnerScore=${partnerUserScore || ''}`);
+                    console.log(`📝 Writing CSV for ${user}: Task ${userTask.label}, Earned=${userPointsEarned}, Penalty=${userPenalty}, Net=${userNetScore}, PartnerScore=${partnerUserScore || ''}`);
                     
                     fs.appendFile(
-                        csvLogFile, 
+                        userLogFile, 
                         Date.now() + "," + 
                         user + "," + 
-                        csvUserGroup + "," + 
+                        userGroup + "," + 
                         experiment.partners[user] + "," + 
-                        userTask.label + "," +
-                        roundNumber + "," + 
+                        userTask.label + "," + 
                         (userDecision.intention || '') + "," + 
                         (userDecision.intentionTimestamp || '') + "," + 
                         (userDecision.intentionTimeSpent || 0) + "," +
@@ -762,9 +779,9 @@ module.exports = function(io) {
                         (userDecision.choiceTimeSpent || 0) + "," +
                         (userDecision.totalTimeSpent || userDecision.choiceTimeSpent || 0) + "," +
                         (userOptionOrder[user] && userOptionOrder[user][taskIndex] ? userOptionOrder[user][taskIndex].join(';') : 'A;B;C;Y') + "," +
-                        csvPointsEarned + "," +
-                        csvPenalty + "," +
-                        csvNetScore + "," + 
+                        userPointsEarned + "," +
+                        userPenalty + "," +
+                        userNetScore + "," + 
                         (partnerUserScore || '') + "\r\n",
                         err => {
                             if (err) {
