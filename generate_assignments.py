@@ -24,18 +24,29 @@ import random
 U_VALUES = [0.62, 0.67, 0.72, 0.77, 0.82]
 
 # Map u-value to task indices
+# Training tasks are at indices 0-1
+# Focal tasks are at indices 2-26 (25 tasks, 5 per u-value)
 def get_task_indices_for_u(u_value):
-    """Return list of task indices for a given u-value"""
+    """Return list of task indices for a given u-value.
+    
+    Task structure in experiment.json:
+    - Index 0-1: Training tasks (u=0.5, u=0.75)
+    - Index 2-6: Focal tasks with u=0.62
+    - Index 7-11: Focal tasks with u=0.67
+    - Index 12-16: Focal tasks with u=0.72
+    - Index 17-21: Focal tasks with u=0.77
+    - Index 22-26: Focal tasks with u=0.82
+    """
     if u_value == 0.62:
-        return [0, 1, 2, 3, 4]
+        return [2, 3, 4, 5, 6]
     elif u_value == 0.67:
-        return [5, 6, 7, 8, 9]
+        return [7, 8, 9, 10, 11]
     elif u_value == 0.72:
-        return [10, 11, 12, 13, 14]
+        return [12, 13, 14, 15, 16]
     elif u_value == 0.77:
-        return [15, 16, 17, 18, 19]
+        return [17, 18, 19, 20, 21]
     elif u_value == 0.82:
-        return [20, 21, 22, 23, 24]
+        return [22, 23, 24, 25, 26]
     else:
         raise ValueError(f"Unknown u-value: {u_value}")
 
@@ -132,6 +143,10 @@ def generate_crossed_pairing_assignments():
     
     For each pair, we need 25 focal tasks covering all (i,j) combinations.
     This ensures each actor encounters their partner at ALL u-level combinations.
+    
+    RANDOMIZATION: The order of (u1, u2) combinations is randomized to prevent
+    participants from noticing a predictable monotonic increase in difficulty.
+    Within each block of 5 tasks (same u1 value), the partner's u2 values are shuffled.
     """
     
     assignments = {}
@@ -155,37 +170,42 @@ def generate_crossed_pairing_assignments():
         user1_focal = []
         user2_focal = []
         
-        # Create 5x5 pairing matrix where both users experience all pairings
-        # Row = user1's u-value, Column = user2's u-value
-        task_counter = 0
+        # Create all 25 (u1, u2) combinations
+        all_combinations = []
         for actor1_u_idx, actor1_u in enumerate(U_VALUES):
+            for actor2_u_idx, actor2_u in enumerate(U_VALUES):
+                all_combinations.append((actor1_u_idx, actor1_u, actor2_u_idx, actor2_u))
+        
+        # RANDOMIZE: Shuffle within each block of 5 tasks (same actor1_u value)
+        # This keeps blocks together but randomizes partner's u-value order within each block
+        randomized_combinations = []
+        for actor1_u_idx, actor1_u in enumerate(U_VALUES):
+            # Get the 5 combinations for this actor1_u level
+            block = [(a1_idx, a1_u, a2_idx, a2_u) 
+                     for a1_idx, a1_u, a2_idx, a2_u in all_combinations 
+                     if a1_idx == actor1_u_idx]
+            # Shuffle the block to randomize partner's u-value order
+            random.shuffle(block)
+            randomized_combinations.extend(block)
+        
+        # Build the task sequences using randomized combinations
+        for actor1_u_idx, actor1_u, actor2_u_idx, actor2_u in randomized_combinations:
             # Actor 1 uses tasks from their u-level
             actor1_tasks = get_task_indices_for_u(actor1_u)
+            # Actor 2 uses tasks from their u-level  
+            actor2_tasks = get_task_indices_for_u(actor2_u)
             
-            for actor2_u_idx, actor2_u in enumerate(U_VALUES):
-                # Actor 2 uses tasks from their u-level  
-                actor2_tasks = get_task_indices_for_u(actor2_u)
-                
-                # Use different tasks within each u-level to add variety
-                # Each actor uses all 5 tasks from their u-level across the 5 pairings
-                user1_focal.append(actor1_tasks[actor2_u_idx % len(actor1_tasks)])
-                user2_focal.append(actor2_tasks[actor1_u_idx % len(actor2_tasks)])
-                
-                task_counter += 1
+            # Use different tasks within each u-level to add variety
+            # Each actor uses all 5 tasks from their u-level across the 5 pairings
+            user1_focal.append(actor1_tasks[actor2_u_idx % len(actor1_tasks)])
+            user2_focal.append(actor2_tasks[actor1_u_idx % len(actor2_tasks)])
         
         # Now we have 25 focal tasks for each user covering all pairings
-        # Intersperse 5 distraction tasks
-        distraction_tasks = [25, 26, 27, 28, 29]
-        distraction_positions = [5, 11, 17, 23, 29]  # After every 5 focal tasks
-        
-        # Insert distractions into both users' sequences
-        user1_full = user1_focal.copy()
-        user2_full = user2_focal.copy()
-        
-        for i, dist_task in enumerate(distraction_tasks):
-            pos = distraction_positions[i]
-            user1_full.insert(pos, dist_task)
-            user2_full.insert(pos, dist_task)
+        # Add training tasks (indices 0, 1) at the beginning
+        # Note: Distraction tasks are NOT included in assignments - 
+        # they are inserted dynamically by the server based on distraction_positions
+        user1_full = [0, 1] + user1_focal  # Training tasks + focal tasks
+        user2_full = [0, 1] + user2_focal  # Training tasks + focal tasks
         
         assignments[user1] = user1_full
         assignments[user2] = user2_full
@@ -236,7 +256,7 @@ with open('/home/mzarreh/projects2/stratdyn/data/experiment.json', 'r') as f:
     tasks = exp['tasks']
 
 print(f"\nPair: {user1} ↔ {user2}")
-print(f"\nShowing all 25 focal task pairings (excluding distractions):\n")
+print("\nShowing all 25 focal task pairings (excluding training and distractions):\n")
 print(f"{'Pos':<5} {'User1 Task':<15} {'u1':<6} {'User2 Task':<15} {'u2':<6} {'R-value'}")
 print("-" * 70)
 
@@ -249,7 +269,9 @@ for i, (task1_idx, task2_idx) in enumerate(zip(assignments[user1], assignments[u
     task1 = tasks[task1_idx]
     task2 = tasks[task2_idx]
     
-    # Skip distraction tasks for this analysis
+    # Skip training tasks (first 2 positions) and distraction tasks
+    if task1.get('isTraining') or task2.get('isTraining'):
+        continue
     if task1.get('isDistraction') or task2.get('isDistraction'):
         continue
     

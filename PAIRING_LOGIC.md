@@ -9,11 +9,12 @@ The experiment uses a sophisticated pairing system where each participant encoun
 
 ## Task Index Mapping
 ```
-Tasks 0-4   (Task 1-5):    u = 0.62
-Tasks 5-9   (Task 6-10):   u = 0.67
-Tasks 10-14 (Task 11-15):  u = 0.72
-Tasks 15-19 (Task 16-20):  u = 0.77
-Tasks 20-24 (Task 21-25):  u = 0.82
+Index 0-1:   Training tasks (u=0.5, u=0.75)
+Index 2-6:   Focal tasks with u = 0.62
+Index 7-11:  Focal tasks with u = 0.67
+Index 12-16: Focal tasks with u = 0.72
+Index 17-21: Focal tasks with u = 0.77
+Index 22-26: Focal tasks with u = 0.82
 ```
 
 ## Pairing Matrix
@@ -30,31 +31,38 @@ For each pair of participants (e.g., user01 ↔ user02), the 25 focal tasks cove
 
 **Total**: 5 × 5 = 25 unique pairings
 
-## Example: user01 ↔ user02
+## Randomized Partner U-Value Order
 
-### User01's Task Sequence (first 10 focal tasks):
+**IMPORTANT**: To prevent participants from noticing a predictable monotonic increase in difficulty sliders, the partner's u-value order is **randomized within each block**.
+
+### Example: user01 ↔ user02 (Randomized)
+
+Instead of a predictable sequence like:
 ```
-Position  Task       u1    Partner Task  u2    R-value
-0         Task 1     0.62  Task 1        0.62  0.490
-1         Task 2     0.62  Task 6        0.67  0.599
-2         Task 3     0.62  Task 11       0.72  0.717
-3         Task 4     0.62  Task 16       0.77  0.849
-4         Task 5     0.62  Task 21       0.82  1.003
-5         [Distraction Task 1]
-6         Task 6     0.67  Task 2        0.62  0.599
-7         Task 7     0.67  Task 7        0.67  0.708
-8         Task 8     0.67  Task 12       0.72  0.826
-9         Task 9     0.67  Task 17       0.77  0.958
-...
+Task 1: u1=0.62 ↔ u2=0.62  (R increases...)
+Task 2: u1=0.62 ↔ u2=0.67
+Task 3: u1=0.62 ↔ u2=0.72
+Task 4: u1=0.62 ↔ u2=0.77
+Task 5: u1=0.62 ↔ u2=0.82
 ```
 
-### Pattern Analysis
-- **Rows** (User01): Stays at one u-level for 5 consecutive tasks
-- **Columns** (User02): Cycles through all u-levels (0.62 → 0.67 → 0.72 → 0.77 → 0.82)
+The partner's u-values are shuffled within each block:
+```
+Task 1: u1=0.62 ↔ u2=0.72  (randomized order)
+Task 2: u1=0.62 ↔ u2=0.62
+Task 3: u1=0.62 ↔ u2=0.82
+Task 4: u1=0.62 ↔ u2=0.67
+Task 5: u1=0.62 ↔ u2=0.77
+```
 
-This ensures:
-1. **User01** faces their partner at u = 0.62, 0.67, 0.72, 0.77, 0.82 ✓
-2. **User02** faces their partner at u = 0.62, 0.67, 0.72, 0.77, 0.82 ✓
+### What's Preserved:
+- ✓ All 25 (u1, u2) combinations are covered exactly once
+- ✓ User01 stays at one u-level for 5 consecutive tasks (block structure)
+- ✓ Both partners experience the same pairing at each position
+
+### What's Randomized:
+- The ORDER in which partner u-values appear within each block
+- This prevents visible monotonic increase in R-value sliders
 
 ## Risk Dominance (R) Coverage
 
