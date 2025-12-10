@@ -6,8 +6,6 @@ The experiment uses a sophisticated pairing system where each participant encoun
 ## U-Values and Task Distribution
 - **5 U-levels**: 0.62, 0.67, 0.72, 0.77, 0.82
 - **25 Focal tasks**: 5 tasks per u-level (Tasks 1-25)
-- **5 Distraction tasks**: Various u-levels (Tasks 26-30)
-- **Total**: 30 tasks per participant
 
 ## Task Index Mapping
 ```
@@ -16,7 +14,6 @@ Tasks 5-9   (Task 6-10):   u = 0.67
 Tasks 10-14 (Task 11-15):  u = 0.72
 Tasks 15-19 (Task 16-20):  u = 0.77
 Tasks 20-24 (Task 21-25):  u = 0.82
-Tasks 25-29 (Distraction): u = 0.50-0.70
 ```
 
 ## Pairing Matrix

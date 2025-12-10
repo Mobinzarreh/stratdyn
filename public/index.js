@@ -975,14 +975,14 @@ $(document).ready(function() {
 
     // bind behavior to partner waiting screen (after submitting decision)
     socket.on("show-partner-waiting", (response) => {
-        console.log("Waiting for partner:", response.partner, "to complete task", response.taskNumber);
+        console.log("Waiting for partner:", response.partner, "to complete", response.taskLabel);
         // hide all other screens
         $("#welcome, #admin, #design, #thank-you, #main-survey, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         // update wait screen message
         $("#wait-message").html(`
             <div class="alert alert-info">
                 <h4><i class="bi-hourglass-split"></i> Waiting for Partner</h4>
-                <p>You have completed Task ${response.taskNumber}. Please wait while your partner completes their decision...</p>
+                <p>You have completed ${response.taskLabel}. Please wait while your partner completes their decision...</p>
             </div>
         `);
         // show the wait screen

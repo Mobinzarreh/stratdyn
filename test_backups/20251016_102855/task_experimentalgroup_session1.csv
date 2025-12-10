@@ -1,9 +1,0 @@
-timestamp,username,partner,task,design,strategy,collabBelief,usedRobot, score,partnerScore
-1682349281163,user0019,user0020,Training Task 1,Design Y,individual,71, true, null, null
-1682349291649,user0020,user0019,Training Task 1,Design L,collaborative,26, true, -15, 50
-1682349311269,user0022,user0021,Training Task 1,Design Y,individual,100, true, null, null
-1682349314960,user0021,user0022,Training Task 1,Design K,collaborative,73, false, -45, 50
-1682349329328,user0019,user0020,Task Washington,Design K,collaborative,33, false, null, null
-1682349338853,user0020,user0019,Task Pennsylvania,Design K,collaborative,28, true, 96, 96
-1682349357075,user0022,user0021,Task New York,Design K,collaborative,98, true, null, null
-1682349361936,user0021,user0022,Task Colorado,Design Y,individual,50, false, 50, -25

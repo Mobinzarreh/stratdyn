@@ -1,31 +1,62 @@
 /**
  * Utility functions for calculating u percentile and risk dominance (R)
+ * 
+ * IMPORTANT: All percentile calculations use ONLY the 25 focal tasks.
+ * Training tasks and distraction tasks are EXCLUDED from percentile computations.
  */
 
 /**
- * Calculate u percentile (0-100) based on task's u value relative to all tasks
- * EXCLUDES training tasks (indices 0-1) from the percentile pool
- * Pool includes: main/focal tasks (2-26) and distraction tasks (27-31)
+ * Calculate u percentile (0-100) based on task's u value relative to focal tasks only
+ * EXCLUDES: training tasks (isTraining=true) and distraction tasks (isDistraction=true)
+ * INCLUDES: only focal tasks (isFocal=true)
  * @param {number} uValue - The u value of the current task (e.g., 0.62, 0.67, etc.)
  * @param {array} allTasks - Array of all task objects with uValue property
+ * @param {object} taskData - Optional: the current task object (to check if distraction)
  * @returns {number} - Percentile from 0 to 100
  */
-function calculateUPercentile(uValue, allTasks) {
-    // EXCLUDE training tasks (indices 0-1) from percentile calculation
-    // Include only: main/focal tasks (2-26) and distraction tasks (27+)
-    const nonTrainingTasks = allTasks.slice(2);
+function calculateUPercentile(uValue, allTasks, taskData = null) {
+    // If this is a distraction task, return its fixed percentile
+    if (taskData && taskData.isDistraction && taskData.individual_percentile !== undefined) {
+        return taskData.individual_percentile;
+    }
     
-    // Get all UNIQUE u values from non-training tasks
-    const uniqueUValues = [...new Set(nonTrainingTasks.map(task => task.uValue))].sort((a, b) => a - b);
+    // If this is a training task, return 0 (not used for analysis)
+    if (taskData && taskData.isTraining) {
+        return 0;
+    }
+    
+    // Filter to include ONLY focal tasks (exclude training and distraction)
+    const focalTasks = allTasks.filter(task => 
+        task.isFocal === true && 
+        !task.isTraining && 
+        !task.isDistraction
+    );
+    
+    // Fallback: if no isFocal flag, use old logic (tasks from index 2 onwards that aren't distraction)
+    const tasksToUse = focalTasks.length > 0 ? focalTasks : allTasks.filter((task, index) => 
+        index >= 2 && !task.isDistraction && !task.isTraining
+    );
+    
+    if (tasksToUse.length === 0) {
+        console.warn('No focal tasks found for percentile calculation');
+        return 50; // Default to middle
+    }
+    
+    // Get all UNIQUE u values from focal tasks only
+    const uniqueUValues = [...new Set(tasksToUse.map(task => task.uValue))].sort((a, b) => a - b);
     
     // Count how many UNIQUE u values are less than or equal to current u
     const countLessOrEqual = uniqueUValues.filter(u => u <= uValue).length;
     
     // Calculate percentile (0 = easiest, 100 = hardest)
     // Using unique u values for the calculation, not total task count
+    if (uniqueUValues.length <= 1) {
+        return 50; // Only one unique value
+    }
+    
     const percentile = ((countLessOrEqual - 1) / (uniqueUValues.length - 1)) * 100;
     
-    return Math.round(percentile);
+    return Math.round(Math.max(0, Math.min(100, percentile)));
 }
 
 /**
@@ -49,20 +80,45 @@ function calculateRiskDominance(u1, u2) {
 }
 
 /**
- * Calculate R percentile based on all possible R values in the experiment
- * EXCLUDES training tasks from the u-value pool used to calculate R values
+ * Calculate R percentile based on all possible R values from focal tasks only
+ * EXCLUDES training tasks and distraction tasks from the u-value pool
  * @param {number} rValue - The R value for the current pair
  * @param {array} allTasks - Array of all task objects
+ * @param {object} taskData - Optional: the current task object (to check if distraction)
  * @returns {number} - Percentile from 0 to 100
  */
-function calculateRPercentile(rValue, allTasks) {
-    // EXCLUDE training tasks (indices 0-1) from R-value pool
-    const nonTrainingTasks = allTasks.slice(2);
+function calculateRPercentile(rValue, allTasks, taskData = null) {
+    // If this is a distraction task, return its fixed percentile
+    if (taskData && taskData.isDistraction && taskData.paired_percentile !== undefined) {
+        return taskData.paired_percentile;
+    }
     
-    // Get all unique u values from non-training tasks
-    const uniqueUValues = [...new Set(nonTrainingTasks.map(task => task.uValue))];
+    // If this is a training task, return 0 (not used for analysis)
+    if (taskData && taskData.isTraining) {
+        return 0;
+    }
     
-    // Calculate all possible R values from pairings
+    // Filter to include ONLY focal tasks (exclude training and distraction)
+    const focalTasks = allTasks.filter(task => 
+        task.isFocal === true && 
+        !task.isTraining && 
+        !task.isDistraction
+    );
+    
+    // Fallback: if no isFocal flag, use old logic
+    const tasksToUse = focalTasks.length > 0 ? focalTasks : allTasks.filter((task, index) => 
+        index >= 2 && !task.isDistraction && !task.isTraining
+    );
+    
+    if (tasksToUse.length === 0) {
+        console.warn('No focal tasks found for R percentile calculation');
+        return 50; // Default to middle
+    }
+    
+    // Get all unique u values from focal tasks only
+    const uniqueUValues = [...new Set(tasksToUse.map(task => task.uValue))];
+    
+    // Calculate all possible R values from pairings of focal task u-values
     const allRValues = [];
     for (let u1 of uniqueUValues) {
         for (let u2 of uniqueUValues) {
@@ -72,6 +128,10 @@ function calculateRPercentile(rValue, allTasks) {
     
     // Sort R values
     allRValues.sort((a, b) => a - b);
+    
+    if (allRValues.length <= 1) {
+        return 50; // Only one possible R value
+    }
     
     // Count how many R values are less than or equal to current R
     const countLessOrEqual = allRValues.filter(r => r <= rValue).length;

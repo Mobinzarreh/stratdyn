@@ -2,12 +2,11 @@
     "tasks": [
         {
             "label": "Training Task 1",
-            "uValue": 0.50,
+            "uValue": 0.5,
             "isTraining": true,
             "options": [
                 {
                     "label": "A",
-                    "designName": "K",
                     "designName": "K",
                     "upside": "100",
                     "downside": "0"
@@ -15,20 +14,17 @@
                 {
                     "label": "B",
                     "designName": "M",
-                    "designName": "M",
                     "upside": "80",
                     "downside": "30"
                 },
                 {
                     "label": "C",
                     "designName": "L",
-                    "designName": "L",
                     "upside": "90",
                     "downside": "10"
                 },
                 {
                     "label": "Y",
-                    "designName": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -94,7 +90,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 2",
@@ -124,7 +123,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 3",
@@ -154,7 +156,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 4",
@@ -184,7 +189,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 5",
@@ -214,7 +222,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 6",
@@ -244,7 +255,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 7",
@@ -274,7 +288,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 8",
@@ -304,7 +321,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 9",
@@ -334,7 +354,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 10",
@@ -364,7 +387,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 11",
@@ -394,7 +420,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 12",
@@ -424,7 +453,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 13",
@@ -454,7 +486,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 14",
@@ -484,7 +519,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 15",
@@ -514,7 +552,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 16",
@@ -544,7 +585,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 17",
@@ -574,7 +618,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 18",
@@ -604,7 +651,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 19",
@@ -634,7 +684,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 20",
@@ -664,7 +717,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 21",
@@ -694,7 +750,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 22",
@@ -724,7 +783,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 23",
@@ -754,7 +816,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 24",
@@ -784,7 +849,10 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         },
         {
             "label": "Task 25",
@@ -814,171 +882,17 @@
                     "upside": "50",
                     "downside": "50"
                 }
-            ]
-        },
-        {
-            "label": "Distraction Task 1",
-            "uValue": 0.5,
-            "isDistraction": true,
-            "options": [
-                {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "80",
-                    "downside": "20"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "75",
-                    "downside": "25"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "70",
-                    "downside": "30"
-                },
-                {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ]
-        },
-        {
-            "label": "Distraction Task 2",
-            "uValue": 0.55,
-            "isDistraction": true,
-            "options": [
-                {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "85",
-                    "downside": "15"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "78",
-                    "downside": "22"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "72",
-                    "downside": "28"
-                },
-                {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ]
-        },
-        {
-            "label": "Distraction Task 3",
-            "uValue": 0.6,
-            "isDistraction": true,
-            "options": [
-                {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "88",
-                    "downside": "10"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "80",
-                    "downside": "18"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "74",
-                    "downside": "24"
-                },
-                {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ]
-        },
-        {
-            "label": "Distraction Task 4",
-            "uValue": 0.65,
-            "isDistraction": true,
-            "options": [
-                {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "90",
-                    "downside": "5"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "82",
-                    "downside": "15"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "76",
-                    "downside": "20"
-                },
-                {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ]
-        },
-        {
-            "label": "Distraction Task 5",
-            "uValue": 0.7,
-            "isDistraction": true,
-            "options": [
-                {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "87",
-                    "downside": "0"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "79",
-                    "downside": "10"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "73",
-                    "downside": "15"
-                },
-                {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ]
+            ],
+            "isFocal": true,
+            "isTraining": false,
+            "isDistraction": false
         }
     ],
     "partners": {
         "user01": "user02",
         "user02": "user01",
         "user03": "user04",
-        "user04": "user03",
-        "user05": "user06",
-        "user06": "user05"
+        "user04": "user03"
     },
     "assignments": {
         "user01": [
@@ -989,31 +903,26 @@
             4,
             5,
             6,
-            27,
             7,
             8,
             9,
             10,
             11,
-            28,
             12,
             13,
             14,
             15,
             16,
-            29,
             17,
             18,
             19,
             20,
             21,
-            30,
             22,
             23,
             24,
             25,
-            26,
-            31
+            26
         ],
         "user02": [
             0,
@@ -1023,31 +932,26 @@
             12,
             17,
             22,
-            27,
             3,
             8,
             13,
             18,
             23,
-            28,
             4,
             9,
             14,
             19,
             24,
-            29,
             5,
             10,
             15,
             20,
             25,
-            30,
             6,
             11,
             16,
             21,
-            26,
-            31
+            26
         ],
         "user03": [
             0,
@@ -1057,31 +961,26 @@
             4,
             5,
             6,
-            27,
             7,
             8,
             9,
             10,
             11,
-            28,
             12,
             13,
             14,
             15,
             16,
-            29,
             17,
             18,
             19,
             20,
             21,
-            30,
             22,
             23,
             24,
             25,
-            26,
-            31
+            26
         ],
         "user04": [
             0,
@@ -1091,99 +990,201 @@
             12,
             17,
             22,
-            27,
             3,
             8,
             13,
             18,
             23,
-            28,
             4,
             9,
             14,
             19,
             24,
-            29,
             5,
             10,
             15,
             20,
             25,
-            30,
             6,
             11,
             16,
             21,
-            26,
-            31
-        ],
-        "user05": [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            27,
-            7,
-            8,
-            9,
-            10,
-            11,
-            28,
-            12,
-            13,
-            14,
-            15,
-            16,
-            29,
-            17,
-            18,
-            19,
-            20,
-            21,
-            30,
-            22,
-            23,
-            24,
-            25,
-            26,
-            31
-        ],
-        "user06": [
-            0,
-            1,
-            2,
-            7,
-            12,
-            17,
-            22,
-            27,
-            3,
-            8,
-            13,
-            18,
-            23,
-            28,
-            4,
-            9,
-            14,
-            19,
-            24,
-            29,
-            5,
-            10,
-            15,
-            20,
-            25,
-            30,
-            6,
-            11,
-            16,
-            21,
-            26,
-            31
+            26
         ]
-    }
+    },
+    "use_distraction_tasks": true,
+    "distraction_positions": [
+        5,
+        11,
+        17,
+        22,
+        25
+    ],
+    "distraction_tasks": [
+        {
+            "label": "Distr_Collab_1",
+            "isDistraction": true,
+            "individual_percentile": 0,
+            "paired_percentile": 0,
+            "uValue": 0.62,
+            "options": [
+                {
+                    "label": "A",
+                    "designName": "K",
+                    "upside": "90",
+                    "downside": "52"
+                },
+                {
+                    "label": "B",
+                    "designName": "M",
+                    "upside": "88",
+                    "downside": "50"
+                },
+                {
+                    "label": "C",
+                    "designName": "L",
+                    "upside": "85",
+                    "downside": "51"
+                },
+                {
+                    "label": "Y",
+                    "designName": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Distr_Collab_2",
+            "isDistraction": true,
+            "individual_percentile": 0,
+            "paired_percentile": 0,
+            "uValue": 0.62,
+            "options": [
+                {
+                    "label": "A",
+                    "designName": "K",
+                    "upside": "89",
+                    "downside": "55"
+                },
+                {
+                    "label": "B",
+                    "designName": "M",
+                    "upside": "86",
+                    "downside": "53"
+                },
+                {
+                    "label": "C",
+                    "designName": "L",
+                    "upside": "84",
+                    "downside": "52"
+                },
+                {
+                    "label": "Y",
+                    "designName": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Distr_Defect_1",
+            "isDistraction": true,
+            "individual_percentile": 100,
+            "paired_percentile": 100,
+            "uValue": 0.82,
+            "options": [
+                {
+                    "label": "A",
+                    "designName": "K",
+                    "upside": "42",
+                    "downside": "-20"
+                },
+                {
+                    "label": "B",
+                    "designName": "M",
+                    "upside": "44",
+                    "downside": "-10"
+                },
+                {
+                    "label": "C",
+                    "designName": "L",
+                    "upside": "40",
+                    "downside": "-30"
+                },
+                {
+                    "label": "Y",
+                    "designName": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Distr_Defect_2",
+            "isDistraction": true,
+            "individual_percentile": 100,
+            "paired_percentile": 100,
+            "uValue": 0.82,
+            "options": [
+                {
+                    "label": "A",
+                    "designName": "K",
+                    "upside": "48",
+                    "downside": "-15"
+                },
+                {
+                    "label": "B",
+                    "designName": "M",
+                    "upside": "45",
+                    "downside": "-25"
+                },
+                {
+                    "label": "C",
+                    "designName": "L",
+                    "upside": "43",
+                    "downside": "-5"
+                },
+                {
+                    "label": "Y",
+                    "designName": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        },
+        {
+            "label": "Distr_Ambiguous_1",
+            "isDistraction": true,
+            "individual_percentile": 50,
+            "paired_percentile": 50,
+            "uValue": 0.72,
+            "options": [
+                {
+                    "label": "A",
+                    "designName": "K",
+                    "upside": "51",
+                    "downside": "-8"
+                },
+                {
+                    "label": "B",
+                    "designName": "M",
+                    "upside": "49",
+                    "downside": "2"
+                },
+                {
+                    "label": "C",
+                    "designName": "L",
+                    "upside": "50",
+                    "downside": "-3"
+                },
+                {
+                    "label": "Y",
+                    "designName": "Y",
+                    "upside": "50",
+                    "downside": "50"
+                }
+            ]
+        }
+    ]
 }

@@ -18,194 +18,10 @@ module.exports = function(io) {
         fs.readFileSync('./data/experiment.json')
     );
 
-    // Log session metadata including distraction task toggle
-    const sessionMetadata = {
-        session_id: `session_${Date.now()}`,
-        use_distraction_tasks: experiment.use_distraction_tasks || false,
-        timestamp: new Date().toISOString()
-    };
-    console.log('=== SESSION METADATA ===');
-    console.log(JSON.stringify(sessionMetadata, null, 2));
-    console.log('========================');
-
-    /**
-     * Build the task sequence for the experiment
-     * If use_distraction_tasks is true, insert distraction tasks at specified positions
-     * Returns an array of task objects in presentation order
-     */
-    function buildTaskSequence() {
-        const useDistraction = experiment.use_distraction_tasks || false;
-        const baseTasks = experiment.tasks.slice(); // Copy all tasks (training + focal)
-        
-        if (!useDistraction) {
-            // No distraction tasks - return base tasks as-is
-            console.log(`Task sequence: ${baseTasks.length} tasks (distraction DISABLED)`);
-            return baseTasks;
-        }
-        
-        // Build sequence with distraction tasks inserted
-        const distractionTasks = experiment.distraction_tasks || [];
-        const positions = experiment.distraction_positions || [3, 9, 15, 20, 27];
-        
-        // Start with training tasks (indices 0-1)
-        const trainingTasks = baseTasks.slice(0, 2);
-        const focalTasks = baseTasks.slice(2); // Tasks 1-25 (indices 2-26)
-        
-        // Build the final sequence
-        let finalSequence = [...trainingTasks];
-        let distractionIndex = 0;
-        
-        // Positions are 1-indexed positions in focal task sequence
-        // Position 3 means after the 1st focal task (index 0 in focal array)
-        for (let i = 0; i < focalTasks.length; i++) {
-            finalSequence.push(focalTasks[i]);
-            
-            // Check if we need to insert a distraction task after this focal task
-            // Position N means after focal task N (1-indexed)
-            const focalPosition = i + 1; // 1-indexed position
-            if (distractionIndex < distractionTasks.length && positions.includes(focalPosition + 2)) {
-                // +2 because positions include training tasks
-                const distTask = { ...distractionTasks[distractionIndex] };
-                distTask.sequenceIndex = finalSequence.length;
-                finalSequence.push(distTask);
-                distractionIndex++;
-            }
-        }
-        
-        // If there are remaining distraction tasks (e.g., position 27 = after all focal tasks)
-        while (distractionIndex < distractionTasks.length) {
-            const distTask = { ...distractionTasks[distractionIndex] };
-            distTask.sequenceIndex = finalSequence.length;
-            finalSequence.push(distTask);
-            distractionIndex++;
-        }
-        
-        console.log(`Task sequence: ${finalSequence.length} tasks (distraction ENABLED)`);
-        console.log(`  - Training: 2, Focal: ${focalTasks.length}, Distraction: ${distractionTasks.length}`);
-        
-        return finalSequence;
-    }
-
-    // Build the task sequence once at startup
-    const taskSequence = buildTaskSequence();
-    
-    /**
-     * Get the effective task sequence for a user
-     * Maps user assignment indices to actual task objects
-     */
-    function getUserTaskSequence(username) {
-        const useDistraction = experiment.use_distraction_tasks || false;
-        
-        if (!useDistraction) {
-            // Simple case: assignments directly map to tasks
-            return experiment.assignments[username].map(idx => experiment.tasks[idx]);
-        }
-        
-        // With distraction: we need to interleave distraction tasks
-        // User assignments still refer to focal task indices (0-1 = training, 2-26 = focal)
-        // We insert distraction tasks AFTER specific focal task counts
-        const assignments = experiment.assignments[username];
-        const distractionTasks = experiment.distraction_tasks || [];
-        // distraction_positions now means: insert after this many focal tasks
-        // e.g., [5, 11, 17, 22, 25] means insert after focal task 5, 11, 17, 22, 25
-        const insertAfterFocalCounts = experiment.distraction_positions || [5, 11, 17, 22, 25];
-        
-        let sequence = [];
-        let assignmentIndex = 0;
-        let focalTaskCount = 0; // Count of focal tasks seen (excluding training)
-        let distractionIdx = 0;
-        
-        // Process training tasks first (assignments 0, 1)
-        for (let i = 0; i < 2 && assignmentIndex < assignments.length; i++) {
-            sequence.push({
-                task: experiment.tasks[assignments[assignmentIndex]],
-                originalIndex: assignments[assignmentIndex],
-                assignmentIndex: assignmentIndex,
-                isDistraction: false
-            });
-            assignmentIndex++;
-        }
-        
-        // Process focal tasks with distraction insertions
-        while (assignmentIndex < assignments.length) {
-            // Add focal task
-            sequence.push({
-                task: experiment.tasks[assignments[assignmentIndex]],
-                originalIndex: assignments[assignmentIndex],
-                assignmentIndex: assignmentIndex,
-                isDistraction: false
-            });
-            focalTaskCount++;
-            
-            // Check if distraction task should be inserted after this focal task count
-            if (distractionIdx < distractionTasks.length && 
-                insertAfterFocalCounts[distractionIdx] === focalTaskCount) {
-                sequence.push({
-                    task: distractionTasks[distractionIdx],
-                    originalIndex: -1, // Distraction tasks don't have original index
-                    assignmentIndex: -1,
-                    isDistraction: true,
-                    distractionIndex: distractionIdx
-                });
-                distractionIdx++;
-            }
-            
-            assignmentIndex++;
-        }
-        
-        return sequence;
-    }
-
-    /**
-     * Get proper task label for display
-     * @param {string} username - The user
-     * @param {number} seqIndex - The sequence index
-     * @returns {string} - Human-readable task label
-     */
-    function getTaskLabel(username, seqIndex) {
-        if (seqIndex === undefined || seqIndex === null) return 'Not Started';
-        if (seqIndex === -4) return 'Consent Page';
-        if (seqIndex === -3) return 'Briefing';
-        if (seqIndex === -2) return 'Demographics Survey';
-        if (seqIndex === -1) return 'Pre-Survey';  // Handle -1 case
-        if (seqIndex === 0) return 'Training Task 1';
-        if (seqIndex === 1) return 'Training Task 2';
-        
-        const userSequence = getUserTaskSequence(username);
-        const totalSeqLength = userSequence.length;
-        
-        if (seqIndex >= totalSeqLength) return 'Post-Survey';
-        if (seqIndex >= totalSeqLength + 1) return 'Complete';
-        
-        // For seqIndex >= 2, determine if focal or distraction
-        if (seqIndex >= 2 && seqIndex < userSequence.length) {
-            const seqItem = userSequence[seqIndex];
-            if (seqItem.isDistraction) {
-                return seqItem.task.label || 'Distraction Task';
-            } else {
-                // Count focal tasks up to this position
-                let focalCount = 0;
-                for (let i = 2; i <= seqIndex; i++) {
-                    if (!userSequence[i].isDistraction) {
-                        focalCount++;
-                    }
-                }
-                return `Task ${focalCount}`;
-            }
-        }
-        
-        return 'Unknown';
-    }
-
     // define space to save decisions
-    // When distraction is enabled, we need space for more tasks
-    const totalTaskSlots = experiment.use_distraction_tasks 
-        ? experiment.tasks.length + (experiment.distraction_tasks?.length || 0)
-        : experiment.tasks.length;
-        
     experiment.decisions = {};
     Object.keys(experiment.assignments).forEach((user) => {
-        experiment.decisions[user] = Array.from(Array(totalTaskSlots), ()=> {
+        experiment.decisions[user] = Array.from(Array(experiment.tasks.length), ()=> {
             return {
                 "intention": null,
                 "intentionTimestamp": null,
@@ -215,9 +31,7 @@ module.exports = function(io) {
                 "uPercentile": null,
                 "rValue": null,
                 "rPercentile": null,
-                "score": null,
-                "isDistraction": false,
-                "isTraining": false
+                "score": null
             };
         });
     });
@@ -270,10 +84,10 @@ module.exports = function(io) {
         
         const logFiles = getLogFiles(group);
         
-        // Create main task log file with new headers (includes distraction flag)
+        // Create main task log file with new headers
         fs.writeFile(
             logFiles.task, 
-            "timestamp,username,group,partner,task,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,designName,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,designName,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -284,7 +98,7 @@ module.exports = function(io) {
         // Create training task log file (separate from main analysis)
         fs.writeFile(
             logFiles.trainingTask, 
-            "timestamp,username,group,partner,task,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -393,96 +207,64 @@ module.exports = function(io) {
         var username = null;
         
         function showDesignTask(context, stage = 'intention', targetUsername = null) {
-            try {
-                // Use targetUsername if provided (for admin operations), otherwise use current username
-                const activeUsername = targetUsername || username;
-                // Get this user's current task index in the sequence
-                const sequenceIndex = userTaskIndex[activeUsername] || 0;
-                
-                // Get the task sequence for this user (handles distraction task insertion)
-                const userSequence = getUserTaskSequence(activeUsername);
-            
-            if (sequenceIndex < 0 || sequenceIndex >= userSequence.length) {
-                console.error(`Invalid sequence index ${sequenceIndex} for ${activeUsername}`);
-                return;
-            }
-            
-            const seqItem = userSequence[sequenceIndex];
-            const isDistraction = seqItem.isDistraction || false;
+            // Use targetUsername if provided (for admin operations), otherwise use current username
+            const activeUsername = targetUsername || username;
+            // Get this user's current task index
+            const taskIndex = userTaskIndex[activeUsername] || 0;
             
             // DEBUG: Log what we're retrieving
-            console.log(`showDesignTask [${stage}] - User: ${activeUsername}, SeqIndex: ${sequenceIndex}, IsDistraction: ${isDistraction}`);
+            const assignmentIndex = experiment.assignments[activeUsername][taskIndex];
+            console.log(`showDesignTask [${stage}] - User: ${activeUsername}, TaskIndex: ${taskIndex}, AssignmentIndex: ${assignmentIndex}`);
             
-            // Get the task data
-            let task;
-            if (isDistraction) {
-                // Distraction task - use directly from the sequence item
-                task = JSON.parse(JSON.stringify(seqItem.task));
-                task.isDistraction = true;
-                console.log(`  [DISTRACTION] Task Label: ${task.label}`);
-            } else {
-                // Regular task - use the originalIndex from sequence item (which is the task index)
-                task = JSON.parse(JSON.stringify(experiment.tasks[seqItem.originalIndex]));
-                task.isDistraction = false;
-                console.log(`  Task Label: ${task.label}, u-Value: ${task.uValue}`);
-            }
+            // retrieve the current task and work with a cloned copy
+            let task = JSON.parse(
+                JSON.stringify(
+                    experiment.tasks[assignmentIndex]
+                )
+            );
             
+            // DEBUG: Log task data
+            console.log(`  Task Label: ${task.label}, u-Value: ${task.uValue}`);
             console.log(`  Original Options:`, task.options.map(o => `${o.label}(${o.upside}/${o.downside})`).join(', '));
             
-            // Get partner info
             task.partner = experiment.partners[activeUsername];
-            
-            // Get partner's task for R calculation (only for non-distraction tasks)
-            if (!isDistraction && task.partner) {
-                const partnerSequence = getUserTaskSequence(task.partner);
-                if (sequenceIndex < partnerSequence.length && !partnerSequence[sequenceIndex].isDistraction) {
-                    const partnerSeqItem = partnerSequence[sequenceIndex];
-                    task.partnerTask = JSON.parse(JSON.stringify(experiment.tasks[partnerSeqItem.originalIndex]));
-                } else {
-                    // Partner is on a different task type at this sequence position - use a copy
-                    task.partnerTask = JSON.parse(JSON.stringify(task));
-                    delete task.partnerTask.partnerTask; // Prevent circular reference
-                }
-            } else {
-                // For distraction tasks, create a minimal partnerTask (not needed but prevents errors)
-                task.partnerTask = { uValue: task.uValue || 0.5 }; // Minimal object, no circular reference
-            }
+            // clone partner task to avoid circular reference
+            task.partnerTask = JSON.parse(
+                JSON.stringify(
+                    experiment.tasks[experiment.assignments[task.partner][taskIndex]]
+                )
+            );
             
             // RANDOMIZATION: Ensure consistent option order between intention and choice stages
-            task = shuffleCollaborativeOptions(task, activeUsername, sequenceIndex);
+            // The shuffleCollaborativeOptions function handles saving/restoring order
+            // It only creates a NEW random order on first call (intention stage)
+            // On subsequent calls (choice stage), it restores the SAME saved order
+            task = shuffleCollaborativeOptions(task, activeUsername, taskIndex);
             console.log(`  [${stage.toUpperCase()}] Options:`, task.options.map(o => `${o.label}(${o.upside}/${o.downside})`).join(', '));
             
-            // Calculate percentiles
+            // Calculate u percentile for this task
             const myUValue = task.uValue;
-            let myUPercentile, rPercentile, rValue;
+            let myUPercentile = calculateUPercentile(myUValue, experiment.tasks);
             
-            if (isDistraction) {
-                // Distraction tasks use fixed percentiles
-                myUPercentile = task.individual_percentile;
-                rPercentile = task.paired_percentile;
-                rValue = 0; // Not meaningful for distraction tasks
-                console.log(`  [DISTRACTION] Fixed percentiles: U=${myUPercentile}%, R=${rPercentile}%`);
-            } else if (task.isTraining) {
-                // Training tasks use fixed example values - SAME FOR ALL USERS
-                // but DIFFERENT between Training Task 1 and Training Task 2
-                if (sequenceIndex === 0) {
-                    // Training Task 1: lower difficulty
-                    myUPercentile = 25;
-                    rPercentile = 75;
-                } else {
-                    // Training Task 2: higher difficulty
-                    myUPercentile = 60;
-                    rPercentile = 40;
+            // Calculate R and R percentile for paired tasks (INDEPENDENT - uses pre-assigned partner task)
+            const partnerUValue = task.partnerTask.uValue;
+            const rValue = calculateRiskDominance(myUValue, partnerUValue);
+            let rPercentile = calculateRPercentile(rValue, experiment.tasks);
+            
+            // TRAINING TASK 1: Use informative example values instead of 0%
+            // This helps participants understand u-percentile vs R-percentile
+            if (taskIndex === 0) {
+                // Use realistic example values that differ between pairs
+                // User01/User02 get one set, User03/User04 get another, etc.
+                const pairNumber = parseInt(activeUsername.replace(/\D/g, '')) || 1;
+                if (pairNumber % 2 === 1) { // Odd users (user01, user03, etc.)
+                    myUPercentile = 35; // Individual: 35% (moderately easy)
+                    rPercentile = 65;   // Paired: 65% (moderately hard)
+                } else { // Even users (user02, user04, etc.)
+                    myUPercentile = 40; // Individual: 40% (moderately easy)
+                    rPercentile = 60;   // Paired: 60% (moderately hard)
                 }
-                rValue = 0;
-                console.log(`  [TRAINING] Fixed values (Task ${sequenceIndex + 1}): U=${myUPercentile}%, R=${rPercentile}%`);
-            } else {
-                // Focal tasks - calculate percentiles from focal tasks only
-                myUPercentile = calculateUPercentile(myUValue, experiment.tasks, task);
-                const partnerUValue = task.partnerTask.uValue;
-                rValue = calculateRiskDominance(myUValue, partnerUValue);
-                rPercentile = calculateRPercentile(rValue, experiment.tasks, task);
-                console.log(`  [FOCAL] Calculated: U=${myUPercentile}%, R=${rPercentile}%`);
+                console.log(`  [TRAINING TASK 1] Using example values: U=${myUPercentile}%, R=${rPercentile}%`);
             }
             
             task.uValue = myUValue;
@@ -490,58 +272,42 @@ module.exports = function(io) {
             task.rValue = rValue;
             task.rPercentile = rPercentile;
             
+            console.log(`  [${stage.toUpperCase()}] U-Value: ${myUValue}, U-Percentile: ${myUPercentile}%`);
+            
             // Get user group
             const userGroup = users[activeUsername] ? users[activeUsername].group : 'treatment';
             task.userGroup = userGroup;
-            task.stage = stage;
+            task.stage = stage; // 'intention' or 'choice'
             
-            // Determine task numbering for UI
-            const useDistraction = experiment.use_distraction_tasks || false;
-            const totalDisplayTasks = useDistraction ? 30 : 25; // 25 focal + 5 distraction OR just 25 focal
-            
-            if (task.isTraining) {
-                task.taskNumber = sequenceIndex + 1; // Training Task 1 or 2
+            // Determine if this is a training task or main task
+            if (taskIndex === 0 || taskIndex === 1) {
+                task.isTraining = true;
+                task.taskNumber = taskIndex + 1; // Training Task 1 or 2
                 task.totalTasks = 2;
-                task.taskLabel = `Training Task ${sequenceIndex + 1}`;
+                task.taskLabel = `Training Task ${taskIndex + 1}`;
             } else {
-                // For UI display, use sequential numbering (1-30) for all non-training tasks
-                // This counts position in sequence minus the 2 training tasks
-                const displayPosition = sequenceIndex - 1; // sequenceIndex 2 becomes display 1
-                task.totalTasks = totalDisplayTasks;
-                
-                if (isDistraction) {
-                    task.taskLabel = task.label; // Use the distraction task label (e.g., "Distr_Collab_1")
-                    task.taskNumber = displayPosition; // Sequential position for progress
-                } else {
-                    // For focal tasks, count ALL tasks (focal + distraction) seen so far for sequential numbering
-                    // This ensures after distraction Task 6, the next focal is Task 7
-                    task.taskLabel = `Task ${displayPosition}`;
-                    task.taskNumber = displayPosition;
-                }
+                task.isTraining = false;
+                task.taskNumber = taskIndex - 1; // Main tasks: 1-30 (for taskIndex 2-31)
+                task.totalTasks = 30;
+                task.taskLabel = `Task ${taskIndex - 1}`;
             }
             
-            // Progress calculation
-            const totalSeqLength = userSequence.length;
-            task.progress = Math.round(100 * (sequenceIndex + 1) / totalSeqLength);
+            // compute the progress percentage (include training tasks in progress)
+            task.progress = Math.round(100*(taskIndex+1)/(experiment.tasks.length+1));
             
-            // DEBUG: Log final task being sent
+            // DEBUG: Log final task being sent with DETAILED info
             console.log(`  ╔═══════════════════════════════════════════════════════════`);
             console.log(`  ║ SENDING TO CLIENT - ${activeUsername}`);
-            console.log(`  ║ Stage: ${stage.toUpperCase()}, IsDistraction: ${isDistraction}`);
-            console.log(`  ║ SeqIndex: ${sequenceIndex}, TaskLabel: ${task.taskLabel}`);
-            console.log(`  ║ U-Percentile: ${task.uPercentile}%, R-Percentile: ${task.rPercentile}%`);
+            console.log(`  ║ Stage: ${stage.toUpperCase()}`);
+            console.log(`  ║ TaskIndex: ${taskIndex}, AssignmentIndex: ${assignmentIndex}`);
+            console.log(`  ║ Task Label: ${task.label}`);
+            console.log(`  ║ U-Value: ${task.uValue}, U-Percentile: ${task.uPercentile}%`);
+            console.log(`  ║ R-Value: ${task.rValue ? task.rValue.toFixed(3) : 'N/A'}, R-Percentile: ${task.rPercentile}%`);
             console.log(`  ║ Options: ${task.options.map(o => `${o.label}(${o.upside}/${o.downside})`).join(', ')}`);
             console.log(`  ╚═══════════════════════════════════════════════════════════\n`);
             
-            // Remove partnerTask before sending to client (not needed client-side, prevents any circular ref issues)
-            const taskToSend = { ...task };
-            delete taskToSend.partnerTask;
-            
             // send a socket.io show design task
-            context.emit('show-design-task', taskToSend);
-            } catch (error) {
-                console.error(`Error in showDesignTask for ${activeUsername}:`, error);
-            }
+            context.emit('show-design-task', task);
         }
 
         function showWelcomeScreen(context) {
@@ -595,13 +361,29 @@ module.exports = function(io) {
             
             allUsers.forEach((user) => {
                 // Get this user's current task index
-                const taskIndex = userTaskIndex[user] !== undefined ? userTaskIndex[user] : -4;
+                const taskIndex = userTaskIndex[user] !== undefined ? userTaskIndex[user] : -2;
                 const userGroup = users[user] ? users[user].group : (experiment.decisions[user] ? 'unknown' : 'unknown');
                 
-                // Build task label using helper function
-                const userSequence = getUserTaskSequence(user);
-                const totalSeqLength = userSequence.length;
-                const taskLabel = getTaskLabel(user, taskIndex);
+                // Build task label based on user's position
+                let taskLabel = '';
+                if (taskIndex === -4) {
+                    taskLabel = 'Consent Page';
+                } else if (taskIndex === -3) {
+                    taskLabel = 'Briefing';
+                } else if (taskIndex === -2) {
+                    taskLabel = 'Demographics Survey';
+                } else if (taskIndex === 0) {
+                    taskLabel = 'Training Task 1';
+                } else if (taskIndex === 1) {
+                    taskLabel = 'Training Task 2';
+                } else if (taskIndex >= 2 && taskIndex < experiment.tasks.length + 2) {
+                    // Main tasks: taskIndex 2-31 display as "Task 3" through "Task 32"
+                    taskLabel = `Task ${taskIndex + 1}`;
+                } else if (taskIndex === experiment.tasks.length + 2) {
+                    taskLabel = 'Post-Survey';
+                } else {
+                    taskLabel = 'Complete';
+                }
                 
                 // Initialize user decision info
                 decisions[user] = {
@@ -616,43 +398,22 @@ module.exports = function(io) {
                 };
                 
                 // Add task-specific data if user is on a task
-                if (taskIndex >= 0 && taskIndex < totalSeqLength && experiment.decisions[user] && experiment.decisions[user][taskIndex]) {
+                if (taskIndex >= 0 && taskIndex < experiment.tasks.length && experiment.decisions[user] && experiment.decisions[user][taskIndex]) {
                     decisions[user].intention = experiment.decisions[user][taskIndex].intention;
                     decisions[user].design = experiment.decisions[user][taskIndex].design;
                     decisions[user].strategy = experiment.decisions[user][taskIndex].strategy;
                     decisions[user].score = experiment.decisions[user][taskIndex].score;
                 }
                 
-                // Calculate total scores across completed tasks (exclude training, include distraction if enabled)
-                // SCORING RULES:
-                // - Training tasks: NEVER count toward scoring
-                // - Focal tasks: ALWAYS count toward scoring
-                // - Distraction tasks: count ONLY if use_distraction_tasks is enabled
+                // Calculate total score across all completed tasks
                 if (experiment.decisions[user]) {
-                    let totalScoreWithPenalty = 0;  // Net score (for ranking and compensation)
-                    let totalScoreNoPenalty = 0;    // Earned points only (for analysis)
-                    
-                    const userSequence = getUserTaskSequence(user);
-                    const totalTasks = userSequence.length;
-                    
-                    for (let i = 2; i < totalTasks; i++) { // Start from index 2 to skip training tasks
-                        if (experiment.decisions[user][i]) {
-                            const decision = experiment.decisions[user][i];
-                            // Skip training tasks (should already be excluded by starting at i=2)
-                            if (decision.isTraining) continue;
-                            
-                            // Add net score (with penalty) for compensation/ranking
-                            if (decision.score) {
-                                totalScoreWithPenalty += decision.score;
-                            }
-                            // Add earned points (without penalty) for analysis
-                            if (decision.pointsEarned) {
-                                totalScoreNoPenalty += decision.pointsEarned;
-                            }
+                    let totalScore = 0;
+                    for (let i = 0; i < experiment.tasks.length; i++) {
+                        if (experiment.decisions[user][i] && experiment.decisions[user][i].score) {
+                            totalScore += experiment.decisions[user][i].score;
                         }
                     }
-                    decisions[user].totalScore = totalScoreWithPenalty; // Used for ranking/compensation
-                    decisions[user].totalScoreNoPenalty = totalScoreNoPenalty; // Used for analysis
+                    decisions[user].totalScore = totalScore;
                 }
             });
             
@@ -661,11 +422,7 @@ module.exports = function(io) {
             let userCount = allUsers.size;
             allUsers.forEach(user => {
                 const taskIndex = userTaskIndex[user] !== undefined ? userTaskIndex[user] : -2;
-                const userSeq = getUserTaskSequence(user);
-                const totalUserTasks = userSeq.length;
-                // Progress: -4(consent) to totalUserTasks(post-survey) => 0% to 100%
-                // -4 = 0%, -3 = ~3%, -2 = ~6%, 0 = ~9%, ..., totalUserTasks = 100%
-                totalProgress += Math.round(100 * (taskIndex + 5) / (totalUserTasks + 6));
+                totalProgress += Math.round(100 * (taskIndex + 2) / (experiment.tasks.length + 3));
             });
             const avgProgress = userCount > 0 ? Math.round(totalProgress / userCount) : 0;
             
@@ -687,10 +444,6 @@ module.exports = function(io) {
                 // Get this user's current task index
                 const taskIndex = userTaskIndex[username] !== undefined ? userTaskIndex[username] : -4; // Default to consent
                 
-                // Get total tasks for this user (includes distraction if enabled)
-                const userSequence = getUserTaskSequence(username);
-                const totalTasks = userSequence.length;
-                
                 if (taskIndex === -4) {
                     // Show consent page
                     showConsentScreen(context);
@@ -700,10 +453,10 @@ module.exports = function(io) {
                 } else if (taskIndex === -2) {
                     // Show demographics survey
                     showDemographicsSurveyScreen(context);
-                } else if (taskIndex < totalTasks) {
-                    // Show task (0-1 = training, 2+ = main experiment including distraction)
+                } else if (taskIndex < experiment.tasks.length + 2) {
+                    // Show task (0-1 = training, 2-31 = main experiment)
                     showDesignTask(context, 'intention', username);
-                } else if (taskIndex === totalTasks) {
+                } else if (taskIndex === experiment.tasks.length + 2) {
                     // Show post-survey
                     showPostSurveyScreen(context);
                 } else {
@@ -792,37 +545,21 @@ module.exports = function(io) {
                 // Get this user's current task index
                 const taskIndex = userTaskIndex[username];
                 
-                // Get task sequence to check if this is a distraction task
-                const userSequence = getUserTaskSequence(username);
-                const seqItem = userSequence[taskIndex];
-                const isDistraction = seqItem ? seqItem.isDistraction : false;
-                
                 // save the intention and timing
                 experiment.decisions[username][taskIndex].intention = request.intention;
                 experiment.decisions[username][taskIndex].intentionTimestamp = Date.now();
-                experiment.decisions[username][taskIndex].intentionTimeSpent = request.timeSpent || 0;
+                experiment.decisions[username][taskIndex].intentionTimeSpent = request.timeSpent || 0; // Time in seconds
                 experiment.decisions[username][taskIndex].intentionStartTime = request.startTime || Date.now();
-                experiment.decisions[username][taskIndex].isDistraction = isDistraction;
-                experiment.decisions[username][taskIndex].isTraining = (taskIndex === 0 || taskIndex === 1);
                 
-                // Get task data and calculate percentile
-                let uValue, uPercentile;
-                if (isDistraction) {
-                    const distTask = seqItem.task;
-                    uValue = distTask.uValue;
-                    uPercentile = distTask.individual_percentile;
-                    console.log(`  [DISTRACTION] Using fixed percentile: ${uPercentile}%`);
-                } else {
-                    const myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
-                    uValue = myTask.uValue;
-                    uPercentile = calculateUPercentile(uValue, experiment.tasks, myTask);
-                }
-                
+                // Calculate and store u percentile
+                const myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
+                const uValue = myTask.uValue;
+                const uPercentile = calculateUPercentile(uValue, experiment.tasks);
                 experiment.decisions[username][taskIndex].uValue = uValue;
                 experiment.decisions[username][taskIndex].uPercentile = uPercentile;
                 
                 console.log(`\n>>> INTENTION SAVED for ${username}:`);
-                console.log(`    TaskIndex: ${taskIndex}, IsDistraction: ${isDistraction}`);
+                console.log(`    TaskIndex: ${taskIndex}, AssignmentIndex: ${experiment.assignments[username][taskIndex]}`);
                 console.log(`    Intention: ${request.intention}, TimeSpent: ${request.timeSpent}s`);
                 console.log(`    U-Value: ${uValue}, U-Percentile: ${uPercentile}%`);
                 console.log(`>>> Now transitioning to CHOICE stage...\n`);
@@ -839,37 +576,38 @@ module.exports = function(io) {
                 // Get this user's current task index
                 const taskIndex = userTaskIndex[username];
                 
-                // Get task sequence to check if this is a distraction task
-                const userSequence = getUserTaskSequence(username);
-                const seqItem = userSequence[taskIndex];
-                const isDistraction = seqItem ? seqItem.isDistraction : false;
-                const isTrainingTask = (taskIndex === 0 || taskIndex === 1);
-                
                 // Save timing information
-                const choiceTimeSpent = request.timeSpent || 0;
-                const totalTimeSpent = request.totalTimeSpent || choiceTimeSpent;
+                const choiceTimeSpent = request.timeSpent || 0; // Time in choice stage only
+                const totalTimeSpent = request.totalTimeSpent || choiceTimeSpent; // Total time for entire task
                 experiment.decisions[username][taskIndex].choiceTimeSpent = choiceTimeSpent;
                 experiment.decisions[username][taskIndex].totalTimeSpent = totalTimeSpent;
                 experiment.decisions[username][taskIndex].choiceStartTime = request.startTime || Date.now();
-                experiment.decisions[username][taskIndex].isDistraction = isDistraction;
-                experiment.decisions[username][taskIndex].isTraining = isTrainingTask;
                 
-                // Calculate time penalty
+                // Calculate time penalty based on NEW POOLED TIMER SYSTEM
+                // - Training Task 1: 180 seconds (for learning UI)
+                // - Training Task 2 & Main tasks: 90 seconds (standard timing)
+                // - First 10 seconds overtime = no penalty (grace period)
+                // - After grace period: 1 point per second penalty
                 let timePenalty = 0;
-                const isTrainingTask1 = (taskIndex === 0);
-                const TOTAL_TIME_LIMIT = isTrainingTask1 ? 180 : 90;
-                const GRACE_PERIOD = 10;
+                
+                // Determine time limit based on task type
+                const isTrainingTask1 = (taskIndex === 0); // Training Task 1 only
+                const TOTAL_TIME_LIMIT = isTrainingTask1 ? 180 : 90; // 3 min for training task 1, 90s for others
+                const GRACE_PERIOD = 10; // 10 seconds grace period
                 
                 if (totalTimeSpent > TOTAL_TIME_LIMIT + GRACE_PERIOD) {
+                    // Over grace period - apply 1 point per second penalty
                     const overtime = totalTimeSpent - (TOTAL_TIME_LIMIT + GRACE_PERIOD);
-                    timePenalty = Math.round(overtime);
+                    timePenalty = Math.round(overtime); // 1 point per second, rounded
                     console.log(`⚠️ ${username} overtime: ${totalTimeSpent.toFixed(1)}s total (limit: ${TOTAL_TIME_LIMIT}s, penalty: -${timePenalty} points)`);
                 } else if (totalTimeSpent > TOTAL_TIME_LIMIT) {
+                    // Within grace period - no penalty but log it
                     console.log(`ℹ️ ${username} in grace period: ${totalTimeSpent.toFixed(1)}s total (limit: ${TOTAL_TIME_LIMIT}s, no penalty)`);
                 }
                 
+                // Store penalty separately for statistical analysis
                 experiment.decisions[username][taskIndex].pointsLostPenalty = timePenalty;
-                experiment.decisions[username][taskIndex].timePenalty = timePenalty;
+                experiment.decisions[username][taskIndex].timePenalty = timePenalty; // Keep for backwards compatibility
                 
                 // save the task decision (final choice)
                 experiment.decisions[username][taskIndex].design = request.design.replace("\xa0", " ");
@@ -877,56 +615,29 @@ module.exports = function(io) {
                     experiment.decisions[username][taskIndex].strategy = request.strategy.replace("\xa0", " ");
                 }
                 
-                // Get task data for scoring
-                let myTask;
-                if (isDistraction) {
-                    myTask = seqItem.task;
-                } else {
-                    myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
-                }
-                
-                // Calculate and store R percentile
+                // Calculate and store R percentile (INDEPENDENT - uses pre-assigned partner task)
                 let partner = experiment.partners[username];
-                if (partner != null && !isDistraction) {
-                    const partnerSequence = getUserTaskSequence(partner);
-                    const partnerSeqItem = partnerSequence[taskIndex];
+                if (partner != null) {
+                    const myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
+                    const partnerTask = experiment.tasks[experiment.assignments[partner][taskIndex]];
+                    const myUValue = myTask.uValue;
+                    const partnerUValue = partnerTask.uValue; // Already known from experiment.json!
+                    const rValue = calculateRiskDominance(myUValue, partnerUValue);
+                    const rPercentile = calculateRPercentile(rValue, experiment.tasks);
                     
-                    if (partnerSeqItem && !partnerSeqItem.isDistraction) {
-                        const partnerTask = experiment.tasks[experiment.assignments[partner][taskIndex]];
-                        const myUValue = myTask.uValue;
-                        const partnerUValue = partnerTask.uValue;
-                        const rValue = calculateRiskDominance(myUValue, partnerUValue);
-                        const rPercentile = calculateRPercentile(rValue, experiment.tasks, myTask);
-                        
-                        experiment.decisions[username][taskIndex].rValue = rValue;
-                        experiment.decisions[username][taskIndex].rPercentile = rPercentile;
-                    }
-                } else if (isDistraction) {
-                    // Distraction tasks use fixed R percentile
-                    experiment.decisions[username][taskIndex].rValue = 0;
-                    experiment.decisions[username][taskIndex].rPercentile = myTask.paired_percentile;
+                    experiment.decisions[username][taskIndex].rValue = rValue;
+                    experiment.decisions[username][taskIndex].rPercentile = rPercentile;
                 }
                 
                 // Payoff calculation - only if partner has also completed this task
                 var myScore = null;
                 var partnerScore = null;
-                let partnerHasSubmitted = false;
-                
                 if (partner != null && experiment.decisions[partner]){
                     if (experiment.decisions[partner][taskIndex] && experiment.decisions[partner][taskIndex].design){
-                        partnerHasSubmitted = true;
                         let myDesign = experiment.decisions[username][taskIndex].design.replace("\xa0", " ");
+                        let myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
                         let partnerDesign = experiment.decisions[partner][taskIndex].design.replace("\xa0", " ");
-                        
-                        // Get partner's task
-                        let partnerTask;
-                        const partnerSequence = getUserTaskSequence(partner);
-                        const partnerSeqItem = partnerSequence[taskIndex];
-                        if (partnerSeqItem && partnerSeqItem.isDistraction) {
-                            partnerTask = partnerSeqItem.task;
-                        } else {
-                            partnerTask = experiment.tasks[experiment.assignments[partner][taskIndex]];
-                        }
+                        let partnerTask = experiment.tasks[experiment.assignments[partner][taskIndex]];
 
                         for (let myDesignIndex = 0; myDesignIndex < 4; myDesignIndex++) {
                             if (myDesign === myTask.options[myDesignIndex].label) {
@@ -950,8 +661,11 @@ module.exports = function(io) {
                             }
                         }
 
+                        // Store earned points (before penalty) separately for statistical analysis
                         experiment.decisions[username][taskIndex].pointsEarned = myScore;
                         experiment.decisions[partner][taskIndex].pointsEarned = partnerScore;
+                        
+                        // score field will be updated to net score (earned - penalty) after penalty calculation
                         experiment.decisions[username][taskIndex].score = myScore;
                         experiment.decisions[partner][taskIndex].score = partnerScore;
                     }
@@ -961,29 +675,37 @@ module.exports = function(io) {
                 const logFiles = getLogFiles(userGroup);
                 const decision = experiment.decisions[username][taskIndex];
                 
-                // Calculate net score
+                // Calculate net score (earned points - penalty) for payoff/ranking
                 const pointsEarned = decision.pointsEarned || 0;
                 const pointsLostPenalty = timePenalty;
                 const netScore = pointsEarned - pointsLostPenalty;
+                
+                // Update score field to net score (for ranking and compensation)
                 experiment.decisions[username][taskIndex].score = netScore;
                 
-                // Determine log file (training vs main tasks)
+                let task = experiment.tasks[experiment.assignments[username][taskIndex]];
+                
+                // Determine which log file to use (training vs main tasks)
+                const isTrainingTask = (taskIndex === 0 || taskIndex === 1); // Training tasks at indices 0-1
                 const logFile = isTrainingTask ? logFiles.trainingTask : logFiles.task;
                 
                 console.log({
                     "user": username,
                     "group": userGroup,
                     "taskIndex": taskIndex,
-                    "taskLabel": myTask.label,
-                    "isDistraction": isDistraction,
-                    "isTraining": isTrainingTask,
+                    "taskLabel": task.label,
                     "intention": decision.intention,
+                    "intentionTime": decision.intentionTimeSpent,
                     "design": request.design,
+                    "choiceTime": choiceTimeSpent,
+                    "totalTime": totalTimeSpent,
+                    "strategy": request.strategy,
                     "uValue": decision.uValue,
                     "uPercentile": decision.uPercentile,
                     "rValue": decision.rValue,
                     "rPercentile": decision.rPercentile,
                     "points_earned": pointsEarned,
+                    "points_lost_penalty": pointsLostPenalty,
                     "score_net": netScore,
                     "partnerScore": partnerScore
                 });
@@ -993,112 +715,77 @@ module.exports = function(io) {
                     showAdminScreen(admins[admin]);
                 });
                 
-                // Helper function to write a user's decision to CSV
-                function writeUserToCSV(user, partnerUser, userScore, partnerUserScore) {
-                    const userDecision = experiment.decisions[user][taskIndex];
-                    const userSequence = getUserTaskSequence(user);
-                    const userSeqItem = userSequence[taskIndex];
-                    const userIsDistraction = userSeqItem ? userSeqItem.isDistraction : false;
-                    
-                    let userTask;
-                    if (userIsDistraction) {
-                        userTask = userSeqItem.task;
-                    } else {
-                        userTask = experiment.tasks[experiment.assignments[user][taskIndex]];
-                    }
-                    
-                    const userGroup = users[user] ? users[user].group : 'treatment';
-                    const userLogFiles = getLogFiles(userGroup);
-                    const userLogFile = isTrainingTask ? userLogFiles.trainingTask : userLogFiles.task;
-                    
-                    const userPointsEarned = userScore || 0;
-                    const userPenalty = userDecision.pointsLostPenalty || 0;
-                    const userNetScore = userPointsEarned - userPenalty;
-                    
-                    userDecision.pointsEarned = userPointsEarned;
-                    userDecision.score = userNetScore;
-                    
-                    console.log(`📝 Writing CSV for ${user}: Task ${userTask.label}, Distraction=${userIsDistraction}, Earned=${userPointsEarned}, Net=${userNetScore}`);
-                    
-                    fs.appendFile(
-                        userLogFile, 
-                        Date.now() + "," + 
-                        user + "," + 
-                        userGroup + "," + 
-                        experiment.partners[user] + "," + 
-                        userTask.label + "," + 
-                        (userIsDistraction ? "true" : "false") + "," +
-                        (isTrainingTask ? "true" : "false") + "," +
-                        (userDecision.intention || '') + "," + 
-                        (userDecision.intentionTimestamp || '') + "," + 
-                        (userDecision.intentionTimeSpent || 0) + "," +
-                        (userDecision.uValue || '') + "," + 
-                        (userDecision.uPercentile || '') + "," + 
-                        (userDecision.rValue || '') + "," + 
-                        (userDecision.rPercentile || '') + "," + 
-                        userDecision.design + "," + 
-                        (userDecision.designName || '') + "," + 
-                        Date.now() + "," + 
-                        (userDecision.choiceTimeSpent || 0) + "," +
-                        (userDecision.totalTimeSpent || userDecision.choiceTimeSpent || 0) + "," +
-                        (userOptionOrder[user] && userOptionOrder[user][taskIndex] ? userOptionOrder[user][taskIndex].join(';') : 'A;B;C;Y') + "," +
-                        userPointsEarned + "," +
-                        userPenalty + "," +
-                        userNetScore + "," + 
-                        (partnerUserScore || '') + "\r\n",
-                        err => {
-                            if (err) {
-                              console.error(err);
-                            }
+                // Write to CSV with separated earned points and penalties for statistical analysis
+                // Use training log file for training tasks (indices 0-1), main log file for analysis tasks
+                fs.appendFile(
+                    logFile, 
+                    Date.now() + "," + 
+                    username + "," + 
+                    userGroup + "," + 
+                    experiment.partners[username] + "," + 
+                    task.label + "," + 
+                    (decision.intention || '') + "," + 
+                    (decision.intentionTimestamp || '') + "," + 
+                    (decision.intentionTimeSpent || 0) + "," +
+                    (decision.uValue || '') + "," + 
+                    (decision.uPercentile || '') + "," + 
+                    (decision.rValue || '') + "," + 
+                    (decision.rPercentile || '') + "," + 
+                    request.design + "," + 
+                    (request.designName || '') + "," + 
+                    Date.now() + "," + 
+                    choiceTimeSpent + "," +
+                    (totalTimeSpent || choiceTimeSpent) + "," +
+                    (userOptionOrder[username] && userOptionOrder[username][taskIndex] ? userOptionOrder[username][taskIndex].join(';') : 'A;B;C;Y') + "," +
+                    pointsEarned + "," +
+                    pointsLostPenalty + "," +
+                    netScore + "," + 
+                    (partnerScore || '') + "\r\n",
+                    err => {
+                        if (err) {
+                          console.error(err);
                         }
-                    );
-                }
-                
-                // DEFERRED CSV WRITING: Only write CSV when BOTH users have submitted
-                if (partnerHasSubmitted) {
-                    console.log(`✅ Both ${username} and ${partner} have submitted for task ${taskIndex}. Writing CSV for both.`);
-                    writeUserToCSV(username, partner, myScore, partnerScore);
-                    writeUserToCSV(partner, username, partnerScore, myScore);
-                } else {
-                    console.log(`⏳ ${username} submitted first for task ${taskIndex}. Deferring CSV write until partner ${partner} submits.`);
-                }
+                    }
+                );
                 
                 // PARTNER SYNCHRONIZATION: Mark completion and check if partner ready
                 if (autoAdvance) {
                     userTaskCompletion[username] = taskIndex;
                     
+                    // Check if partner has also completed this task
                     let partnerCompleted = userTaskCompletion[partner] >= taskIndex;
                     
                     if (partnerCompleted) {
+                        // Both users completed - advance both
                         userTaskIndex[username]++;
                         userTaskIndex[partner]++;
                         
                         console.log(`✅ Both ${username} and ${partner} completed task ${taskIndex}. Advancing both to ${taskIndex + 1}`);
                         
+                        // Show next content to both users
                         setImmediate(() => {
                             const nextIndex = userTaskIndex[username];
-                            const totalUserTasks = userSequence.length;
-                            
-                            if (nextIndex < totalUserTasks) {
+                            if (nextIndex < experiment.tasks.length) {
+                                // Show next task Part 1 (Intention)
                                 if (users[username]) showDesignTask(users[username].socket, 'intention', username);
                                 if (users[partner]) showDesignTask(users[partner].socket, 'intention', partner);
-                            } else if (nextIndex === totalUserTasks) {
+                            } else if (nextIndex === experiment.tasks.length) {
+                                // Show post-survey
                                 if (users[username]) showPostSurveyScreen(users[username].socket);
                                 if (users[partner]) showPostSurveyScreen(users[partner].socket);
                             } else {
+                                // Show thank you
                                 if (users[username]) showThankYouScreen(users[username].socket);
                                 if (users[partner]) showThankYouScreen(users[partner].socket);
                             }
                         });
                     } else {
+                        // Partner not ready - show waiting screen
                         console.log(`⏳ ${username} waiting for ${partner} to complete task ${taskIndex}...`);
                         if (users[username]) {
-                            // Use display position (Task X of 30) instead of internal label
-                            const displayPosition = taskIndex - 1; // seqIndex 2 = Task 1, etc.
-                            const taskLabel = `Task ${displayPosition}`;
                             users[username].socket.emit('show-partner-waiting', {
                                 partner: partner,
-                                taskLabel: taskLabel
+                                taskNumber: taskIndex + 1
                             });
                         }
                     }
@@ -1345,11 +1032,7 @@ module.exports = function(io) {
                     console.log(`${username} completed demographics. Advancing to first training task`);
                     // Give time for index to update, then show content
                     setImmediate(() => {
-                        try {
-                            showDesignTask(socket, 'intention', username);
-                        } catch (error) {
-                            console.error(`Error showing design task for ${username}:`, error);
-                        }
+                        showDesignTask(socket, 'intention', username);
                     });
                 }
             }
@@ -1376,20 +1059,15 @@ module.exports = function(io) {
                         return;
                     }
                     
-                    // Get user's task sequence to determine proper bounds
-                    const userSequence = getUserTaskSequence(targetUser);
-                    const totalSeqLength = userSequence.length;
-                    
                     const currentIndex = userTaskIndex[targetUser];
-                    // Max index: totalSeqLength = post-survey, totalSeqLength+1 = thank you
-                    const newIndex = Math.max(-4, Math.min(totalSeqLength + 1, currentIndex + steps));
+                    const newIndex = Math.max(-4, Math.min(experiment.tasks.length + 3, currentIndex + steps));
                     
                     if (newIndex === currentIndex) {
                         console.log(`  ${targetUser}: Already at boundary, no change`);
                         return;
                     }
                     
-                    console.log(`  ${targetUser}: ${currentIndex} → ${newIndex} (${getTaskLabel(targetUser, currentIndex)} → ${getTaskLabel(targetUser, newIndex)})`);
+                    console.log(`  ${targetUser}: ${currentIndex} → ${newIndex}`);
                     
                     // If moving backward, clear decisions after the new position
                     if (steps < 0) {
@@ -1411,7 +1089,7 @@ module.exports = function(io) {
                         
                         // Clear cached option orders after the new position
                         if (userOptionOrder[targetUser]) {
-                            for (let i = newIndex + 1; i < totalSeqLength; i++) {
+                            for (let i = newIndex + 1; i < experiment.tasks.length; i++) {
                                 if (userOptionOrder[targetUser][i]) {
                                     delete userOptionOrder[targetUser][i];
                                 }
@@ -1436,9 +1114,9 @@ module.exports = function(io) {
                                 showBriefingScreen(users[targetUser].socket);
                             } else if (newIndex === -2) {
                                 showDemographicsSurveyScreen(users[targetUser].socket);
-                            } else if (newIndex >= 0 && newIndex < totalSeqLength) {
+                            } else if (newIndex >= 0 && newIndex < experiment.tasks.length + 2) {
                                 showDesignTask(users[targetUser].socket, 'intention', targetUser);
-                            } else if (newIndex === totalSeqLength) {
+                            } else if (newIndex === experiment.tasks.length + 2) {
                                 showPostSurveyScreen(users[targetUser].socket);
                             } else {
                                 showThankYouScreen(users[targetUser].socket);
