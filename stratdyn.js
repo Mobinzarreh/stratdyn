@@ -835,6 +835,22 @@ module.exports = function(io) {
                 console.log(`    Intention: ${request.intention}, TimeSpent: ${request.timeSpent}s`);
                 console.log(`    U-Value: ${uValue}, U-Percentile: ${uPercentile}%`);
                 
+                // Check if this is a training task (taskIndex 0 or 1)
+                const isTrainingTask = (taskIndex === 0 || taskIndex === 1);
+                
+                // TRAINING TASKS: Advance immediately without waiting for partner
+                // This allows users to learn the interface independently
+                if (isTrainingTask) {
+                    console.log(`🎓 TRAINING TASK ${taskIndex + 1}: Advancing ${username} immediately to choice stage (no partner sync needed)`);
+                    if (users[username] && users[username].socket) {
+                        showDesignTask(users[username].socket, 'choice', username);
+                        console.log(`    ✓ showDesignTask(choice) completed for ${username}`);
+                    } else {
+                        console.log(`    ❌ ERROR: users[${username}] or socket not found!`);
+                    }
+                    return; // Exit early for training tasks
+                }
+                
                 // PARTNER SYNCHRONIZATION: Check if partner has also submitted intention
                 const partner = experiment.partners[username];
                 console.log(`    Partner: ${partner}`);
@@ -1432,7 +1448,6 @@ module.exports = function(io) {
         });
 
         // Admin move users: Move multiple users forward or back
-        /*
         socket.on('admin-move-users', (moveData) => {
             if (username in admins) {
                 const targetUsers = moveData.usernames || [];
@@ -1537,7 +1552,6 @@ module.exports = function(io) {
                 });
             }
         });
-        */
         
         // Admin back-step: Move a user back by multiple steps (LEGACY - keeping for compatibility)
         socket.on('admin-backstep-user', (request) => {
