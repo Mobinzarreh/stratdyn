@@ -407,9 +407,10 @@ $(document).ready(function() {
         if (response.stage === 'intention') {
             // Part 1: Show Intention Stage
             console.log("Showing intention stage, hiding all other screens");
-            // Hide all screens explicitly
-            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #design, #consent, #briefing").collapse("hide");
-            $("#intention").collapse("show");
+            // Immediately hide all screens (no animation) to prevent overlap
+            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #design, #consent, #briefing").removeClass('show').hide();
+            // Then show intention screen
+            $("#intention").addClass('show').show();
             console.log("After screen changes:",
                 $("#welcome").is(":visible") ? "welcome " : "",
                 $("#wait").is(":visible") ? "wait " : "",
@@ -477,9 +478,10 @@ $(document).ready(function() {
         } else {
             // Part 2: Show Choice Stage
             console.log("Showing choice stage, hiding all other screens");
-            // Hide all screens explicitly
-            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
-            $("#design").collapse("show");
+            // Immediately hide all screens (no animation) to prevent overlap
+            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").removeClass('show').hide();
+            // Then show design screen
+            $("#design").addClass('show').show();
             console.log("After screen changes:",
                 $("#welcome").is(":visible") ? "welcome " : "",
                 $("#wait").is(":visible") ? "wait " : "",
@@ -823,8 +825,8 @@ $(document).ready(function() {
         });
         // Immediately hide demographics survey and show loading state
         console.log("Hiding demographics survey and showing wait screen");
-        $("#demographics-survey").collapse("hide");
-        $("#wait").collapse("show");
+        $("#demographics-survey").removeClass('show').hide();
+        $("#wait").addClass('show').show();
         $("#wait-message").html(`
             <h1>Please Wait</h1>
             <p>Submitting your demographics survey...</p>
