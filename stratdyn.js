@@ -1427,7 +1427,7 @@ module.exports = function(io) {
                     // If moving backward, clear decisions after the new position
                     if (steps < 0) {
                         if (experiment.decisions[targetUser]) {
-                            for (let i = newIndex + 1; i < experiment.decisions[targetUser].length; i++) {
+                            for (let i = adjustedNewIndex + 1; i < experiment.decisions[targetUser].length; i++) {
                                 experiment.decisions[targetUser][i] = {
                                     "intention": null,
                                     "intentionTimestamp": null,
@@ -1437,14 +1437,16 @@ module.exports = function(io) {
                                     "uPercentile": null,
                                     "rValue": null,
                                     "rPercentile": null,
-                                    "score": null
+                                    "score": null,
+                                    "isDistraction": false,
+                                    "isTraining": false
                                 };
                             }
                         }
                         
                         // Clear cached option orders after the new position
                         if (userOptionOrder[targetUser]) {
-                            for (let i = newIndex + 1; i < totalSeqLength; i++) {
+                            for (let i = adjustedNewIndex + 1; i < totalSeqLength; i++) {
                                 if (userOptionOrder[targetUser][i]) {
                                     delete userOptionOrder[targetUser][i];
                                 }
@@ -1452,8 +1454,8 @@ module.exports = function(io) {
                         }
                         
                         // Clear task completion tracking
-                        if (userTaskCompletion[targetUser] !== undefined && userTaskCompletion[targetUser] >= newIndex) {
-                            userTaskCompletion[targetUser] = newIndex - 1;
+                        if (userTaskCompletion[targetUser] !== undefined && userTaskCompletion[targetUser] >= adjustedNewIndex) {
+                            userTaskCompletion[targetUser] = adjustedNewIndex - 1;
                         }
                     }
                     
@@ -1463,15 +1465,15 @@ module.exports = function(io) {
                     // Show appropriate content to the target user if online
                     if (users[targetUser]) {
                         setImmediate(() => {
-                            if (newIndex === -4) {
+                            if (adjustedNewIndex === -4) {
                                 showConsentScreen(users[targetUser].socket);
-                            } else if (newIndex === -3) {
+                            } else if (adjustedNewIndex === -3) {
                                 showBriefingScreen(users[targetUser].socket);
-                            } else if (newIndex === -2) {
+                            } else if (adjustedNewIndex === -2) {
                                 showDemographicsSurveyScreen(users[targetUser].socket);
-                            } else if (newIndex >= 0 && newIndex < totalSeqLength) {
+                            } else if (adjustedNewIndex >= 0 && adjustedNewIndex < totalSeqLength) {
                                 showDesignTask(users[targetUser].socket, 'intention', targetUser);
-                            } else if (newIndex === totalSeqLength) {
+                            } else if (adjustedNewIndex === totalSeqLength) {
                                 showPostSurveyScreen(users[targetUser].socket);
                             } else {
                                 showThankYouScreen(users[targetUser].socket);
