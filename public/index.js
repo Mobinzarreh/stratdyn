@@ -275,12 +275,18 @@ $(document).ready(function() {
         // show spinner and disable button
         $("#intention-button .spinner-border").removeClass("d-none");
         $("#intention-button").prop("disabled", true);
+        
+        const intentionValue = parseInt($("#intention-slider").val());
+        console.log(`[CLIENT] Submitting intention: ${intentionValue}, timeSpent: ${intentionTimeSpent}s`);
+        
         // send intention to server with timing data
         socket.emit("submit-intention", {
-            intention: parseInt($("#intention-slider").val()),
+            intention: intentionValue,
             timeSpent: intentionTimeSpent,
             startTime: taskStartTime // Send task start time for record keeping
         });
+        
+        console.log("[CLIENT] Intention submitted, waiting for server response...");
     });
 
     // bind behavior to clicks on the design button
