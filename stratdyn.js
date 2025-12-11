@@ -835,69 +835,15 @@ module.exports = function(io) {
                 console.log(`    Intention: ${request.intention}, TimeSpent: ${request.timeSpent}s`);
                 console.log(`    U-Value: ${uValue}, U-Percentile: ${uPercentile}%`);
                 
-                // Check if this is a training task (taskIndex 0 or 1)
-                const isTrainingTask = (taskIndex === 0 || taskIndex === 1);
-                
-                // TRAINING TASKS: Advance immediately without waiting for partner
-                // This allows users to learn the interface independently
-                if (isTrainingTask) {
-                    console.log(`🎓 TRAINING TASK ${taskIndex + 1}: Advancing ${username} immediately to choice stage (no partner sync needed)`);
-                    if (users[username] && users[username].socket) {
-                        showDesignTask(users[username].socket, 'choice', username);
-                        console.log(`    ✓ showDesignTask(choice) completed for ${username}`);
-                    } else {
-                        console.log(`    ❌ ERROR: users[${username}] or socket not found!`);
-                    }
-                    return; // Exit early for training tasks
-                }
-                
-                // PARTNER SYNCHRONIZATION: Check if partner has also submitted intention
-                const partner = experiment.partners[username];
-                console.log(`    Partner: ${partner}`);
-                
-                let partnerHasSubmittedIntention = false;
-                
-                if (partner != null && experiment.decisions[partner] && experiment.decisions[partner][taskIndex]) {
-                    partnerHasSubmittedIntention = experiment.decisions[partner][taskIndex].intention !== null;
-                    console.log(`    Partner intention status: ${partnerHasSubmittedIntention ? 'SUBMITTED' : 'NOT SUBMITTED'}`);
+                // INTENTION STAGE: Always advance to choice stage immediately
+                // No partner synchronization at this stage - users can submit intentions independently
+                // Partner synchronization only happens after FINAL CHOICE (submit-decision)
+                console.log(`✅ Advancing ${username} to choice stage (intention stage complete)`);
+                if (users[username] && users[username].socket) {
+                    showDesignTask(users[username].socket, 'choice', username);
+                    console.log(`    ✓ showDesignTask(choice) completed for ${username}`);
                 } else {
-                    console.log(`    Partner data check: partner=${partner}, decisions[partner]=${!!experiment.decisions[partner]}, decisions[partner][${taskIndex}]=${!!(experiment.decisions[partner] && experiment.decisions[partner][taskIndex])}`);
-                }
-                
-                console.log(`    users[${username}]: ${!!users[username]}`);
-                console.log(`    users[${partner}]: ${!!users[partner]}`);
-                
-                if (partnerHasSubmittedIntention) {
-                    console.log(`✅ Both ${username} and ${partner} have submitted intentions for task ${taskIndex}. Advancing both to choice stage.`);
-                    console.log(`    Socket check: users[${username}]=${!!users[username]}, users[${username}].socket=${!!(users[username] && users[username].socket)}`);
-                    console.log(`    Socket check: users[${partner}]=${!!users[partner]}, users[${partner}].socket=${!!(users[partner] && users[partner].socket)}`);
-                    
-                    // Show choice stage for both users
-                    if (users[username] && users[username].socket) {
-                        console.log(`    Calling showDesignTask(choice) for ${username}`);
-                        showDesignTask(users[username].socket, 'choice', username);
-                        console.log(`    ✓ showDesignTask(choice) completed for ${username}`);
-                    } else {
-                        console.log(`    ❌ ERROR: users[${username}] or socket not found!`);
-                    }
-                    
-                    if (users[partner] && users[partner].socket) {
-                        console.log(`    Calling showDesignTask(choice) for ${partner}`);
-                        showDesignTask(users[partner].socket, 'choice', partner);
-                        console.log(`    ✓ showDesignTask(choice) completed for ${partner}`);
-                    } else {
-                        console.log(`    ❌ ERROR: users[${partner}] or socket not found!`);
-                    }
-                } else {
-                    console.log(`⏳ ${username} submitted intention first for task ${taskIndex}. Waiting for partner ${partner} to submit intention.`);
-                    
-                    // Show waiting screen for this user
-                    if (users[username]) {
-                        console.log(`    Showing wait screen for ${username}`);
-                        showWaitScreen(users[username].socket);
-                    } else {
-                        console.log(`    WARNING: users[${username}] not found!`);
-                    }
+                    console.log(`    ❌ ERROR: users[${username}] or socket not found!`);
                 }
             }
         });
