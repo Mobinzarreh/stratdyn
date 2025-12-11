@@ -981,7 +981,7 @@ $(document).ready(function() {
         // hide the welcome, admin, design, and thank you screens
         $("#welcome, #admin, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         // show the wait screen
-        $("#wait").removeClass("hide").collapse("show");
+        $("#wait").removeClass("hide").show();
     });
 
     // bind behavior to partner waiting screen (after submitting decision)
@@ -999,7 +999,7 @@ $(document).ready(function() {
             </div>
         `);
         // show the wait screen
-        $("#wait").removeClass("hide").collapse("show");
+        $("#wait").removeClass("hide").show();
     });
 
     // bind behavior to the socket.io update content
