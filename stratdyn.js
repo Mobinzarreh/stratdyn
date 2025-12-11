@@ -853,20 +853,24 @@ module.exports = function(io) {
                 
                 if (partnerHasSubmittedIntention) {
                     console.log(`✅ Both ${username} and ${partner} have submitted intentions for task ${taskIndex}. Advancing both to choice stage.`);
+                    console.log(`    Socket check: users[${username}]=${!!users[username]}, users[${username}].socket=${!!(users[username] && users[username].socket)}`);
+                    console.log(`    Socket check: users[${partner}]=${!!users[partner]}, users[${partner}].socket=${!!(users[partner] && users[partner].socket)}`);
                     
                     // Show choice stage for both users
-                    if (users[username]) {
+                    if (users[username] && users[username].socket) {
                         console.log(`    Calling showDesignTask(choice) for ${username}`);
                         showDesignTask(users[username].socket, 'choice', username);
+                        console.log(`    ✓ showDesignTask(choice) completed for ${username}`);
                     } else {
-                        console.log(`    WARNING: users[${username}] not found!`);
+                        console.log(`    ❌ ERROR: users[${username}] or socket not found!`);
                     }
                     
-                    if (users[partner]) {
+                    if (users[partner] && users[partner].socket) {
                         console.log(`    Calling showDesignTask(choice) for ${partner}`);
                         showDesignTask(users[partner].socket, 'choice', partner);
+                        console.log(`    ✓ showDesignTask(choice) completed for ${partner}`);
                     } else {
-                        console.log(`    WARNING: users[${partner}] not found!`);
+                        console.log(`    ❌ ERROR: users[${partner}] or socket not found!`);
                     }
                 } else {
                     console.log(`⏳ ${username} submitted intention first for task ${taskIndex}. Waiting for partner ${partner} to submit intention.`);
