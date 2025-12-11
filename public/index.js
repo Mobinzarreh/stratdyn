@@ -984,6 +984,20 @@ $(document).ready(function() {
         $("#thank-you").collapse("show");
     });
 
+    // Handle error screen from server
+    socket.on("show-error-screen", (response) => {
+        console.error("Server error:", response.message);
+        alert("Error: " + response.message);
+        // Show wait screen with error message
+        $("#admin, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #thank-you").collapse("hide");
+        $("#wait").collapse("show");
+        $("#wait-message").html(`
+            <h1>Error</h1>
+            <p>${response.message}</p>
+            <button class="btn btn-primary" onclick="location.reload()">Refresh Page</button>
+        `);
+    });
+
     // Handle partner declined notification
     socket.on("partner-declined", (response) => {
         console.log("Partner declined participation");

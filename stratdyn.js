@@ -538,9 +538,12 @@ module.exports = function(io) {
             delete taskToSend.partnerTask;
             
             // send a socket.io show design task
+            console.log(`  >>> Emitting 'show-design-task' to ${activeUsername}...`);
             context.emit('show-design-task', taskToSend);
+            console.log(`  >>> Emit completed for ${activeUsername}`);
             } catch (error) {
                 console.error(`Error in showDesignTask for ${activeUsername}:`, error);
+                console.error(`Stack trace:`, error.stack);
             }
         }
 
@@ -1357,14 +1360,28 @@ module.exports = function(io) {
                 if (autoAdvance) {
                     userTaskIndex[username] = 0; // Move directly to first training task
                     console.log(`${username} completed demographics. Advancing to first training task (index=0)`);
-                    // Give time for index to update, then show content
-                    setImmediate(() => {
-                        try {
-                            showDesignTask(socket, 'intention', username);
-                        } catch (error) {
-                            console.error(`Error showing design task for ${username}:`, error);
-                        }
-                    });
+                    
+                    // Verify user has assignments before attempting to show task
+                    if (!experiment.assignments[username]) {
+                        console.error(`ERROR: No assignments found for ${username}. Cannot advance to training task.`);
+                        socket.emit('show-error-screen', { 
+                            message: 'Your account is not properly configured. Please contact the administrator.' 
+                        });
+                        return;
+                    }
+                    
+                    // Show design task directly (no setImmediate needed)
+                    try {
+                        console.log(`Calling showDesignTask for ${username} with socket connected: ${socket.connected}`);
+                        showDesignTask(socket, 'intention', username);
+                        console.log(`showDesignTask completed for ${username}`);
+                    } catch (error) {
+                        console.error(`Error showing design task for ${username}:`, error);
+                        // Fallback: try again or show error
+                        socket.emit('show-error-screen', { 
+                            message: 'Error loading training task. Please refresh the page.' 
+                        });
+                    }
                 }
             }
         });
