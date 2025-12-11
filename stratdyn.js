@@ -231,15 +231,15 @@ module.exports = function(io) {
     // 0-1 = training tasks (2 practice tasks, not analyzed)
     // 2-31 = main experiment (30 tasks)
     // 32 = post-survey, 33+ = thank you
-    const userTaskIndex = {};
+    let userTaskIndex = {};
     
     // RANDOMIZATION: Store presented option order per user per task
     // Structure: { "user01": { "0": ["B", "A", "C", "Y"], "1": [...], ... }, ... }
-    const userOptionOrder = {};
+    let userOptionOrder = {};
     
     // PARTNER SYNCHRONIZATION: Track who completed which task
     // Structure: { "user01": 5, "user02": 4, ... } = user01 completed up to task 5
-    const userTaskCompletion = {};
+    let userTaskCompletion = {};
 
     let timestamp = Math.floor(new Date().getTime() / 1000);
     let sessionId = 'session1_pilot'; // Can be changed as needed
@@ -343,8 +343,8 @@ module.exports = function(io) {
 
     // keep track of logged-in users and admins
     // users structure: {username: {socket: socket, group: 'treatment'|'control'}}
-    const users = {};
-    const admins = {};
+    let users = {};
+    let admins = {};
 
     // RANDOMIZATION FUNCTION: Shuffle collaborative options (A, B, C), keep Y last
     function shuffleCollaborativeOptions(task, username, taskIndex) {
