@@ -989,11 +989,13 @@ $(document).ready(function() {
         console.log("Waiting for partner:", response.partner, "to complete", response.taskLabel);
         // hide all other screens
         $("#welcome, #admin, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
-        // update wait screen message
+        // update wait screen message (more descriptive)
         $("#wait-message").html(`
-            <div class="alert alert-info">
-                <h4><i class="bi-hourglass-split"></i> Waiting for Partner</h4>
-                <p>You have completed ${response.taskLabel}. Please wait while your partner completes their decision...</p>
+            <div class="alert alert-info text-start">
+                <h4 class="mb-2"><i class="bi-hourglass-split"></i> Waiting for Partner</h4>
+                <p class="mb-1">You have completed <strong>${response.taskLabel}</strong>.</p>
+                <p class="mb-1">Please wait while your partner <strong>${response.partner}</strong> submits their final decision. Once your partner finishes, both of you will advance to the next task together.</p>
+                <p class="mb-0 text-muted">If your partner does not respond, please notify the session administrator or use the reschedule option.</p>
             </div>
         `);
         // show the wait screen
