@@ -834,10 +834,33 @@ module.exports = function(io) {
                 console.log(`    TaskIndex: ${taskIndex}, IsDistraction: ${isDistraction}`);
                 console.log(`    Intention: ${request.intention}, TimeSpent: ${request.timeSpent}s`);
                 console.log(`    U-Value: ${uValue}, U-Percentile: ${uPercentile}%`);
-                console.log(`>>> Now transitioning to CHOICE stage...\n`);
                 
-                // Now show Part 2 (choice stage) - MUST pass username explicitly
-                showDesignTask(socket, 'choice', username);
+                // PARTNER SYNCHRONIZATION: Check if partner has also submitted intention
+                const partner = experiment.partners[username];
+                let partnerHasSubmittedIntention = false;
+                
+                if (partner != null && experiment.decisions[partner] && experiment.decisions[partner][taskIndex]) {
+                    partnerHasSubmittedIntention = experiment.decisions[partner][taskIndex].intention !== null;
+                }
+                
+                if (partnerHasSubmittedIntention) {
+                    console.log(`✅ Both ${username} and ${partner} have submitted intentions for task ${taskIndex}. Advancing both to choice stage.`);
+                    
+                    // Show choice stage for both users
+                    if (users[username]) {
+                        setImmediate(() => showDesignTask(users[username].socket, 'choice', username));
+                    }
+                    if (users[partner]) {
+                        setImmediate(() => showDesignTask(users[partner].socket, 'choice', partner));
+                    }
+                } else {
+                    console.log(`⏳ ${username} submitted intention first for task ${taskIndex}. Waiting for partner ${partner} to submit intention.`);
+                    
+                    // Show waiting screen for this user
+                    if (users[username]) {
+                        setImmediate(() => showWaitScreen(users[username].socket));
+                    }
+                }
             }
         });
 
