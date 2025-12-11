@@ -1432,10 +1432,10 @@ module.exports = function(io) {
         });
 
         // Admin move users: Move multiple users forward or back
-        socket.on('admin-move-users', (request) => {
+        socket.on('admin-move-users', (data) => {
             if (username in admins) {
-                const targetUsers = request.usernames || [];
-                const steps = request.steps || 0; // Positive = forward, negative = back
+                const targetUsers = data.usernames || [];
+                const steps = data.steps || 0; // Positive = forward, negative = back
                 
                 if (targetUsers.length === 0) {
                     console.log(`⚠️ Admin ${username} attempted to move users but none selected`);
