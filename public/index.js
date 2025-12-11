@@ -408,8 +408,8 @@ $(document).ready(function() {
             // Part 1: Show Intention Stage
             console.log("Showing intention stage, hiding all other screens");
             // Hide all screens explicitly
-            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #design, #consent, #briefing").hide();
-            $("#intention").show();
+            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #design, #consent, #briefing").collapse("hide");
+            $("#intention").collapse("show");
             console.log("After screen changes:",
                 $("#welcome").is(":visible") ? "welcome " : "",
                 $("#wait").is(":visible") ? "wait " : "",
@@ -476,8 +476,16 @@ $(document).ready(function() {
             
         } else {
             // Part 2: Show Choice Stage
+            console.log("Showing choice stage, hiding all other screens");
+            // Hide all screens explicitly
             $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
             $("#design").collapse("show");
+            console.log("After screen changes:",
+                $("#welcome").is(":visible") ? "welcome " : "",
+                $("#wait").is(":visible") ? "wait " : "",
+                $("#design").is(":visible") ? "design " : "",
+                $("#demographics-survey").is(":visible") ? "demographics-survey " : ""
+            );
             
             // hide spinner on button and update text
             $("#design .spinner-border").addClass("d-none");
@@ -815,8 +823,8 @@ $(document).ready(function() {
         });
         // Immediately hide demographics survey and show loading state
         console.log("Hiding demographics survey and showing wait screen");
-        $("#demographics-survey").hide();
-        $("#wait").show();
+        $("#demographics-survey").collapse("hide");
+        $("#wait").collapse("show");
         $("#wait-message").html(`
             <h1>Please Wait</h1>
             <p>Submitting your demographics survey...</p>
