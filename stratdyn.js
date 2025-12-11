@@ -14,7 +14,7 @@ module.exports = function(io) {
     );
 
     // read the user credentials from file
-    const experiment = JSON.parse(
+    let experiment = JSON.parse(
         fs.readFileSync('./data/experiment.json')
     );
 
