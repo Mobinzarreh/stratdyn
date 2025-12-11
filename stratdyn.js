@@ -1110,16 +1110,7 @@ module.exports = function(io) {
                         console.log(`⏳ ${username} waiting for ${partner} to complete task ${taskIndex}...`);
                         if (users[username]) {
                             // Use proper task label for waiting message
-                            let taskLabel;
-                            if (taskIndex === 0) {
-                                taskLabel = 'Training Task 1';
-                            } else if (taskIndex === 1) {
-                                taskLabel = 'Training Task 2';
-                            } else {
-                                // For main tasks (2+), use sequential numbering
-                                const displayPosition = taskIndex - 1; // seqIndex 2 = Task 1, etc.
-                                taskLabel = `Task ${displayPosition}`;
-                            }
+                            let taskLabel = getTaskLabel(username, taskIndex);
                             users[username].socket.emit('show-partner-waiting', {
                                 partner: partner,
                                 taskLabel: taskLabel
