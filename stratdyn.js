@@ -837,28 +837,46 @@ module.exports = function(io) {
                 
                 // PARTNER SYNCHRONIZATION: Check if partner has also submitted intention
                 const partner = experiment.partners[username];
+                console.log(`    Partner: ${partner}`);
+                
                 let partnerHasSubmittedIntention = false;
                 
                 if (partner != null && experiment.decisions[partner] && experiment.decisions[partner][taskIndex]) {
                     partnerHasSubmittedIntention = experiment.decisions[partner][taskIndex].intention !== null;
+                    console.log(`    Partner intention status: ${partnerHasSubmittedIntention ? 'SUBMITTED' : 'NOT SUBMITTED'}`);
+                } else {
+                    console.log(`    Partner data check: partner=${partner}, decisions[partner]=${!!experiment.decisions[partner]}, decisions[partner][${taskIndex}]=${!!(experiment.decisions[partner] && experiment.decisions[partner][taskIndex])}`);
                 }
+                
+                console.log(`    users[${username}]: ${!!users[username]}`);
+                console.log(`    users[${partner}]: ${!!users[partner]}`);
                 
                 if (partnerHasSubmittedIntention) {
                     console.log(`✅ Both ${username} and ${partner} have submitted intentions for task ${taskIndex}. Advancing both to choice stage.`);
                     
                     // Show choice stage for both users
                     if (users[username]) {
-                        setImmediate(() => showDesignTask(users[username].socket, 'choice', username));
+                        console.log(`    Calling showDesignTask(choice) for ${username}`);
+                        showDesignTask(users[username].socket, 'choice', username);
+                    } else {
+                        console.log(`    WARNING: users[${username}] not found!`);
                     }
+                    
                     if (users[partner]) {
-                        setImmediate(() => showDesignTask(users[partner].socket, 'choice', partner));
+                        console.log(`    Calling showDesignTask(choice) for ${partner}`);
+                        showDesignTask(users[partner].socket, 'choice', partner);
+                    } else {
+                        console.log(`    WARNING: users[${partner}] not found!`);
                     }
                 } else {
                     console.log(`⏳ ${username} submitted intention first for task ${taskIndex}. Waiting for partner ${partner} to submit intention.`);
                     
                     // Show waiting screen for this user
                     if (users[username]) {
-                        setImmediate(() => showWaitScreen(users[username].socket));
+                        console.log(`    Showing wait screen for ${username}`);
+                        showWaitScreen(users[username].socket);
+                    } else {
+                        console.log(`    WARNING: users[${username}] not found!`);
                     }
                 }
             }
