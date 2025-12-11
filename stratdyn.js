@@ -1432,6 +1432,7 @@ module.exports = function(io) {
         });
 
         // Admin move users: Move multiple users forward or back
+        /*
         socket.on('admin-move-users', (moveData) => {
             if (username in admins) {
                 const targetUsers = moveData.usernames || [];
@@ -1480,6 +1481,7 @@ module.exports = function(io) {
                                     "strategy": null,
                                     "uValue": null,
                                     "uPercentile": null,
+                                    "rValue": null,
                                     "rValue": null,
                                     "rPercentile": null,
                                     "score": null,
@@ -1535,6 +1537,7 @@ module.exports = function(io) {
                 });
             }
         });
+        */
         
         // Admin back-step: Move a user back by multiple steps (LEGACY - keeping for compatibility)
         socket.on('admin-backstep-user', (request) => {
