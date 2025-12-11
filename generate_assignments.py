@@ -153,7 +153,7 @@ def generate_crossed_pairing_assignments():
     partners = {}
     
     # Create assignments for user pairs
-    users = ["user01", "user02", "user03", "user04", "user05", "user06"]
+    users = ["user01", "user02", "user03", "user04"]
     
     for pair_idx in range(0, len(users), 2):
         if pair_idx + 1 >= len(users):

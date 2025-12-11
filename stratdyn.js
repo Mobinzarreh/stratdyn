@@ -167,7 +167,7 @@ module.exports = function(io) {
         if (seqIndex === -4) return 'Consent Page';
         if (seqIndex === -3) return 'Briefing';
         if (seqIndex === -2) return 'Demographics Survey';
-        if (seqIndex === -1) return 'Pre-Survey';  // Handle -1 case
+        if (seqIndex === -1) return 'Demographics Survey';  // In case of -1, show demographics
         if (seqIndex === 0) return 'Training Task 1';
         if (seqIndex === 1) return 'Training Task 2';
         
@@ -564,10 +564,8 @@ module.exports = function(io) {
             context.emit('show-demographics-survey-screen');
         }
 
-        function showSurveyScreen(context) {
-            // send a socket.io show survey screen
-            context.emit('show-survey-screen');
-        }
+        // NOTE: showSurveyScreen (pre-survey) was removed from the experiment flow.
+        // Participants now go directly from Demographics Survey to Training Task 1.
 
         function showPostSurveyScreen(context) {
             // send a socket.io show post survey screen
@@ -579,8 +577,15 @@ module.exports = function(io) {
             context.emit('show-wait-screen');
         }
 
-        function showThankYouScreen(context) {
+        function showThankYouScreen(context, reason = 'unspecified') {
             // send a socket.io show thank you screen
+            try {
+                const targetUser = username || 'unknown';
+                const idx = userTaskIndex[targetUser];
+                console.log(`[THANK-YOU] Emitting show-thank-you-screen for ${targetUser} | reason=${reason} | index=${idx}`);
+            } catch (e) {
+                console.log('[THANK-YOU] Emitting show-thank-you-screen (logging failed)', e);
+            }
             context.emit('show-thank-you-screen');
         }
 
@@ -691,6 +696,7 @@ module.exports = function(io) {
                 const userSequence = getUserTaskSequence(username);
                 const totalTasks = userSequence.length;
                 
+                console.log(`[CONTENT] User=${username} taskIndex=${taskIndex} totalTasks=${totalTasks}`);
                 if (taskIndex === -4) {
                     // Show consent page
                     showConsentScreen(context);
@@ -1093,9 +1099,17 @@ module.exports = function(io) {
                     } else {
                         console.log(`⏳ ${username} waiting for ${partner} to complete task ${taskIndex}...`);
                         if (users[username]) {
-                            // Use display position (Task X of 30) instead of internal label
-                            const displayPosition = taskIndex - 1; // seqIndex 2 = Task 1, etc.
-                            const taskLabel = `Task ${displayPosition}`;
+                            // Use proper task label for waiting message
+                            let taskLabel;
+                            if (taskIndex === 0) {
+                                taskLabel = 'Training Task 1';
+                            } else if (taskIndex === 1) {
+                                taskLabel = 'Training Task 2';
+                            } else {
+                                // For main tasks (2+), use sequential numbering
+                                const displayPosition = taskIndex - 1; // seqIndex 2 = Task 1, etc.
+                                taskLabel = `Task ${displayPosition}`;
+                            }
                             users[username].socket.emit('show-partner-waiting', {
                                 partner: partner,
                                 taskLabel: taskLabel
@@ -1342,7 +1356,7 @@ module.exports = function(io) {
                 // Auto-advance to next stage if enabled
                 if (autoAdvance) {
                     userTaskIndex[username] = 0; // Move directly to first training task
-                    console.log(`${username} completed demographics. Advancing to first training task`);
+                    console.log(`${username} completed demographics. Advancing to first training task (index=0)`);
                     // Give time for index to update, then show content
                     setImmediate(() => {
                         try {
@@ -1382,14 +1396,16 @@ module.exports = function(io) {
                     
                     const currentIndex = userTaskIndex[targetUser];
                     // Max index: totalSeqLength = post-survey, totalSeqLength+1 = thank you
+                    // Min index: -4 (consent), but skip -1 as it's not a valid state
                     const newIndex = Math.max(-4, Math.min(totalSeqLength + 1, currentIndex + steps));
+                    const adjustedNewIndex = (newIndex === -1) ? (steps > 0 ? 0 : -2) : newIndex;
                     
-                    if (newIndex === currentIndex) {
+                    if (adjustedNewIndex === currentIndex) {
                         console.log(`  ${targetUser}: Already at boundary, no change`);
                         return;
                     }
                     
-                    console.log(`  ${targetUser}: ${currentIndex} → ${newIndex} (${getTaskLabel(targetUser, currentIndex)} → ${getTaskLabel(targetUser, newIndex)})`);
+                    console.log(`  ${targetUser}: ${currentIndex} → ${adjustedNewIndex} (${getTaskLabel(targetUser, currentIndex)} → ${getTaskLabel(targetUser, adjustedNewIndex)})`);
                     
                     // If moving backward, clear decisions after the new position
                     if (steps < 0) {
@@ -1425,7 +1441,7 @@ module.exports = function(io) {
                     }
                     
                     // Update user's task index
-                    userTaskIndex[targetUser] = newIndex;
+                    userTaskIndex[targetUser] = adjustedNewIndex;
                     
                     // Show appropriate content to the target user if online
                     if (users[targetUser]) {
