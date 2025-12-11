@@ -376,6 +376,12 @@ $(document).ready(function() {
     // bind behavior to the socket.io show design task
     socket.on("show-design-task", (response) => {
         console.log("Received show-design-task:", response);
+        console.log("Current visible screens before hiding:", 
+            $("#welcome").is(":visible") ? "welcome " : "",
+            $("#wait").is(":visible") ? "wait " : "",
+            $("#intention").is(":visible") ? "intention " : "",
+            $("#demographics-survey").is(":visible") ? "demographics-survey " : ""
+        );
         
         // save the current design task
         currentDesignTask = response;
@@ -400,8 +406,16 @@ $(document).ready(function() {
 
         if (response.stage === 'intention') {
             // Part 1: Show Intention Stage
-            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #design, #consent, #briefing").collapse("hide");
-            $("#intention").collapse("show");
+            console.log("Showing intention stage, hiding all other screens");
+            // Hide all screens explicitly
+            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #design, #consent, #briefing").hide();
+            $("#intention").show();
+            console.log("After screen changes:",
+                $("#welcome").is(":visible") ? "welcome " : "",
+                $("#wait").is(":visible") ? "wait " : "",
+                $("#intention").is(":visible") ? "intention " : "",
+                $("#demographics-survey").is(":visible") ? "demographics-survey " : ""
+            );
             
             // set the progress bar
             $("#intention .progress").attr("aria-valuenow", response.progress);
@@ -800,8 +814,9 @@ $(document).ready(function() {
             "demographics-survey-q8": q8
         });
         // Immediately hide demographics survey and show loading state
-        $("#demographics-survey").collapse("hide");
-        $("#wait").collapse("show");
+        console.log("Hiding demographics survey and showing wait screen");
+        $("#demographics-survey").hide();
+        $("#wait").show();
         $("#wait-message").html(`
             <h1>Please Wait</h1>
             <p>Submitting your demographics survey...</p>
