@@ -918,11 +918,12 @@ module.exports = function(io) {
                 }
                 
                 // Payoff calculation - only if partner has also completed this task
+                // SKIP for distraction tasks (they remain scoreless per Option B)
                 var myScore = null;
                 var partnerScore = null;
                 let partnerHasSubmitted = false;
                 
-                if (partner != null && experiment.decisions[partner]){
+                if (!isDistraction && partner != null && experiment.decisions[partner]){
                     if (experiment.decisions[partner][taskIndex] && experiment.decisions[partner][taskIndex].design){
                         partnerHasSubmitted = true;
                         let myDesign = experiment.decisions[username][taskIndex].design.replace("\xa0", " ");
@@ -933,38 +934,44 @@ module.exports = function(io) {
                         const partnerSequence = getUserTaskSequence(partner);
                         const partnerSeqItem = partnerSequence[taskIndex];
                         if (partnerSeqItem && partnerSeqItem.isDistraction) {
-                            partnerTask = partnerSeqItem.task;
+                            // Partner is also on a distraction - skip scoring
+                            partnerHasSubmitted = false;
                         } else {
                             // Use partnerSeqItem.originalIndex which correctly maps to experiment.tasks
                             partnerTask = experiment.tasks[partnerSeqItem.originalIndex];
-                        }
 
-                        for (let myDesignIndex = 0; myDesignIndex < 4; myDesignIndex++) {
-                            if (myDesign === myTask.options[myDesignIndex].label) {
-                                for (let partnerDesignIndex = 0; partnerDesignIndex < 4; partnerDesignIndex++) {
-                                    if (partnerDesign === partnerTask.options[partnerDesignIndex].label) {
-                                        if (myDesignIndex < 3 && partnerDesignIndex < 3) {
-                                            myScore = parseInt(myTask.options[myDesignIndex].upside);
-                                            partnerScore = parseInt(partnerTask.options[partnerDesignIndex].upside);
-                                        } else if (myDesignIndex < 3 && partnerDesignIndex >= 3) {
-                                            myScore = parseInt(myTask.options[myDesignIndex].downside);
-                                            partnerScore = parseInt(partnerTask.options[partnerDesignIndex].upside);
-                                        } else if (myDesignIndex >= 3 && partnerDesignIndex < 3) {
-                                            myScore = parseInt(myTask.options[myDesignIndex].upside);
-                                            partnerScore = parseInt(partnerTask.options[partnerDesignIndex].downside);
-                                        } else if (myDesignIndex >= 3 && partnerDesignIndex >= 3) {
-                                            myScore = parseInt(myTask.options[myDesignIndex].downside);
-                                            partnerScore = parseInt(partnerTask.options[partnerDesignIndex].downside);
+                            for (let myDesignIndex = 0; myDesignIndex < 4; myDesignIndex++) {
+                                if (myDesign === myTask.options[myDesignIndex].label) {
+                                    for (let partnerDesignIndex = 0; partnerDesignIndex < 4; partnerDesignIndex++) {
+                                        if (partnerDesign === partnerTask.options[partnerDesignIndex].label) {
+                                            if (myDesignIndex < 3 && partnerDesignIndex < 3) {
+                                                myScore = parseInt(myTask.options[myDesignIndex].upside);
+                                                partnerScore = parseInt(partnerTask.options[partnerDesignIndex].upside);
+                                            } else if (myDesignIndex < 3 && partnerDesignIndex >= 3) {
+                                                myScore = parseInt(myTask.options[myDesignIndex].downside);
+                                                partnerScore = parseInt(partnerTask.options[partnerDesignIndex].upside);
+                                            } else if (myDesignIndex >= 3 && partnerDesignIndex < 3) {
+                                                myScore = parseInt(myTask.options[myDesignIndex].upside);
+                                                partnerScore = parseInt(partnerTask.options[partnerDesignIndex].downside);
+                                            } else if (myDesignIndex >= 3 && partnerDesignIndex >= 3) {
+                                                myScore = parseInt(myTask.options[myDesignIndex].downside);
+                                                partnerScore = parseInt(partnerTask.options[partnerDesignIndex].downside);
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        experiment.decisions[username][taskIndex].pointsEarned = myScore;
-                        experiment.decisions[partner][taskIndex].pointsEarned = partnerScore;
-                        experiment.decisions[username][taskIndex].score = myScore;
-                        experiment.decisions[partner][taskIndex].score = partnerScore;
+                            experiment.decisions[username][taskIndex].pointsEarned = myScore;
+                            experiment.decisions[partner][taskIndex].pointsEarned = partnerScore;
+                            experiment.decisions[username][taskIndex].score = myScore;
+                            experiment.decisions[partner][taskIndex].score = partnerScore;
+                        }
+                    }
+                } else if (isDistraction && partner != null && experiment.decisions[partner]) {
+                    // For distraction tasks, just check if partner submitted to mark as complete
+                    if (experiment.decisions[partner][taskIndex] && experiment.decisions[partner][taskIndex].design){
+                        partnerHasSubmitted = true;
                     }
                 }
 
