@@ -177,21 +177,12 @@ module.exports = function(io) {
         if (seqIndex >= totalSeqLength) return 'Post-Survey';
         if (seqIndex >= totalSeqLength + 1) return 'Complete';
         
-        // For seqIndex >= 2, determine if focal or distraction
+        // For seqIndex >= 2, use sequential numbering for all tasks (focal and distraction)
+        // This ensures consistency between user UI, admin dashboard, and messages
         if (seqIndex >= 2 && seqIndex < userSequence.length) {
-            const seqItem = userSequence[seqIndex];
-            if (seqItem.isDistraction) {
-                return seqItem.task.label || 'Distraction Task';
-            } else {
-                // Count focal tasks up to this position
-                let focalCount = 0;
-                for (let i = 2; i <= seqIndex; i++) {
-                    if (!userSequence[i].isDistraction) {
-                        focalCount++;
-                    }
-                }
-                return `Task ${focalCount}`;
-            }
+            // Use sequential numbering: seqIndex - 1 (training tasks are 0,1 so first task is seqIndex 2 = Task 1)
+            const displayPosition = seqIndex - 1;
+            return `Task ${displayPosition}`;
         }
         
         return 'Unknown';
@@ -510,7 +501,7 @@ module.exports = function(io) {
                 task.totalTasks = totalDisplayTasks;
                 
                 if (isDistraction) {
-                    task.taskLabel = task.label; // Use the distraction task label (e.g., "Distr_Collab_1")
+                    task.taskLabel = `Task ${displayPosition}`; // Use sequential numbering for consistency
                     task.taskNumber = displayPosition; // Sequential position for progress
                 } else {
                     // For focal tasks, count ALL tasks (focal + distraction) seen so far for sequential numbering
@@ -822,7 +813,8 @@ module.exports = function(io) {
                     uPercentile = distTask.individual_percentile;
                     console.log(`  [DISTRACTION] Using fixed percentile: ${uPercentile}%`);
                 } else {
-                    const myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
+                    // Use seqItem.originalIndex which correctly maps to experiment.tasks
+                    const myTask = experiment.tasks[seqItem.originalIndex];
                     uValue = myTask.uValue;
                     uPercentile = calculateUPercentile(uValue, experiment.tasks, myTask);
                 }
@@ -898,7 +890,8 @@ module.exports = function(io) {
                 if (isDistraction) {
                     myTask = seqItem.task;
                 } else {
-                    myTask = experiment.tasks[experiment.assignments[username][taskIndex]];
+                    // Use seqItem.originalIndex which correctly maps to experiment.tasks
+                    myTask = experiment.tasks[seqItem.originalIndex];
                 }
                 
                 // Calculate and store R percentile
@@ -908,7 +901,8 @@ module.exports = function(io) {
                     const partnerSeqItem = partnerSequence[taskIndex];
                     
                     if (partnerSeqItem && !partnerSeqItem.isDistraction) {
-                        const partnerTask = experiment.tasks[experiment.assignments[partner][taskIndex]];
+                        // Use partnerSeqItem.originalIndex which correctly maps to experiment.tasks
+                        const partnerTask = experiment.tasks[partnerSeqItem.originalIndex];
                         const myUValue = myTask.uValue;
                         const partnerUValue = partnerTask.uValue;
                         const rValue = calculateRiskDominance(myUValue, partnerUValue);
@@ -941,7 +935,8 @@ module.exports = function(io) {
                         if (partnerSeqItem && partnerSeqItem.isDistraction) {
                             partnerTask = partnerSeqItem.task;
                         } else {
-                            partnerTask = experiment.tasks[experiment.assignments[partner][taskIndex]];
+                            // Use partnerSeqItem.originalIndex which correctly maps to experiment.tasks
+                            partnerTask = experiment.tasks[partnerSeqItem.originalIndex];
                         }
 
                         for (let myDesignIndex = 0; myDesignIndex < 4; myDesignIndex++) {
@@ -1020,7 +1015,8 @@ module.exports = function(io) {
                     if (userIsDistraction) {
                         userTask = userSeqItem.task;
                     } else {
-                        userTask = experiment.tasks[experiment.assignments[user][taskIndex]];
+                        // Use userSeqItem.originalIndex which correctly maps to experiment.tasks
+                        userTask = experiment.tasks[userSeqItem.originalIndex];
                     }
                     
                     const userGroup = users[user] ? users[user].group : 'treatment';
