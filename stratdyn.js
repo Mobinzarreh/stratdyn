@@ -1193,6 +1193,14 @@ module.exports = function(io) {
         // Removed submit-collabBelief handler - replaced by submit-intention
         socket.on('submit-postsurvey', (request) => {
             if (username != null) {
+                console.log(`\n╔══════════════════════════════════════════════════════════════`);
+                console.log(`║ 📝 POST-SURVEY SUBMISSION RECEIVED`);
+                console.log(`║ User: ${username}`);
+                console.log(`║ autoAdvance: ${autoAdvance}`);
+                console.log(`║ users[${username}] exists: ${!!users[username]}`);
+                console.log(`║ Socket exists: ${!!socket}`);
+                console.log(`╚══════════════════════════════════════════════════════════════\n`);
+                
                 console.log({
                     "user": username,
                     "results": request
@@ -1230,11 +1238,24 @@ module.exports = function(io) {
                 // Auto-advance to thank you screen if enabled
                 if (autoAdvance) {
                     userTaskIndex[username]++;
-                    console.log(`${username} completed post-survey. Advancing to thank you`);
+                    console.log(`✅ ${username} completed post-survey. Advancing to thank you (index now ${userTaskIndex[username]})`);
+                    console.log(`>>> Calling showThankYouScreen in setImmediate`);
                     setImmediate(() => {
-                        showThankYouScreen(socket);
+                        try {
+                            console.log(`>>> setImmediate callback executing for ${username}`);
+                            console.log(`>>> Emitting show-thank-you-screen to ${username}`);
+                            showThankYouScreen(socket);
+                            console.log(`>>> ✓ Successfully emitted show-thank-you-screen`);
+                        } catch (err) {
+                            console.error(`>>> ❌ Error in showThankYouScreen callback:`, err);
+                            console.error(`>>> Stack trace:`, err.stack);
+                        }
                     });
+                } else {
+                    console.log(`⚠️ autoAdvance is disabled, not advancing to thank you screen`);
                 }
+            } else {
+                console.log(`⚠️ submit-postsurvey received but username is null`);
             }
         });
 

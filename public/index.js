@@ -867,6 +867,7 @@ $(document).ready(function() {
     // bind behavior to post survey form submissions
     $("#postsurvey-form").on("submit", (event) => {
         event.preventDefault();
+        console.log(">>> POST-SURVEY FORM SUBMITTED");
         
         // Validate all sliders have been moved from default position
         const q1 = $("#postsurvey-q1c2").val();
@@ -881,9 +882,11 @@ $(document).ready(function() {
         
         if (!q1 || !q2 || !q3 || !q4 || !q5 || !q6 || !q7 || !q8 || !q9) {
             alert("Please answer all 9 questions before submitting.");
+            console.log(">>> Validation failed - missing answers");
             return;
         }
         
+        console.log(">>> Validation passed, emitting submit-postsurvey event");
         // send a socket.io post survey submit with the responses
         socket.emit("submit-postsurvey", {
             "q1c2": parseInt(q1),
@@ -896,6 +899,7 @@ $(document).ready(function() {
             "q8c1": parseInt(q8),
             "q9r3": parseInt(q9)
         });
+        console.log(">>> submit-postsurvey event emitted, disabling form");
         $("#postsurvey-form input").prop("disabled", true);
         $("#postsurvey-form button:submit").prop("disabled", true);
         $("#postsurvey-form button:submit .spinner-border").removeClass("d-none");
@@ -1092,18 +1096,44 @@ $(document).ready(function() {
 
     // bind behavior to the socket.io show thank you screen
     socket.on("show-thank-you-screen", (response) => {
-        console.log(">>> RECEIVED show-thank-you-screen event");
-        // Clear any waiting timeout
-        if (waitingForPartnerTimeout) {
-            clearTimeout(waitingForPartnerTimeout);
-            waitingForPartnerTimeout = null;
+        try {
+            console.log(">>> RECEIVED show-thank-you-screen event");
+            console.log(">>> Event data:", response);
+            
+            // Clear any waiting timeout
+            if (waitingForPartnerTimeout) {
+                clearTimeout(waitingForPartnerTimeout);
+                waitingForPartnerTimeout = null;
+            }
+            currentWaitingTaskLabel = null;
+            
+            // Hide ALL screens using consistent visibility methods
+            console.log(">>> Step 1: Hiding all screens");
+            $("#admin, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").removeClass('show').hide();
+            $("#wait").removeClass('show').hide();
+            
+            // Show the thank you screen
+            console.log(">>> Step 2: Showing thank-you screen");
+            $("#thank-you").removeClass('hide').removeClass('collapse').addClass('show').show();
+            
+            console.log(">>> Thank-you display commands completed");
+            
+            // Verification check
+            setTimeout(() => {
+                console.log(">>> Thank-you visibility verification:");
+                console.log("  #thank-you display:", $("#thank-you").css("display"));
+                console.log("  #thank-you is visible:", $("#thank-you").is(':visible'));
+                
+                // If still not visible, force it
+                if (!$("#thank-you").is(':visible')) {
+                    console.log(">>> WARNING: Thank-you still not visible, forcing display");
+                    $("#thank-you").css('display', 'block').css('visibility', 'visible');
+                }
+            }, 200);
+        } catch (error) {
+            console.error(">>> ERROR in show-thank-you-screen handler:", error);
+            console.error(">>> Stack trace:", error.stack);
         }
-        currentWaitingTaskLabel = null;
-        // hide the admin, wait, design and welcome screens - use .hide() for #wait
-        $("#admin, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
-        $("#wait").hide();
-        // show the thank you screen
-        $("#thank-you").collapse("show");
     });
 
     // Handle error screen from server
