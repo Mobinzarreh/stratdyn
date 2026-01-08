@@ -1031,35 +1031,56 @@ $(document).ready(function() {
     
     // Clear waiting timeout when we receive any screen transition event
     socket.on("show-postsurvey-screen", (response) => {
-        console.log(">>> RECEIVED show-postsurvey-screen event");
-        console.log(">>> Event data:", response);
-        console.log(">>> Socket connected:", socket.connected);
-        console.log(">>> Socket id:", socket.id);
-        
-        // Clear fallback timeout
-        if (waitingForPartnerTimeout) {
-            clearTimeout(waitingForPartnerTimeout);
-            waitingForPartnerTimeout = null;
+        try {
+            console.log(">>> RECEIVED show-postsurvey-screen event");
+            console.log(">>> Event data:", response);
+            console.log(">>> Socket connected:", socket.connected);
+            console.log(">>> Socket id:", socket.id);
+            
+            // Clear fallback timeout
+            if (waitingForPartnerTimeout) {
+                clearTimeout(waitingForPartnerTimeout);
+                waitingForPartnerTimeout = null;
+            }
+            currentWaitingTaskLabel = null;
+            
+            // Hide ALL screens first using both methods to ensure clean state
+            console.log(">>> Step 1: Hiding all screens");
+            $("#admin, #design, #thank-you, #welcome, #demographics-survey, #intention, #consent, #briefing").removeClass('show').hide();
+            $("#wait").removeClass('show').hide();
+            
+            console.log(">>> Step 2: Enabling post-survey form");
+            $("#postsurvey-form input").prop("disabled", false);
+            $("#postsurvey-form button:submit").prop("disabled", false);
+            $("#postsurvey-form button:submit .spinner-border").addClass("d-none");
+            
+            // Show the post-survey screen using multiple methods to ensure visibility
+            console.log(">>> Step 3: Showing post-survey screen");
+            $("#main-postsurvey").removeClass('hide').removeClass('collapse').addClass('show').show();
+            
+            console.log(">>> Post-survey display commands completed");
+            
+            // Verification check after a short delay
+            setTimeout(() => {
+                console.log(">>> Post-survey visibility verification:");
+                console.log("  #main-postsurvey display:", $("#main-postsurvey").css("display"));
+                console.log("  #main-postsurvey visibility:", $("#main-postsurvey").css("visibility"));
+                console.log("  #main-postsurvey has class 'show':", $("#main-postsurvey").hasClass("show"));
+                console.log("  #main-postsurvey has class 'hide':", $("#main-postsurvey").hasClass("hide"));
+                console.log("  #main-postsurvey is visible:", $("#main-postsurvey").is(':visible'));
+                console.log("  #wait display:", $("#wait").css("display"));
+                console.log("  #wait is visible:", $("#wait").is(':visible'));
+                
+                // If still not visible, force it
+                if (!$("#main-postsurvey").is(':visible')) {
+                    console.log(">>> WARNING: Post-survey still not visible, forcing display");
+                    $("#main-postsurvey").css('display', 'block').css('visibility', 'visible');
+                }
+            }, 200);
+        } catch (error) {
+            console.error(">>> ERROR in show-postsurvey-screen handler:", error);
+            console.error(">>> Stack trace:", error.stack);
         }
-        currentWaitingTaskLabel = null;
-        
-        // hide all other screens - use .hide() for #wait since it was shown with .show()
-        $("#admin, #design, #thank-you, #welcome, #demographics-survey, #intention, #consent, #briefing").collapse("hide");
-        $("#wait").hide();
-        $("#postsurvey-form input").prop("disabled", false);
-        $("#postsurvey-form button:submit").prop("disabled", false);
-        $("#postsurvey-form button:submit .spinner-border").addClass("d-none");
-        // show the post-survey screen
-        $("#main-postsurvey").collapse("show");
-        console.log(">>> Post-survey screen should now be visible");
-        
-        // Additional debugging - check if the element is actually visible
-        setTimeout(() => {
-            console.log(">>> Post-survey visibility check:");
-            console.log("  #main-postsurvey display:", $("#main-postsurvey").css("display"));
-            console.log("  #main-postsurvey has class 'show':", $("#main-postsurvey").hasClass("show"));
-            console.log("  #wait display:", $("#wait").css("display"));
-        }, 100);
     });
 
     // bind behavior to the socket.io update content
