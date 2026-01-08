@@ -849,13 +849,16 @@ $(document).ready(function() {
 
     // bind behavior to the socket.io post show post survey screen
     socket.on("show-postsurvey-screen", (response) => {
-        // hide all other screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #demographics-survey, #intention, #consent, #briefing").collapse("hide");
+        console.log(">>> RECEIVED show-postsurvey-screen event");
+        // hide all other screens - use .hide() for #wait since it was shown with .show()
+        $("#admin, #design, #thank-you, #welcome, #demographics-survey, #intention, #consent, #briefing").collapse("hide");
+        $("#wait").hide();
         $("#postsurvey-form input").prop("disabled", false);
         $("#postsurvey-form button:submit").prop("disabled", false);
         $("#postsurvey-form button:submit .spinner-border").addClass("d-none");
         // show the post-survey screen
         $("#main-postsurvey").collapse("show");
+        console.log(">>> Post-survey screen should now be visible");
     });
 
     // bind behavior to post survey form submissions
@@ -1011,9 +1014,11 @@ $(document).ready(function() {
 
     // bind behavior to the socket.io show thank you screen
     socket.on("show-thank-you-screen", (response) => {
-        // hide the admin, wait, design and welcome screens
-        $("#admin, #wait, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
-        // show the welcome screen
+        console.log(">>> RECEIVED show-thank-you-screen event");
+        // hide the admin, wait, design and welcome screens - use .hide() for #wait
+        $("#admin, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
+        $("#wait").hide();
+        // show the thank you screen
         $("#thank-you").collapse("show");
     });
 
