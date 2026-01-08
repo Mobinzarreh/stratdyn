@@ -1088,23 +1088,47 @@ module.exports = function(io) {
                     
                     let partnerCompleted = userTaskCompletion[partner] >= taskIndex;
                     
+                    // DEBUG: Log synchronization state
+                    console.log(`\n╔══════════════════════════════════════════════════════════════`);
+                    console.log(`║ 🔄 PARTNER SYNC DEBUG - ${username}`);
+                    console.log(`║ taskIndex: ${taskIndex}, isDistraction: ${isDistraction}`);
+                    console.log(`║ userTaskCompletion[${username}]: ${userTaskCompletion[username]}`);
+                    console.log(`║ userTaskCompletion[${partner}]: ${userTaskCompletion[partner]}`);
+                    console.log(`║ partnerCompleted: ${partnerCompleted}`);
+                    console.log(`║ userSequence.length: ${userSequence.length}`);
+                    console.log(`╚══════════════════════════════════════════════════════════════\n`);
+                    
                     if (partnerCompleted) {
                         userTaskIndex[username]++;
                         userTaskIndex[partner]++;
                         
-                        console.log(`✅ Both ${username} and ${partner} completed task ${taskIndex}. Advancing both to ${taskIndex + 1}`);
+                        const nextIndex = userTaskIndex[username];
+                        const totalUserTasks = userSequence.length;
+                        
+                        console.log(`✅ Both ${username} and ${partner} completed task ${taskIndex}. Advancing both to ${nextIndex}`);
+                        console.log(`   nextIndex=${nextIndex}, totalUserTasks=${totalUserTasks}`);
+                        console.log(`   Condition check: nextIndex < totalUserTasks = ${nextIndex < totalUserTasks}`);
+                        console.log(`   Condition check: nextIndex === totalUserTasks = ${nextIndex === totalUserTasks}`);
                         
                         setImmediate(() => {
-                            const nextIndex = userTaskIndex[username];
-                            const totalUserTasks = userSequence.length;
-                            
                             if (nextIndex < totalUserTasks) {
+                                console.log(`   📋 Showing next task to both users`);
                                 if (users[username]) showDesignTask(users[username].socket, 'intention', username);
                                 if (users[partner]) showDesignTask(users[partner].socket, 'intention', partner);
                             } else if (nextIndex === totalUserTasks) {
-                                if (users[username]) showPostSurveyScreen(users[username].socket);
-                                if (users[partner]) showPostSurveyScreen(users[partner].socket);
+                                console.log(`   📝 SHOWING POST-SURVEY to both users`);
+                                console.log(`   users[${username}] exists: ${!!users[username]}`);
+                                console.log(`   users[${partner}] exists: ${!!users[partner]}`);
+                                if (users[username]) {
+                                    console.log(`   >>> Calling showPostSurveyScreen for ${username}`);
+                                    showPostSurveyScreen(users[username].socket);
+                                }
+                                if (users[partner]) {
+                                    console.log(`   >>> Calling showPostSurveyScreen for ${partner}`);
+                                    showPostSurveyScreen(users[partner].socket);
+                                }
                             } else {
+                                console.log(`   🎉 Showing thank you screen to both users`);
                                 if (users[username]) showThankYouScreen(users[username].socket);
                                 if (users[partner]) showThankYouScreen(users[partner].socket);
                             }
