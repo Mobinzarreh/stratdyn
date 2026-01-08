@@ -1086,12 +1086,26 @@ module.exports = function(io) {
                 if (autoAdvance) {
                     userTaskCompletion[username] = taskIndex;
                     
+                    // Pre-check: Are we on the final task?
+                    const isFinalTask = (taskIndex === userSequence.length - 1);
+                    if (isFinalTask) {
+                        console.log(`\n🎯🎯🎯 FINAL TASK DETECTED 🎯🎯🎯`);
+                        console.log(`   User: ${username}, TaskIndex: ${taskIndex}`);
+                        console.log(`   Sequence Length: ${userSequence.length}`);
+                        console.log(`   Partner: ${partner}`);
+                        console.log(`   users[${username}] exists: ${!!users[username]}`);
+                        console.log(`   users[${partner}] exists: ${!!users[partner]}`);
+                        if (users[username]) console.log(`   users[${username}].socket exists: ${!!users[username].socket}`);
+                        if (users[partner]) console.log(`   users[${partner}].socket exists: ${!!users[partner].socket}`);
+                    }
+                    
                     let partnerCompleted = userTaskCompletion[partner] >= taskIndex;
                     
                     // DEBUG: Log synchronization state
                     console.log(`\n╔══════════════════════════════════════════════════════════════`);
                     console.log(`║ 🔄 PARTNER SYNC DEBUG - ${username}`);
                     console.log(`║ taskIndex: ${taskIndex}, isDistraction: ${isDistraction}`);
+                    console.log(`║ isFinalTask: ${isFinalTask}`);
                     console.log(`║ userTaskCompletion[${username}]: ${userTaskCompletion[username]}`);
                     console.log(`║ userTaskCompletion[${partner}]: ${userTaskCompletion[partner]}`);
                     console.log(`║ partnerCompleted: ${partnerCompleted}`);
@@ -1111,26 +1125,54 @@ module.exports = function(io) {
                         console.log(`   Condition check: nextIndex === totalUserTasks = ${nextIndex === totalUserTasks}`);
                         
                         setImmediate(() => {
-                            if (nextIndex < totalUserTasks) {
-                                console.log(`   📋 Showing next task to both users`);
-                                if (users[username]) showDesignTask(users[username].socket, 'intention', username);
-                                if (users[partner]) showDesignTask(users[partner].socket, 'intention', partner);
-                            } else if (nextIndex === totalUserTasks) {
-                                console.log(`   📝 SHOWING POST-SURVEY to both users`);
-                                console.log(`   users[${username}] exists: ${!!users[username]}`);
-                                console.log(`   users[${partner}] exists: ${!!users[partner]}`);
-                                if (users[username]) {
-                                    console.log(`   >>> Calling showPostSurveyScreen for ${username}`);
-                                    showPostSurveyScreen(users[username].socket);
+                            try {
+                                console.log(`\n>>> setImmediate callback executing for ${username}`);
+                                console.log(`    nextIndex=${nextIndex}, totalUserTasks=${totalUserTasks}`);
+                                
+                                if (nextIndex < totalUserTasks) {
+                                    console.log(`   📋 Showing next task to both users`);
+                                    if (users[username]) showDesignTask(users[username].socket, 'intention', username);
+                                    if (users[partner]) showDesignTask(users[partner].socket, 'intention', partner);
+                                } else if (nextIndex === totalUserTasks) {
+                                    console.log(`\n   ╔═══════════════════════════════════════════════════════`);
+                                    console.log(`   ║ 📝 POST-SURVEY EMISSION BLOCK`);
+                                    console.log(`   ║ nextIndex: ${nextIndex}, totalUserTasks: ${totalUserTasks}`);
+                                    console.log(`   ║ users object keys: ${Object.keys(users).join(', ')}`);
+                                    console.log(`   ║ users[${username}] exists: ${!!users[username]}`);
+                                    console.log(`   ║ users[${partner}] exists: ${!!users[partner]}`);
+                                    
+                                    if (users[username] && users[username].socket) {
+                                        console.log(`   ║ >>> Emitting show-postsurvey-screen to ${username}`);
+                                        try {
+                                            showPostSurveyScreen(users[username].socket);
+                                            console.log(`   ║ ✓ Successfully emitted to ${username}`);
+                                        } catch (emitErr) {
+                                            console.error(`   ║ ❌ Error emitting to ${username}:`, emitErr);
+                                        }
+                                    } else {
+                                        console.log(`   ║ ⚠️ Cannot emit to ${username}: user or socket missing`);
+                                    }
+                                    
+                                    if (users[partner] && users[partner].socket) {
+                                        console.log(`   ║ >>> Emitting show-postsurvey-screen to ${partner}`);
+                                        try {
+                                            showPostSurveyScreen(users[partner].socket);
+                                            console.log(`   ║ ✓ Successfully emitted to ${partner}`);
+                                        } catch (emitErr) {
+                                            console.error(`   ║ ❌ Error emitting to ${partner}:`, emitErr);
+                                        }
+                                    } else {
+                                        console.log(`   ║ ⚠️ Cannot emit to ${partner}: user or socket missing`);
+                                    }
+                                    console.log(`   ╚═══════════════════════════════════════════════════════\n`);
+                                } else {
+                                    console.log(`   🎉 Showing thank you screen to both users (nextIndex > totalUserTasks)`);
+                                    if (users[username]) showThankYouScreen(users[username].socket);
+                                    if (users[partner]) showThankYouScreen(users[partner].socket);
                                 }
-                                if (users[partner]) {
-                                    console.log(`   >>> Calling showPostSurveyScreen for ${partner}`);
-                                    showPostSurveyScreen(users[partner].socket);
-                                }
-                            } else {
-                                console.log(`   🎉 Showing thank you screen to both users`);
-                                if (users[username]) showThankYouScreen(users[username].socket);
-                                if (users[partner]) showThankYouScreen(users[partner].socket);
+                            } catch (err) {
+                                console.error(`\n❌❌❌ ERROR in setImmediate callback for ${username}:`, err);
+                                console.error(`    Stack trace:`, err.stack);
                             }
                         });
                     } else {

@@ -847,19 +847,8 @@ $(document).ready(function() {
     // NOTE: Pre-survey (show-survey-screen) has been removed from the experiment flow.
     // Participants now go directly from Demographics Survey to Training Task 1.
 
-    // bind behavior to the socket.io post show post survey screen
-    socket.on("show-postsurvey-screen", (response) => {
-        console.log(">>> RECEIVED show-postsurvey-screen event");
-        // hide all other screens - use .hide() for #wait since it was shown with .show()
-        $("#admin, #design, #thank-you, #welcome, #demographics-survey, #intention, #consent, #briefing").collapse("hide");
-        $("#wait").hide();
-        $("#postsurvey-form input").prop("disabled", false);
-        $("#postsurvey-form button:submit").prop("disabled", false);
-        $("#postsurvey-form button:submit .spinner-border").addClass("d-none");
-        // show the post-survey screen
-        $("#main-postsurvey").collapse("show");
-        console.log(">>> Post-survey screen should now be visible");
-    });
+    // NOTE: show-postsurvey-screen handler is defined below after show-partner-waiting
+    // to properly integrate with the waiting timeout fallback logic
 
     // bind behavior to post survey form submissions
     $("#postsurvey-form").on("submit", (event) => {
@@ -987,9 +976,15 @@ $(document).ready(function() {
         $("#wait").removeClass("hide").show();
     });
 
+    // Track waiting state for fallback detection
+    let waitingForPartnerTimeout = null;
+    let currentWaitingTaskLabel = null;
+    
     // bind behavior to partner waiting screen (after submitting decision)
     socket.on("show-partner-waiting", (response) => {
         console.log("Waiting for partner:", response.partner, "to complete", response.taskLabel);
+        currentWaitingTaskLabel = response.taskLabel;
+        
         // hide all other screens
         $("#welcome, #admin, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         // update wait screen message (more descriptive)
@@ -1003,6 +998,42 @@ $(document).ready(function() {
         `);
         // show the wait screen
         $("#wait").removeClass("hide").show();
+        
+        // Clear any existing timeout
+        if (waitingForPartnerTimeout) {
+            clearTimeout(waitingForPartnerTimeout);
+        }
+        
+        // Set a fallback timeout - if stuck waiting for 45 seconds on final task, request content refresh
+        // Check if this is Task 30 (final task)
+        if (response.taskLabel && response.taskLabel.includes("Task 30")) {
+            console.log(">>> Final task detected (Task 30), setting fallback timeout");
+            waitingForPartnerTimeout = setTimeout(() => {
+                console.log(">>> Fallback: Still waiting after 45 seconds on Task 30, requesting content refresh");
+                socket.emit("content-request");
+            }, 45000);
+        }
+    });
+    
+    // Clear waiting timeout when we receive any screen transition event
+    socket.on("show-postsurvey-screen", (response) => {
+        console.log(">>> RECEIVED show-postsurvey-screen event");
+        // Clear fallback timeout
+        if (waitingForPartnerTimeout) {
+            clearTimeout(waitingForPartnerTimeout);
+            waitingForPartnerTimeout = null;
+        }
+        currentWaitingTaskLabel = null;
+        
+        // hide all other screens - use .hide() for #wait since it was shown with .show()
+        $("#admin, #design, #thank-you, #welcome, #demographics-survey, #intention, #consent, #briefing").collapse("hide");
+        $("#wait").hide();
+        $("#postsurvey-form input").prop("disabled", false);
+        $("#postsurvey-form button:submit").prop("disabled", false);
+        $("#postsurvey-form button:submit .spinner-border").addClass("d-none");
+        // show the post-survey screen
+        $("#main-postsurvey").collapse("show");
+        console.log(">>> Post-survey screen should now be visible");
     });
 
     // bind behavior to the socket.io update content
@@ -1015,6 +1046,12 @@ $(document).ready(function() {
     // bind behavior to the socket.io show thank you screen
     socket.on("show-thank-you-screen", (response) => {
         console.log(">>> RECEIVED show-thank-you-screen event");
+        // Clear any waiting timeout
+        if (waitingForPartnerTimeout) {
+            clearTimeout(waitingForPartnerTimeout);
+            waitingForPartnerTimeout = null;
+        }
+        currentWaitingTaskLabel = null;
         // hide the admin, wait, design and welcome screens - use .hide() for #wait
         $("#admin, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
         $("#wait").hide();
