@@ -2,6 +2,20 @@ $(document).ready(function() {
     // establish socket.io connection
     var socket = io();
 
+    // DEBUG: Log all socket events
+    socket.onAny((event, ...args) => {
+        console.log(`🔌 SOCKET EVENT: ${event}`, args);
+    });
+
+    // DEBUG: Check socket connection status
+    console.log("🔌 Initial socket connection status:", socket.connected);
+    socket.on('connect', () => {
+        console.log("🔌 Socket connected, ID:", socket.id);
+    });
+    socket.on('disconnect', () => {
+        console.log("🔌 Socket disconnected");
+    });
+
     // store user group (treatment/control)
     var userGroup = null;
     
@@ -1018,6 +1032,10 @@ $(document).ready(function() {
     // Clear waiting timeout when we receive any screen transition event
     socket.on("show-postsurvey-screen", (response) => {
         console.log(">>> RECEIVED show-postsurvey-screen event");
+        console.log(">>> Event data:", response);
+        console.log(">>> Socket connected:", socket.connected);
+        console.log(">>> Socket id:", socket.id);
+        
         // Clear fallback timeout
         if (waitingForPartnerTimeout) {
             clearTimeout(waitingForPartnerTimeout);
@@ -1034,6 +1052,14 @@ $(document).ready(function() {
         // show the post-survey screen
         $("#main-postsurvey").collapse("show");
         console.log(">>> Post-survey screen should now be visible");
+        
+        // Additional debugging - check if the element is actually visible
+        setTimeout(() => {
+            console.log(">>> Post-survey visibility check:");
+            console.log("  #main-postsurvey display:", $("#main-postsurvey").css("display"));
+            console.log("  #main-postsurvey has class 'show':", $("#main-postsurvey").hasClass("show"));
+            console.log("  #wait display:", $("#wait").css("display"));
+        }, 100);
     });
 
     // bind behavior to the socket.io update content
