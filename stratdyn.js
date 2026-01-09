@@ -264,7 +264,7 @@ module.exports = function(io) {
         // Create main task log file with new headers (includes distraction flag)
         fs.writeFile(
             logFiles.task, 
-            "timestamp,username,group,partner,task,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,designName,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,uiTaskNumber,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,designName,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -275,12 +275,12 @@ module.exports = function(io) {
         // Create training task log file (separate from main analysis)
         fs.writeFile(
             logFiles.trainingTask, 
-            "timestamp,username,group,partner,task,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,uiTaskNumber,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
                 }
-            }
+                }
         );
 
         // Create pre-survey log file
@@ -881,6 +881,9 @@ module.exports = function(io) {
                 
                 // save the task decision (final choice)
                 experiment.decisions[username][taskIndex].design = request.design.replace("\xa0", " ");
+                if (request.designName) {
+                    experiment.decisions[username][taskIndex].designName = request.designName.replace("\xa0", " ");
+                }
                 if (request.strategy) {
                     experiment.decisions[username][taskIndex].strategy = request.strategy.replace("\xa0", " ");
                 }
@@ -1037,7 +1040,15 @@ module.exports = function(io) {
                     userDecision.pointsEarned = userPointsEarned;
                     userDecision.score = userNetScore;
                     
-                    console.log(`📝 Writing CSV for ${user}: Task ${userTask.label}, Distraction=${userIsDistraction}, Earned=${userPointsEarned}, Net=${userNetScore}`);
+                    // Calculate UI task number (same calculation as in showDesignTask)
+                    let uiTaskNumber;
+                    if (isTrainingTask) {
+                        uiTaskNumber = taskIndex + 1; // Training Task 1 or 2
+                    } else {
+                        uiTaskNumber = taskIndex - 1; // For main tasks, subtract 2 training tasks
+                    }
+                    
+                    console.log(`📝 Writing CSV for ${user}: Task ${userTask.label}, UI#${uiTaskNumber}, Distraction=${userIsDistraction}, Earned=${userPointsEarned}, Net=${userNetScore}`);
                     
                     fs.appendFile(
                         userLogFile, 
@@ -1046,6 +1057,7 @@ module.exports = function(io) {
                         userGroup + "," + 
                         experiment.partners[user] + "," + 
                         userTask.label + "," + 
+                        uiTaskNumber + "," +
                         (userIsDistraction ? "true" : "false") + "," +
                         (isTrainingTask ? "true" : "false") + "," +
                         (userDecision.intention || '') + "," + 
