@@ -641,11 +641,11 @@ module.exports = function(io) {
                             if (decision.isTraining) continue;
                             
                             // Add net score (with penalty) for compensation/ranking
-                            if (decision.score) {
+                            if (decision.score !== undefined && decision.score !== null) {
                                 totalScoreWithPenalty += decision.score;
                             }
                             // Add earned points (without penalty) for analysis
-                            if (decision.pointsEarned) {
+                            if (decision.pointsEarned !== undefined && decision.pointsEarned !== null) {
                                 totalScoreNoPenalty += decision.pointsEarned;
                             }
                         }
@@ -1081,15 +1081,15 @@ module.exports = function(io) {
                         uiTaskNumber + "," +
                         (userIsDistraction ? "true" : "false") + "," +
                         (isTrainingTask ? "true" : "false") + "," +
-                        (userDecision.intention || '') + "," + 
+                        (userDecision.intention !== undefined && userDecision.intention !== null ? userDecision.intention : '') + "," + 
                         (userDecision.intentionTimestamp || '') + "," + 
                         (userDecision.intentionTimeSpent || 0) + "," +
-                        (userDecision.uValue || '') + "," + 
-                        (userDecision.uPercentile || '') + "," + 
-                        (userDecision.rValue || '') + "," + 
-                        (userDecision.rPercentile || '') + "," + 
-                        (userDecision.uPercentile || '') + "," + 
-                        (experiment.decisions[partnerUser] && experiment.decisions[partnerUser][taskIndex] ? experiment.decisions[partnerUser][taskIndex].uPercentile || '' : '') + "," + 
+                        (userDecision.uValue !== undefined && userDecision.uValue !== null ? userDecision.uValue : '') + "," + 
+                        (userDecision.uPercentile !== undefined && userDecision.uPercentile !== null ? userDecision.uPercentile : '') + "," + 
+                        (userDecision.rValue !== undefined && userDecision.rValue !== null ? userDecision.rValue : '') + "," + 
+                        (userDecision.rPercentile !== undefined && userDecision.rPercentile !== null ? userDecision.rPercentile : '') + "," + 
+                        (userDecision.uPercentile !== undefined && userDecision.uPercentile !== null ? userDecision.uPercentile : '') + "," + 
+                        (experiment.decisions[partnerUser] && experiment.decisions[partnerUser][taskIndex] && experiment.decisions[partnerUser][taskIndex].uPercentile !== undefined && experiment.decisions[partnerUser][taskIndex].uPercentile !== null ? experiment.decisions[partnerUser][taskIndex].uPercentile : '') + "," + 
                         userDecision.design + "," + 
                         (userDecision.designName || '') + "," + 
                         Date.now() + "," + 
@@ -1099,7 +1099,7 @@ module.exports = function(io) {
                         userPointsEarned + "," +
                         userPenalty + "," +
                         userNetScore + "," + 
-                        (partnerUserScore || '') + "\r\n",
+                        (partnerUserScore !== undefined && partnerUserScore !== null ? partnerUserScore : '') + "\r\n",
                         err => {
                             if (err) {
                               console.error(err);
