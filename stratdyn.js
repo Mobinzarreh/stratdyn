@@ -909,7 +909,7 @@ module.exports = function(io) {
                     const uPercentile = calculateUPercentile(myUValue, experiment.tasks, myTask);
                     experiment.decisions[username][taskIndex].uValue = myUValue;
                     experiment.decisions[username][taskIndex].uPercentile = uPercentile;
-                    console.log(`  ⚠️ uPercentile was missing for ${username}, calculated: ${uPercentile}%`);
+                    console.log(`  ⚠️ uPercentile was missing for ${username}, recalculated: ${uPercentile}%`);
                 }
                 
                 // Ensure intention is set (mark as "not_set" if missing)
@@ -1089,7 +1089,7 @@ module.exports = function(io) {
                         (userDecision.rValue || '') + "," + 
                         (userDecision.rPercentile || '') + "," + 
                         (userDecision.uPercentile || '') + "," + 
-                        (userDecision.rPercentile || '') + "," + 
+                        (experiment.decisions[partnerUser] && experiment.decisions[partnerUser][taskIndex] ? experiment.decisions[partnerUser][taskIndex].uPercentile || '' : '') + "," + 
                         userDecision.design + "," + 
                         (userDecision.designName || '') + "," + 
                         Date.now() + "," + 
