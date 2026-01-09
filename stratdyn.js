@@ -264,7 +264,7 @@ module.exports = function(io) {
         // Create main task log file with new headers (includes distraction flag)
         fs.writeFile(
             logFiles.task, 
-            "timestamp,username,group,partner,task,uiTaskNumber,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,designName,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,uiTaskNumber,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,designName,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -275,7 +275,7 @@ module.exports = function(io) {
         // Create training task log file (separate from main analysis)
         fs.writeFile(
             logFiles.trainingTask, 
-            "timestamp,username,group,partner,task,uiTaskNumber,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,uiTaskNumber,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -897,7 +897,16 @@ module.exports = function(io) {
                     myTask = experiment.tasks[seqItem.originalIndex];
                 }
                 
-                // Calculate and store R percentile
+                // Calculate and store U and R percentiles
+                // Ensure uPercentile is set (should be from intention, but recalculate if missing)
+                if (!experiment.decisions[username][taskIndex].uPercentile && !isDistraction) {
+                    const myUValue = myTask.uValue;
+                    const uPercentile = calculateUPercentile(myUValue, experiment.tasks, myTask);
+                    experiment.decisions[username][taskIndex].uValue = myUValue;
+                    experiment.decisions[username][taskIndex].uPercentile = uPercentile;
+                    console.log(`  ⚠️ uPercentile was missing, calculated: ${uPercentile}%`);
+                }
+                
                 let partner = experiment.partners[username];
                 if (partner != null && !isDistraction) {
                     const partnerSequence = getUserTaskSequence(partner);
@@ -1066,6 +1075,8 @@ module.exports = function(io) {
                         (userDecision.uValue || '') + "," + 
                         (userDecision.uPercentile || '') + "," + 
                         (userDecision.rValue || '') + "," + 
+                        (userDecision.rPercentile || '') + "," + 
+                        (userDecision.uPercentile || '') + "," + 
                         (userDecision.rPercentile || '') + "," + 
                         userDecision.design + "," + 
                         (userDecision.designName || '') + "," + 
