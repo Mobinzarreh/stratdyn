@@ -817,6 +817,7 @@ module.exports = function(io) {
                     const myTask = experiment.tasks[seqItem.originalIndex];
                     uValue = myTask.uValue;
                     uPercentile = calculateUPercentile(uValue, experiment.tasks, myTask);
+                    console.log(`  [FOCAL] Calculated uPercentile for ${username}: ${uPercentile}% (uValue: ${uValue})`);
                 }
                 
                 experiment.decisions[username][taskIndex].uValue = uValue;
@@ -826,6 +827,8 @@ module.exports = function(io) {
                 console.log(`    TaskIndex: ${taskIndex}, IsDistraction: ${isDistraction}`);
                 console.log(`    Intention: ${request.intention}, TimeSpent: ${request.timeSpent}s`);
                 console.log(`    U-Value: ${uValue}, U-Percentile: ${uPercentile}%`);
+                console.log(`    ✓ Stored in experiment.decisions[${username}][${taskIndex}]`);
+                console.log(`    ✓ Verification - uPercentile stored: ${experiment.decisions[username][taskIndex].uPercentile}`);
                 
                 // INTENTION STAGE: Always advance to choice stage immediately
                 // No partner synchronization at this stage - users can submit intentions independently
@@ -899,18 +902,21 @@ module.exports = function(io) {
                 
                 // Calculate and store U and R percentiles
                 // Ensure uPercentile is set (should be from intention, but recalculate if missing)
-                if (!experiment.decisions[username][taskIndex].uPercentile && !isDistraction) {
+                if ((experiment.decisions[username][taskIndex].uPercentile === undefined || 
+                     experiment.decisions[username][taskIndex].uPercentile === null || 
+                     experiment.decisions[username][taskIndex].uPercentile === '') && !isDistraction) {
                     const myUValue = myTask.uValue;
                     const uPercentile = calculateUPercentile(myUValue, experiment.tasks, myTask);
                     experiment.decisions[username][taskIndex].uValue = myUValue;
                     experiment.decisions[username][taskIndex].uPercentile = uPercentile;
-                    console.log(`  ⚠️ uPercentile was missing, calculated: ${uPercentile}%`);
+                    console.log(`  ⚠️ uPercentile was missing for ${username}, calculated: ${uPercentile}%`);
                 }
                 
                 // Ensure intention is set (mark as "not_set" if missing)
-                if (!experiment.decisions[username][taskIndex].intention) {
+                if (!experiment.decisions[username][taskIndex].intention && 
+                    experiment.decisions[username][taskIndex].intention !== 0) {
                     experiment.decisions[username][taskIndex].intention = 'not_set';
-                    console.log(`  ⚠️ Intention was missing, marked as: not_set`);
+                    console.log(`  ⚠️ Intention was missing for ${username}, marked as: not_set`);
                 }
                 
                 let partner = experiment.partners[username];
