@@ -907,6 +907,12 @@ module.exports = function(io) {
                     console.log(`  ⚠️ uPercentile was missing, calculated: ${uPercentile}%`);
                 }
                 
+                // Ensure intention is set (mark as "not_set" if missing)
+                if (!experiment.decisions[username][taskIndex].intention) {
+                    experiment.decisions[username][taskIndex].intention = 'not_set';
+                    console.log(`  ⚠️ Intention was missing, marked as: not_set`);
+                }
+                
                 let partner = experiment.partners[username];
                 if (partner != null && !isDistraction) {
                     const partnerSequence = getUserTaskSequence(partner);
