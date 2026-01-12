@@ -165,9 +165,9 @@ module.exports = function(io) {
     function getTaskLabel(username, seqIndex) {
         if (seqIndex === undefined || seqIndex === null) return 'Not Started';
         if (seqIndex === -4) return 'Consent Page';
-        if (seqIndex === -3) return 'Briefing';
-        if (seqIndex === -2) return 'Demographics Survey';
-        if (seqIndex === -1) return 'Demographics Survey';  // In case of -1, show demographics
+        if (seqIndex === -3) return 'Demographics Survey';
+        if (seqIndex === -2) return 'Briefing';
+        if (seqIndex === -1) return 'Briefing';  // In case of -1, show briefing
         if (seqIndex === 0) return 'Training Task 1';
         if (seqIndex === 1) return 'Training Task 2';
         
