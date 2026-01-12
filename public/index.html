@@ -150,78 +150,27 @@
       <div class="col">
         <h1 class="mb-4">Study Instructions</h1>
         <div class="card">
-          <div class="card-body text-start">
+          <div class="card-body text-center">
             <h5 class="card-title">Welcome to the Collaborative Design Experiment</h5>
+            <p class="card-text mb-4">Please watch the instructional video below before proceeding.</p>
             
-            <p class="card-text">
-              In this study, you will be working with a partner to make design decisions. Each task involves 
-              choosing between different design options, some of which require collaboration with your partner.
-            </p>
+            <!-- Video Player -->
+            <div class="ratio ratio-16x9" style="max-width: 800px; margin: 0 auto;">
+              <video id="briefing-video" controls controlsList="nodownload">
+                <source id="briefing-video-source" src="" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
             
-            <h6 class="mt-4">Two-Stage Decision Process</h6>
-            <p>Each task consists of two stages:</p>
-            <ol>
-              <li>
-                <strong>Stage 1 - Intention:</strong> You will review the available options and indicate your 
-                intention toward collaboration on a scale from 1 (definitely will not collaborate) to 10 
-                (definitely will collaborate). The timer will show the first 30 seconds.
-              </li>
-              <li>
-                <strong>Stage 2 - Final Choice:</strong> After both you and your partner have submitted your 
-                intentions, you will make your final design choice. Any time remaining from the 90-second total 
-                will be available for this stage.
-              </li>
-            </ol>
-            
-            <h6 class="mt-4">Design Options</h6>
-            <p>In each task, you will see:</p>
-            <ul>
-              <li>
-                <strong>Three Collaborative Options (A, B, C):</strong> These require coordination with your partner. 
-                The payoff depends on whether your partner also chooses a collaborative option.
-              </li>
-              <li>
-                <strong>One Individual Option (Y):</strong> This is a safe choice that doesn't depend on your partner's decision.
-              </li>
-            </ul>
-            
-            <h6 class="mt-4">Timing and Penalties</h6>
-            <p>
-              <strong>Important:</strong> You have a <strong>total of 90 seconds</strong> for each task (both stages combined). 
-              Time management is crucial:
-            </p>
-            <ul>
-              <li>The timer shows 30 seconds during Stage 1 (Intention), then displays remaining time during Stage 2 (Choice)</li>
-              <li>If you finish Stage 1 quickly, more time rolls over to Stage 2</li>
-              <li><strong>No penalties</strong> are applied during Stage 1, regardless of time taken</li>
-              <li>After 90 seconds total: You have a <strong>10-second grace period</strong> with no penalty</li>
-              <li>After the grace period (100 seconds): A penalty of <strong>1 point per second</strong> is deducted from your task score</li>
-              <li>Timer colors: <span class="text-success">green</span> (normal) → 
-                <span class="text-warning">yellow</span> (warning: < 5s left) → <span class="text-danger">red</span> (overtime)</li>
-            </ul>
-            
-            <h6 class="mt-4">Practice Tasks</h6>
-            <p>
-              Before beginning the main experiment, you will complete 2 practice tasks to familiarize yourself 
-              with the interface:
-            </p>
-            <ul>
-              <li><strong>Practice Task 1:</strong> Extended time (3 minutes) to learn the interface and understand the decision process</li>
-              <li><strong>Practice Task 2:</strong> Standard time (90 seconds) to practice the actual timing you'll experience in the main experiment</li>
-            </ul>
-            <p>These practice tasks will not affect your final results.</p>
-            
-            <h6 class="mt-4">Questions?</h6>
-            <p>
-              If you have any questions during the study, please ask the session proctor. Otherwise, click 
-              "Continue" below to proceed to the demographic survey.
+            <p class="text-muted mt-3" id="briefing-video-status">
+              Loading video...
             </p>
           </div>
         </div>
         
         <div class="d-grid gap-2 mt-4">
-          <button type="button" class="btn btn-outline-primary btn-lg" id="briefing-continue-button">
-            Continue to Demographics
+          <button type="button" class="btn btn-outline-primary btn-lg" id="briefing-continue-button" disabled>
+            Continue to Training Tasks
           </button>
         </div>
       </div>

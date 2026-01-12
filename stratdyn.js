@@ -695,11 +695,11 @@ module.exports = function(io) {
                     // Show consent page
                     showConsentScreen(context);
                 } else if (taskIndex === -3) {
-                    // Show briefing page
-                    showBriefingScreen(context);
-                } else if (taskIndex === -2) {
                     // Show demographics survey
                     showDemographicsSurveyScreen(context);
+                } else if (taskIndex === -2) {
+                    // Show briefing page
+                    showBriefingScreen(context);
                 } else if (taskIndex < totalTasks) {
                     // Show task (0-1 = training, 2+ = main experiment including distraction)
                     showDesignTask(context, 'intention', username);
@@ -1299,9 +1299,9 @@ module.exports = function(io) {
             if (username != null) {
                 console.log(`${username} submitted consent: ${request.consent}`);
                 
-                // Auto-advance to briefing page
+                // Auto-advance to demographics page
                 if (autoAdvance && request.consent === 'agree') {
-                    userTaskIndex[username] = -3; // Move to briefing
+                    userTaskIndex[username] = -3; // Move to demographics
                     console.log(`${username} consented. Advancing to briefing`);
                     setImmediate(() => {
                         showBriefingScreen(socket);
@@ -1377,12 +1377,12 @@ module.exports = function(io) {
             if (username != null) {
                 console.log(`${username} completed briefing`);
                 
-                // Auto-advance to demographics
+                // Auto-advance to training tasks
                 if (autoAdvance) {
-                    userTaskIndex[username] = -2; // Move to demographics
-                    console.log(`${username} completed briefing. Advancing to demographics`);
+                    userTaskIndex[username] = 0; // Move to first training task
+                    console.log(`${username} completed briefing. Advancing to training tasks`);
                     setImmediate(() => {
-                        showDemographicsSurveyScreen(socket);
+                        showDesignTask(socket, 'intention', username);
                     });
                 }
             }
@@ -1425,32 +1425,13 @@ module.exports = function(io) {
                     }
                 );
                 
-                // Auto-advance to next stage if enabled
+                // Auto-advance to Briefing
                 if (autoAdvance) {
-                    userTaskIndex[username] = 0; // Move directly to first training task
-                    console.log(`${username} completed demographics. Advancing to first training task (index=0)`);
-                    
-                    // Verify user has assignments before attempting to show task
-                    if (!experiment.assignments[username]) {
-                        console.error(`ERROR: No assignments found for ${username}. Cannot advance to training task.`);
-                        socket.emit('show-error-screen', { 
-                            message: 'Your account is not properly configured. Please contact the administrator.' 
-                        });
-                        return;
-                    }
-                    
-                    // Show design task directly (no setImmediate needed)
-                    try {
-                        console.log(`Calling showDesignTask for ${username} with socket connected: ${socket.connected}`);
-                        showDesignTask(socket, 'intention', username);
-                        console.log(`showDesignTask completed for ${username}`);
-                    } catch (error) {
-                        console.error(`Error showing design task for ${username}:`, error);
-                        // Fallback: try again or show error
-                        socket.emit('show-error-screen', { 
-                            message: 'Error loading training task. Please refresh the page.' 
-                        });
-                    }
+                    userTaskIndex[username] = -2; // Move to briefing
+                    console.log(`${username} completed demographics. Advancing to briefing`);
+                    setImmediate(() => {
+                        showBriefingScreen(socket);
+                    });
                 }
             }
         });
