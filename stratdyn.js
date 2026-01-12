@@ -1519,9 +1519,9 @@ module.exports = function(io) {
                             if (adjustedNewIndex === -4) {
                                 showConsentScreen(users[targetUser].socket);
                             } else if (adjustedNewIndex === -3) {
-                                showBriefingScreen(users[targetUser].socket);
-                            } else if (adjustedNewIndex === -2) {
                                 showDemographicsSurveyScreen(users[targetUser].socket);
+                            } else if (adjustedNewIndex === -2) {
+                                showBriefingScreen(users[targetUser].socket);
                             } else if (adjustedNewIndex >= 0 && adjustedNewIndex < totalSeqLength) {
                                 showDesignTask(users[targetUser].socket, 'intention', targetUser);
                             } else if (adjustedNewIndex === totalSeqLength) {

@@ -240,6 +240,12 @@ $(document).ready(function() {
 
     // bind behavior to briefing continue button
     $("#briefing-continue-button").on("click", () => {
+        // Stop and reset video before advancing
+        const video = $("#briefing-video")[0];
+        if (video) {
+            video.pause();
+            video.currentTime = 0;
+        }
         // send briefing completion to server
         socket.emit("submit-briefing", {});
     });
