@@ -753,8 +753,9 @@ $(document).ready(function() {
         $("#admin, #wait, #design, #thank-you, #welcome, #main-postsurvey, #demographics-survey, #intention, #consent").collapse("hide");
         
         // Determine which video to show based on user group
-        const userGroup = currentUser.group || 'treatment';
         const videoFile = userGroup === 'control' ? 'briefing_control.mp4' : 'briefing_treatment.mp4';
+        
+        console.log("Loading briefing video for group:", userGroup, "File:", videoFile);
         
         // Set video source
         $("#briefing-video-source").attr("src", videoFile);
@@ -762,12 +763,14 @@ $(document).ready(function() {
         
         // Update status and enable button once video is ready
         $("#briefing-video")[0].addEventListener('loadeddata', function() {
+            console.log("Briefing video loaded successfully");
             $("#briefing-video-status").text("Video ready. You may watch the instructions and continue when ready.");
             $("#briefing-continue-button").prop("disabled", false);
         }, { once: true });
         
         // Handle video load errors
-        $("#briefing-video")[0].addEventListener('error', function() {
+        $("#briefing-video")[0].addEventListener('error', function(e) {
+            console.error("Error loading briefing video:", e);
             $("#briefing-video-status").text("Error loading video. Please refresh the page or contact the study administrator.");
         }, { once: true });
         
