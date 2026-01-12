@@ -1302,9 +1302,9 @@ module.exports = function(io) {
                 // Auto-advance to demographics page
                 if (autoAdvance && request.consent === 'agree') {
                     userTaskIndex[username] = -3; // Move to demographics
-                    console.log(`${username} consented. Advancing to briefing`);
+                    console.log(`${username} consented. Advancing to demographics`);
                     setImmediate(() => {
-                        showBriefingScreen(socket);
+                        showDemographicsSurveyScreen(socket);
                     });
                 } else if (request.consent === 'decline') {
                     // User declined after warning - handle partner notification
