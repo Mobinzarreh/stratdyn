@@ -215,17 +215,14 @@ $(document).ready(function() {
         event.preventDefault();
         const agreed = $("#consent-checkbox").is(":checked");
         const fullName = $("#consent-name").val();
-        const email = $("#consent-email").val();
         const date = $("#consent-date").val();
-        const recordingConsent = $("#recording-consent-checkbox").is(":checked");
         
         // send consent response to server with electronic signature data
         socket.emit("submit-consent", {
             consent: agreed ? 'agree' : 'disagree',
             fullName: fullName,
-            email: email,
             date: date,
-            recordingConsent: recordingConsent
+            recordingConsent: true  // Recording is now mandatory
         });
     });
 
@@ -234,6 +231,11 @@ $(document).ready(function() {
         // Show warning modal instead of directly declining
         const declineModal = new bootstrap.Modal(document.getElementById('decline-warning-modal'));
         declineModal.show();
+    });
+
+    // bind behavior to download consent PDF button
+    $("#download-consent-pdf").on("click", () => {
+        generateConsentPDF();
     });
 
     // bind behavior to confirm decline button in modal
@@ -1246,5 +1248,65 @@ $(document).ready(function() {
             location.reload();
         }, 1000);
     });
+
+    // Function to generate consent form PDF
+    function generateConsentPDF() {
+        const consentText = `
+INFORMED CONSENT FOR PARTICIPATION IN RESEARCH
+
+Principal Investigator: Dr. Paul Grogan
+Institution: School of Computing and Augmented Intelligence, Arizona State University
+
+STUDY PURPOSE
+I am conducting a research study to understand factors that impact strategic decision-making in collaborative design tasks. This study focuses on how quantitative economic information influences collaborative decision-making behavior.
+
+PARTICIPATION
+I am inviting your participation, which involves completing a brief demographics questionnaire and a series of two training and thirty experimental decision-making tasks with a partner. This study will take approximately 60 minutes to complete. Each task poses a design decision-making problem with outcomes based on your and your partner's decision. You have the right not to answer any question, and to stop participation at any time.
+
+COMMUNICATION PROTOCOL
+During the experiment, you will work with your assigned partner via Zoom audio connection. You are permitted to communicate verbally with your partner about general strategies and approaches. However, you may NOT share your screen or share any quantitative information displayed on your interface. Video and chat functions will be disabled for this study.
+
+TECHNICAL REQUIREMENTS
+To participate, you will need a computer with stable internet access, Zoom software, a working microphone and speakers or headphones, and a quiet environment for the duration of the study.
+
+ELIGIBILITY AND COMPENSATION
+To participate, you must be 18 years of age, have professional English proficiency, and either be a graduate of or currently enrolled with junior standing or higher in an undergraduate or graduate program related to engineering design. At the end of the session, participants are ranked based on the scores obtained with payoff across the experimental tasks and will privately receive gift cards worth $14, $16, $18, and $20. If your partner declines to participate, you will receive a $5 gift card for your time.
+
+RISKS
+This study involves collaborative decision-making with a partner via audio connection. You may experience psychological discomfort from competitive task performance, social discomfort from partner interaction or disagreements, or minor stress from time-limited decisions. However, these risks are similar to other competitive activities and collaborative online activities played in group settings.
+
+DATA CONFIDENTIALITY
+Your responses will be anonymous. We will collect demographics information, task decisions and response times, survey responses, and audio recordings. All data will be de-identified by removing names and replacing them with participant codes. The results of this study may be used in reports, presentations, or publications but your name will not be used. De-identified data collected as a part of this study may be shared with other investigators for future research purposes. Data will be stored securely on password-protected servers.
+
+AUDIO RECORDING
+This session will be audio recorded via Zoom for research analysis purposes only. You may change your mind during the experiment by informing the researcher. Recordings will be stored securely and used only for research purposes.
+
+WITHDRAWAL
+You may withdraw from this study at any time by closing your browser or informing the researcher. If you withdraw before completing the experimental tasks, you will NOT receive compensation, and your partner will receive a $5 gift card for their time.
+
+CONTACT INFORMATION
+If you have any questions concerning the research study, please contact the Principal Investigator Dr. Paul Grogan at paul.grogan@asu.edu or (602) 496-3495. If you have any questions about your rights as a research participant, or if you feel you have been placed at risk, you can contact the Chair of the Human Subjects Institutional Review Board, through the ASU Office of Research Integrity and Assurance, at (480) 965-6788.
+
+ELECTRONIC CONSENT AGREEMENT
+By providing your information and agreeing to participate, you acknowledge that you have read this information, have had the opportunity to ask questions, and agree to participate in this research study.
+
+Document generated: ${new Date().toLocaleDateString()}
+        `;
+
+        // Create a blob with the text content
+        const blob = new Blob([consentText], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        
+        // Create download link
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Informed_Consent_Form.txt';
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    }
 });
 

@@ -333,7 +333,7 @@ module.exports = function(io) {
         console.log('Created reschedule_log.csv in logs directory');
     }
     if (!fs.existsSync(consentLogPath)) {
-        fs.writeFileSync(consentLogPath, 'timestamp,username,group,fullName,email,consentDate,recordingConsent,consentGiven\n');
+        fs.writeFileSync(consentLogPath, 'timestamp,username,group,fullName,consentDate,recordingConsent,consentGiven\n');
         console.log(`Created consent_log_${sessionId}.csv in logs directory`);
     }
 
@@ -1307,7 +1307,7 @@ module.exports = function(io) {
                 
                 // Log electronic consent to CSV
                 const userGroup = users[username] ? users[username].group : 'unknown';
-                const consentLogEntry = `${Date.now()},${username},${userGroup},"${request.fullName || ''}","${request.email || ''}","${request.date || ''}",${request.recordingConsent || 'false'},${request.consent === 'agree'}\n`;
+                const consentLogEntry = `${Date.now()},${username},${userGroup},"${request.fullName || ''}","${request.date || ''}",${request.recordingConsent || 'true'},${request.consent === 'agree'}\n`;
                 fs.appendFile(consentLogPath, consentLogEntry, (err) => {
                     if (err) console.error('Error logging consent:', err);
                 });
