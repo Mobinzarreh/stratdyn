@@ -297,7 +297,7 @@ module.exports = function(io) {
         // Create post-survey log file
         fs.writeFile(
             logFiles.postsurvey, 
-            "timestamp,username,group,q1c2,q2r1,q3t3,q4r2,q5t1,q6c3,q7t2,q8c1,q9r3\r\n",
+            "timestamp,username,group,q1c2,q2r1,q3t3,q4r2,q5t1,q6c3,q7t2,q8c1,q9r3,q10comm\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -1252,7 +1252,8 @@ module.exports = function(io) {
                     + request["q6c3"] + "\t"
                     + request["q7t2"] + "\t"
                     + request["q8c1"] + "\t"
-                    + request["q9r3"]
+                    + request["q9r3"] + "\t"
+                    + request["q10comm"]
                 );
                 const userGroup = users[username] ? users[username].group : 'treatment';
                 const logFiles = getLogFiles(userGroup);
@@ -1262,7 +1263,7 @@ module.exports = function(io) {
                     Date.now() + "," + username + "," + userGroup + "," + request["q1c2"] + "," + request["q2r1"] + 
                     "," +  request["q3t3"] + "," +request["q4r2"] + "," + request["q5t1"] + "," + 
                     request["q6c3"] + "," + request["q7t2"] + "," + request["q8c1"]  + "," + 
-                    request["q9r3"] +  "\r\n",
+                    request["q9r3"] + "," + request["q10comm"] +  "\r\n",
                     err => {
                         if (err) {
                           console.error(err);

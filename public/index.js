@@ -908,9 +908,10 @@ $(document).ready(function() {
         const q7 = $("#postsurvey-q7t2").val();
         const q8 = $("#postsurvey-q8c1").val();
         const q9 = $("#postsurvey-q9r3").val();
+        const q10 = $("#postsurvey-q10comm").val();
         
-        if (!q1 || !q2 || !q3 || !q4 || !q5 || !q6 || !q7 || !q8 || !q9) {
-            alert("Please answer all 9 questions before submitting.");
+        if (!q1 || !q2 || !q3 || !q4 || !q5 || !q6 || !q7 || !q8 || !q9 || !q10) {
+            alert("Please answer all 10 questions before submitting.");
             console.log(">>> Validation failed - missing answers");
             return;
         }
@@ -926,7 +927,8 @@ $(document).ready(function() {
             "q6c3": parseInt(q6),
             "q7t2": parseInt(q7),
             "q8c1": parseInt(q8),
-            "q9r3": parseInt(q9)
+            "q9r3": parseInt(q9),
+            "q10comm": parseInt(q10)
         });
         console.log(">>> submit-postsurvey event emitted, disabling form");
         $("#postsurvey-form input").prop("disabled", true);
