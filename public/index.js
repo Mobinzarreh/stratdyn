@@ -1251,62 +1251,103 @@ $(document).ready(function() {
 
     // Function to generate consent form PDF
     function generateConsentPDF() {
-        const consentText = `
-INFORMED CONSENT FOR PARTICIPATION IN RESEARCH
-
-Principal Investigator: Dr. Paul Grogan
-Institution: School of Computing and Augmented Intelligence, Arizona State University
-
-STUDY PURPOSE
-I am conducting a research study to understand factors that impact strategic decision-making in collaborative design tasks. This study focuses on how quantitative economic information influences collaborative decision-making behavior.
-
-PARTICIPATION
-I am inviting your participation, which involves completing a brief demographics questionnaire and a series of two training and thirty experimental decision-making tasks with a partner. This study will take approximately 60 minutes to complete. Each task poses a design decision-making problem with outcomes based on your and your partner's decision. You have the right not to answer any question, and to stop participation at any time.
-
-COMMUNICATION PROTOCOL
-During the experiment, you will work with your assigned partner via Zoom audio connection. You are permitted to communicate verbally with your partner about general strategies and approaches. However, you may NOT share your screen or share any quantitative information displayed on your interface. Video and chat functions will be disabled for this study.
-
-TECHNICAL REQUIREMENTS
-To participate, you will need a computer with stable internet access, Zoom software, a working microphone and speakers or headphones, and a quiet environment for the duration of the study.
-
-ELIGIBILITY AND COMPENSATION
-To participate, you must be 18 years of age, have professional English proficiency, and either be a graduate of or currently enrolled with junior standing or higher in an undergraduate or graduate program related to engineering design. At the end of the session, participants are ranked based on the scores obtained with payoff across the experimental tasks and will privately receive gift cards worth $14, $16, $18, and $20. If your partner declines to participate, you will receive a $5 gift card for your time.
-
-RISKS
-This study involves collaborative decision-making with a partner via audio connection. You may experience psychological discomfort from competitive task performance, social discomfort from partner interaction or disagreements, or minor stress from time-limited decisions. However, these risks are similar to other competitive activities and collaborative online activities played in group settings.
-
-DATA CONFIDENTIALITY
-Your responses will be anonymous. We will collect demographics information, task decisions and response times, survey responses, and audio recordings. All data will be de-identified by removing names and replacing them with participant codes. The results of this study may be used in reports, presentations, or publications but your name will not be used. De-identified data collected as a part of this study may be shared with other investigators for future research purposes. Data will be stored securely on password-protected servers.
-
-AUDIO RECORDING
-This session will be audio recorded via Zoom for research analysis purposes only. You may change your mind during the experiment by informing the researcher. Recordings will be stored securely and used only for research purposes.
-
-WITHDRAWAL
-You may withdraw from this study at any time by closing your browser or informing the researcher. If you withdraw before completing the experimental tasks, you will NOT receive compensation, and your partner will receive a $5 gift card for their time.
-
-CONTACT INFORMATION
-If you have any questions concerning the research study, please contact the Principal Investigator Dr. Paul Grogan at paul.grogan@asu.edu or (602) 496-3495. If you have any questions about your rights as a research participant, or if you feel you have been placed at risk, you can contact the Chair of the Human Subjects Institutional Review Board, through the ASU Office of Research Integrity and Assurance, at (480) 965-6788.
-
-ELECTRONIC CONSENT AGREEMENT
-By providing your information and agreeing to participate, you acknowledge that you have read this information, have had the opportunity to ask questions, and agree to participate in this research study.
-
-Document generated: ${new Date().toLocaleDateString()}
-        `;
-
-        // Create a blob with the text content
-        const blob = new Blob([consentText], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
         
-        // Create download link
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'Informed_Consent_Form.txt';
-        document.body.appendChild(a);
-        a.click();
+        // Set font and margins
+        const margin = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const maxLineWidth = pageWidth - (margin * 2);
+        let yPosition = margin;
         
-        // Clean up
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        // Helper function to add text with wrapping
+        function addText(text, fontSize = 11, isBold = false) {
+            doc.setFontSize(fontSize);
+            if (isBold) {
+                doc.setFont(undefined, 'bold');
+            } else {
+                doc.setFont(undefined, 'normal');
+            }
+            
+            const lines = doc.splitTextToSize(text, maxLineWidth);
+            lines.forEach(line => {
+                if (yPosition > doc.internal.pageSize.getHeight() - margin) {
+                    doc.addPage();
+                    yPosition = margin;
+                }
+                doc.text(line, margin, yPosition);
+                yPosition += fontSize * 0.5;
+            });
+            yPosition += 3; // Add spacing after paragraph
+        }
+        
+        // Title
+        addText('INFORMED CONSENT FOR PARTICIPATION IN RESEARCH', 14, true);
+        yPosition += 5;
+        
+        addText('Principal Investigator: Dr. Paul Grogan', 11, true);
+        addText('Institution: School of Computing and Augmented Intelligence, Arizona State University');
+        yPosition += 5;
+        
+        // Study Purpose
+        addText('STUDY PURPOSE', 12, true);
+        addText('I am conducting a research study to understand factors that impact strategic decision-making in collaborative design tasks. This study focuses on how quantitative economic information influences collaborative decision-making behavior.');
+        yPosition += 3;
+        
+        // Participation
+        addText('PARTICIPATION', 12, true);
+        addText('I am inviting your participation, which involves completing a brief demographics questionnaire and a series of two training and thirty experimental decision-making tasks with a partner. This study will take approximately 60 minutes to complete. Each task poses a design decision-making problem with outcomes based on your and your partner\'s decision. You have the right not to answer any question, and to stop participation at any time.');
+        yPosition += 3;
+        
+        // Communication Protocol
+        addText('COMMUNICATION PROTOCOL', 12, true);
+        addText('During the experiment, you will work with your assigned partner via Zoom audio connection. You are permitted to communicate verbally with your partner about general strategies and approaches. However, you may NOT share your screen or share any quantitative information displayed on your interface. Video and chat functions will be disabled for this study.');
+        yPosition += 3;
+        
+        // Technical Requirements
+        addText('TECHNICAL REQUIREMENTS', 12, true);
+        addText('To participate, you will need a computer with stable internet access, Zoom software, a working microphone and speakers or headphones, and a quiet environment for the duration of the study.');
+        yPosition += 3;
+        
+        // Eligibility and Compensation
+        addText('ELIGIBILITY AND COMPENSATION', 12, true);
+        addText('To participate, you must be 18 years of age, have professional English proficiency, and either be a graduate of or currently enrolled with junior standing or higher in an undergraduate or graduate program related to engineering design. At the end of the session, participants are ranked based on the scores obtained with payoff across the experimental tasks and will privately receive gift cards worth $14, $16, $18, and $20. If your partner declines to participate, you will receive a $5 gift card for your time.');
+        yPosition += 3;
+        
+        // Risks
+        addText('RISKS', 12, true);
+        addText('This study involves collaborative decision-making with a partner via audio connection. You may experience psychological discomfort from competitive task performance, social discomfort from partner interaction or disagreements, or minor stress from time-limited decisions. However, these risks are similar to other competitive activities and collaborative online activities played in group settings.');
+        yPosition += 3;
+        
+        // Data Confidentiality
+        addText('DATA CONFIDENTIALITY', 12, true);
+        addText('Your responses will be anonymous. We will collect demographics information, task decisions and response times, survey responses, and audio recordings. All data will be de-identified by removing names and replacing them with participant codes. The results of this study may be used in reports, presentations, or publications but your name will not be used. De-identified data collected as a part of this study may be shared with other investigators for future research purposes. Data will be stored securely on password-protected servers.');
+        yPosition += 3;
+        
+        // Audio Recording
+        addText('AUDIO RECORDING', 12, true);
+        addText('This session will be audio recorded via Zoom for research analysis purposes only. You may change your mind during the experiment by informing the researcher. Recordings will be stored securely and used only for research purposes.');
+        yPosition += 3;
+        
+        // Withdrawal
+        addText('WITHDRAWAL', 12, true);
+        addText('You may withdraw from this study at any time by closing your browser or informing the researcher. If you withdraw before completing the experimental tasks, you will NOT receive compensation, and your partner will receive a $5 gift card for their time.');
+        yPosition += 3;
+        
+        // Contact Information
+        addText('CONTACT INFORMATION', 12, true);
+        addText('If you have any questions concerning the research study, please contact the Principal Investigator Dr. Paul Grogan at paul.grogan@asu.edu or (602) 496-3495. If you have any questions about your rights as a research participant, or if you feel you have been placed at risk, you can contact the Chair of the Human Subjects Institutional Review Board, through the ASU Office of Research Integrity and Assurance, at (480) 965-6788.');
+        yPosition += 3;
+        
+        // Electronic Consent Agreement
+        addText('ELECTRONIC CONSENT AGREEMENT', 12, true);
+        addText('By providing your information and agreeing to participate, you acknowledge that you have read this information, have had the opportunity to ask questions, and agree to participate in this research study.');
+        yPosition += 5;
+        
+        addText('Document generated: ' + new Date().toLocaleDateString(), 10);
+        
+        // Save the PDF
+        doc.save('Informed_Consent_Form.pdf');
     }
 });
 
