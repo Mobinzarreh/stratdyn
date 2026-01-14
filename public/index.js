@@ -214,9 +214,18 @@ $(document).ready(function() {
     $("#consent-form").on("submit", (event) => {
         event.preventDefault();
         const agreed = $("#consent-checkbox").is(":checked");
-        // send consent response to server
+        const fullName = $("#consent-name").val();
+        const email = $("#consent-email").val();
+        const date = $("#consent-date").val();
+        const recordingConsent = $("#recording-consent-checkbox").is(":checked");
+        
+        // send consent response to server with electronic signature data
         socket.emit("submit-consent", {
-            consent: agreed ? 'agree' : 'disagree'
+            consent: agreed ? 'agree' : 'disagree',
+            fullName: fullName,
+            email: email,
+            date: date,
+            recordingConsent: recordingConsent
         });
     });
 

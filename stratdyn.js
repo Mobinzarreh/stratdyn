@@ -319,9 +319,10 @@ module.exports = function(io) {
         createdLogFiles.add(group);
     }
 
-    // Initialize decline and reschedule log files in logs directory
+    // Initialize decline, reschedule, and consent log files in logs directory
     const declineLogPath = `${logsDir}/decline_log.csv`;
     const rescheduleLogPath = `${logsDir}/reschedule_log.csv`;
+    const consentLogPath = `${logsDir}/consent_log_${sessionId}.csv`;
     
     if (!fs.existsSync(declineLogPath)) {
         fs.writeFileSync(declineLogPath, 'timestamp,username,group,event\n');
@@ -330,6 +331,10 @@ module.exports = function(io) {
     if (!fs.existsSync(rescheduleLogPath)) {
         fs.writeFileSync(rescheduleLogPath, 'timestamp,username,group,email,phone,preferredTime\n');
         console.log('Created reschedule_log.csv in logs directory');
+    }
+    if (!fs.existsSync(consentLogPath)) {
+        fs.writeFileSync(consentLogPath, 'timestamp,username,group,fullName,email,consentDate,recordingConsent,consentGiven\n');
+        console.log(`Created consent_log_${sessionId}.csv in logs directory`);
     }
 
     // keep track of logged-in users and admins
@@ -1299,6 +1304,13 @@ module.exports = function(io) {
         socket.on('submit-consent', (request) => {
             if (username != null) {
                 console.log(`${username} submitted consent: ${request.consent}`);
+                
+                // Log electronic consent to CSV
+                const userGroup = users[username] ? users[username].group : 'unknown';
+                const consentLogEntry = `${Date.now()},${username},${userGroup},"${request.fullName || ''}","${request.email || ''}","${request.date || ''}",${request.recordingConsent || 'false'},${request.consent === 'agree'}\n`;
+                fs.appendFile(consentLogPath, consentLogEntry, (err) => {
+                    if (err) console.error('Error logging consent:', err);
+                });
                 
                 // Auto-advance to demographics page
                 if (autoAdvance && request.consent === 'agree') {

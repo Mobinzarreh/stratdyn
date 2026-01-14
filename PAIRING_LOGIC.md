@@ -78,12 +78,12 @@ R = 0.5 × ln(u1/(1-u1)) + 0.5 × ln(u2/(1-u2))
 - **25 distinct R-values** covering the full spectrum of paired collaboration difficulty
 
 ## Distraction Tasks
-Distraction tasks are inserted at positions 5, 11, 17, 23, 29 (after every 5 focal tasks):
-- Position 5: Distraction Task 1 (u=0.50)
-- Position 11: Distraction Task 2 (u=0.55)
-- Position 17: Distraction Task 3 (u=0.60)
-- Position 23: Distraction Task 4 (u=0.65)
-- Position 29: Distraction Task 5 (u=0.70)
+Distraction tasks are inserted after specific counts of focal tasks (defined by `distraction_positions` [5,11,17,22,25]):
+- After 5 focal tasks: Distr_Collab_1 (u=0.62, individual_percentile=0, paired_percentile=0)
+- After 11 focal tasks: Distr_Collab_2 (u=0.62, individual_percentile=0, paired_percentile=0)
+- After 17 focal tasks: Distr_Defect_1 (u=0.82, individual_percentile=100, paired_percentile=100)
+- After 22 focal tasks: Distr_Defect_2 (u=0.82, individual_percentile=100, paired_percentile=100)
+- After 25 focal tasks: Distr_Ambiguous_1 (u=0.72, individual_percentile=50, paired_percentile=50)
 
 Both partners experience the same distraction tasks at the same positions.
 
@@ -93,7 +93,7 @@ Both partners experience the same distraction tasks at the same positions.
 ✓ **Balanced Design**: Each u-level combination appears exactly once
 ✓ **Systematic Progression**: Clear structure from low to high difficulty
 ✓ **Risk Dominance Variety**: Full range of R-values from 0.490 to 1.516
-✓ **Consistent Experience**: Both partners in a pair complete the same 30 tasks (but in different orders)
+✓ **Consistent Experience**: Both partners in a pair complete the same 32 tasks total (2 training + 25 focal + 5 distractions inserted)
 
 ## Implementation Details
 
@@ -103,20 +103,19 @@ Both partners experience the same distraction tasks at the same positions.
   "user01": "user02",
   "user02": "user01",
   "user03": "user04",
-  "user04": "user03",
-  "user05": "user06",
-  "user06": "user05"
+  "user04": "user03"
 }
 ```
 
 ### Assignment Structure
-Each user has a 30-element array of task indices (0-29) representing their unique task sequence.
+Each user has a 27-element array of task indices (0-26) representing their unique task sequence for the 2 training tasks + 25 focal tasks. Distraction tasks are inserted dynamically during task presentation at positions defined by `distraction_positions` [5,11,17,22,25], resulting in 32 total tasks experienced.
 
 ### How to Add More Users
-To add a new pair of users:
-1. Add entries to `partners` object (bidirectional)
-2. Generate assignments using the `generate_assignments.py` script
-3. Ensure the pairing matrix verification passes (all 25 combinations covered)
+To add a new pair of users (e.g., user05-user06):
+1. Add entries to `partners` object (bidirectional) in experiment.json
+2. Add user credentials to userCredentials.json
+3. Generate assignments using the `generate_assignments.py` script
+4. Ensure the pairing matrix verification passes (all 25 combinations covered)
 
 ## Verification
 Run `python3 generate_assignments.py` to verify the pairing logic. It will:
