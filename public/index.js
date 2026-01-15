@@ -1357,7 +1357,6 @@ $(document).ready(function() {
         addText('Date of Electronic Consent: ' + consentDate, 11);
         addText('Consent Method: Electronic checkbox agreement', 11);
         addText('Consent Status: ✓ AGREED TO PARTICIPATE', 11);
-        addText('(including mandatory audio recording)', 11);
         yPosition += 5;
         
         // Add electronic signature confirmation
