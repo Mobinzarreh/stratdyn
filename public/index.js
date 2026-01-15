@@ -1342,7 +1342,26 @@ $(document).ready(function() {
         // Electronic Consent Agreement
         addText('ELECTRONIC CONSENT AGREEMENT', 12, true);
         addText('By providing your information and agreeing to participate, you acknowledge that you have read this information, have had the opportunity to ask questions, and agree to participate in this research study.');
+        yPosition += 10;
+        
+        // Add signature section
+        addText('PARTICIPANT SIGNATURE', 12, true);
         yPosition += 5;
+        
+        // Get participant information from form fields
+        const fullName = $("#consent-name").val() || "[Name not provided]";
+        const consentDate = $("#consent-date").val() || "[Date not provided]";
+        
+        addText('Participant Name: ' + fullName, 11);
+        addText('Date of Consent: ' + consentDate, 11);
+        addText('I have read and understood the above information and agree to participate in this study, including audio recording.', 11);
+        yPosition += 5;
+        
+        // Add signature line
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(11);
+        doc.text('Signature: _______________________________', margin, yPosition);
+        yPosition += 10;
         
         addText('Document generated: ' + new Date().toLocaleDateString(), 10);
         
