@@ -1345,25 +1345,33 @@ $(document).ready(function() {
         yPosition += 10;
         
         // Add signature section
-        addText('PARTICIPANT SIGNATURE', 12, true);
+        addText('ELECTRONIC CONSENT RECORD', 12, true);
         yPosition += 5;
         
         // Get participant information from form fields
         const fullName = $("#consent-name").val() || "[Name not provided]";
         const consentDate = $("#consent-date").val() || "[Date not provided]";
+        const currentTimestamp = new Date().toLocaleString();
         
         addText('Participant Name: ' + fullName, 11);
-        addText('Date of Consent: ' + consentDate, 11);
-        addText('I have read and understood the above information and agree to participate in this study, including audio recording.', 11);
+        addText('Date of Electronic Consent: ' + consentDate, 11);
+        addText('Consent Method: Electronic checkbox agreement', 11);
+        addText('Consent Status: ✓ AGREED TO PARTICIPATE (including audio recording)', 11);
         yPosition += 5;
         
-        // Add signature line
+        // Add electronic signature confirmation
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(12);
+        doc.text('ELECTRONIC SIGNATURE CONFIRMED', margin, yPosition);
+        yPosition += 8;
+        
         doc.setFont(undefined, 'normal');
         doc.setFontSize(11);
-        doc.text('Signature: _______________________________', margin, yPosition);
-        yPosition += 10;
+        doc.text('This document serves as electronic consent documentation.', margin, yPosition);
+        doc.text('Consent was provided by checking the agreement checkbox and submitting the form.', margin, yPosition + 6);
+        yPosition += 15;
         
-        addText('Document generated: ' + new Date().toLocaleDateString(), 10);
+        addText('Document generated: ' + currentTimestamp, 10);
         
         // Save the PDF
         doc.save('Informed_Consent_Form.pdf');
