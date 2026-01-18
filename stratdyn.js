@@ -18,6 +18,30 @@ module.exports = function(io) {
         fs.readFileSync('./data/experiment.json')
     );
 
+    // Load the task schedule (single source of truth)
+    const taskSchedule = JSON.parse(
+        fs.readFileSync('./data/task_schedule.json')
+    );
+    console.log(`Loaded task schedule: ${taskSchedule.total_tasks} tasks`);
+
+    /**
+     * Get user role (user1 or user2) based on username
+     * Odd-numbered users (user01, user03) are 'user1', even-numbered are 'user2'
+     */
+    function getUserRole(username) {
+        const userNum = parseInt(username.replace(/\D/g, ''));
+        return userNum % 2 === 1 ? 'user1' : 'user2';
+    }
+
+    /**
+     * Get user group (treatment or control) based on username
+     * user01/user02 are treatment, user03/user04 are control
+     */
+    function getUserGroup(username) {
+        const userNum = parseInt(username.replace(/\D/g, ''));
+        return (userNum <= 2) ? 'treatment' : 'control';
+    }
+
     // Log session metadata including distraction task toggle
     const sessionMetadata = {
         session_id: `session_${Date.now()}`,
@@ -86,72 +110,60 @@ module.exports = function(io) {
         return finalSequence;
     }
 
-    // Build the task sequence once at startup
+    // Build the task sequence once at startup (for buildTaskSequence compatibility)
     const taskSequence = buildTaskSequence();
     
     /**
-     * Get the effective task sequence for a user
-     * Maps user assignment indices to actual task objects
+     * Get the effective task sequence for a user using task_schedule.json
+     * NEW: Uses the CSV-generated schedule as single source of truth
+     * Returns array with training tasks (indices 0-1) followed by 30 scheduled tasks (indices 2-31)
      */
     function getUserTaskSequence(username) {
-        const useDistraction = experiment.use_distraction_tasks || false;
+        const role = getUserRole(username); // 'user1' or 'user2'
         
-        if (!useDistraction) {
-            // Simple case: assignments directly map to tasks
-            return experiment.assignments[username].map(idx => experiment.tasks[idx]);
-        }
-        
-        // With distraction: we need to interleave distraction tasks
-        // User assignments still refer to focal task indices (0-1 = training, 2-26 = focal)
-        // We insert distraction tasks AFTER specific focal task counts
-        const assignments = experiment.assignments[username];
-        const distractionTasks = experiment.distraction_tasks || [];
-        // distraction_positions now means: insert after this many focal tasks
-        // e.g., [5, 11, 17, 22, 25] means insert after focal task 5, 11, 17, 22, 25
-        const insertAfterFocalCounts = experiment.distraction_positions || [5, 11, 17, 22, 25];
-        
+        // Build sequence: 2 training tasks + 30 scheduled tasks
         let sequence = [];
-        let assignmentIndex = 0;
-        let focalTaskCount = 0; // Count of focal tasks seen (excluding training)
-        let distractionIdx = 0;
         
-        // Process training tasks first (assignments 0, 1)
-        for (let i = 0; i < 2 && assignmentIndex < assignments.length; i++) {
+        // Add training tasks (indices 0-1 in experiment.tasks)
+        for (let i = 0; i < 2; i++) {
             sequence.push({
-                task: experiment.tasks[assignments[assignmentIndex]],
-                originalIndex: assignments[assignmentIndex],
-                assignmentIndex: assignmentIndex,
-                isDistraction: false
+                task: experiment.tasks[i],
+                originalIndex: i,
+                assignmentIndex: i,
+                isDistraction: false,
+                isTraining: true,
+                scheduleIndex: null // Training tasks not in schedule
             });
-            assignmentIndex++;
         }
         
-        // Process focal tasks with distraction insertions
-        while (assignmentIndex < assignments.length) {
-            // Add focal task
-            sequence.push({
-                task: experiment.tasks[assignments[assignmentIndex]],
-                originalIndex: assignments[assignmentIndex],
-                assignmentIndex: assignmentIndex,
-                isDistraction: false
-            });
-            focalTaskCount++;
+        // Add 30 tasks from the schedule
+        taskSchedule.tasks.forEach((schedTask, schedIdx) => {
+            const userData = schedTask[role]; // user1 or user2 data
+            const isDistraction = schedTask.task_type === 'distraction';
             
-            // Check if distraction task should be inserted after this focal task count
-            if (distractionIdx < distractionTasks.length && 
-                insertAfterFocalCounts[distractionIdx] === focalTaskCount) {
-                sequence.push({
-                    task: distractionTasks[distractionIdx],
-                    originalIndex: -1, // Distraction tasks don't have original index
-                    assignmentIndex: -1,
-                    isDistraction: true,
-                    distractionIndex: distractionIdx
-                });
-                distractionIdx++;
+            let taskData;
+            if (isDistraction) {
+                // Find the distraction task by label (D0, D1, D2, D3, D4)
+                const distractionIndex = parseInt(userData.task_id.replace('D', ''));
+                taskData = experiment.distraction_tasks[distractionIndex];
+            } else {
+                // Focal/diagonal task: task_id is the task number (1-25), index is task_id + 1 (accounting for training)
+                const taskIndex = parseInt(userData.task_id) + 1; // +1 because tasks array has 2 training tasks at start
+                taskData = experiment.tasks[taskIndex];
             }
             
-            assignmentIndex++;
-        }
+            sequence.push({
+                task: taskData,
+                originalIndex: isDistraction ? -1 : parseInt(userData.task_id) + 1,
+                assignmentIndex: schedIdx + 2, // Offset by 2 for training tasks
+                isDistraction: isDistraction,
+                isTraining: false,
+                scheduleIndex: schedIdx,
+                scheduleData: userData, // Pre-calculated u_percentile and r_percentile
+                taskType: schedTask.task_type,
+                uiTaskNumber: schedTask.ui_task_number
+            });
+        });
         
         return sequence;
     }
@@ -448,17 +460,15 @@ module.exports = function(io) {
             task = shuffleCollaborativeOptions(task, activeUsername, sequenceIndex);
             console.log(`  [${stage.toUpperCase()}] Options:`, task.options.map(o => `${o.label}(${o.upside}/${o.downside})`).join(', '));
             
-            // Calculate percentiles
+            // Get user group and role for percentile calculation
+            const userGroup = getUserGroup(activeUsername);
+            const userRole = getUserRole(activeUsername);
+            
+            // Calculate percentiles - NOW USING PRE-CALCULATED CSV VALUES
             const myUValue = task.uValue;
             let myUPercentile, rPercentile, rValue;
             
-            if (isDistraction) {
-                // Distraction tasks use fixed percentiles
-                myUPercentile = task.individual_percentile;
-                rPercentile = task.paired_percentile;
-                rValue = 0; // Not meaningful for distraction tasks
-                console.log(`  [DISTRACTION] Fixed percentiles: U=${myUPercentile}%, R=${rPercentile}%`);
-            } else if (task.isTraining) {
+            if (seqItem.isTraining) {
                 // Training tasks use fixed example values - SAME FOR ALL USERS
                 // but DIFFERENT between Training Task 1 and Training Task 2
                 if (sequenceIndex === 0) {
@@ -472,13 +482,27 @@ module.exports = function(io) {
                 }
                 rValue = 0;
                 console.log(`  [TRAINING] Fixed values (Task ${sequenceIndex + 1}): U=${myUPercentile}%, R=${rPercentile}%`);
+            } else if (seqItem.scheduleData) {
+                // Use pre-calculated values from task_schedule.json
+                myUPercentile = seqItem.scheduleData.u_percentile;
+                rValue = 0; // R-value not stored in schedule (not needed for display)
+                
+                // R-percentile: treatment group sees it, control group gets null
+                if (userGroup === 'treatment') {
+                    rPercentile = seqItem.scheduleData.r_percentile;
+                } else {
+                    rPercentile = null; // Control group doesn't see paired difficulty
+                }
+                
+                const taskType = seqItem.taskType || (isDistraction ? 'distraction' : 'focal');
+                console.log(`  [${taskType.toUpperCase()}] From schedule: U=${myUPercentile}%, R=${rPercentile}% (${userRole}, ${userGroup})`);
             } else {
-                // Focal tasks - calculate percentiles from focal tasks only
+                // Fallback: calculate dynamically (shouldn't happen with proper schedule)
                 myUPercentile = calculateUPercentile(myUValue, experiment.tasks, task);
-                const partnerUValue = task.partnerTask.uValue;
+                const partnerUValue = task.partnerTask ? task.partnerTask.uValue : myUValue;
                 rValue = calculateRiskDominance(myUValue, partnerUValue);
-                rPercentile = calculateRPercentile(rValue, experiment.tasks, task);
-                console.log(`  [FOCAL] Calculated: U=${myUPercentile}%, R=${rPercentile}%`);
+                rPercentile = userGroup === 'treatment' ? calculateRPercentile(rValue, experiment.tasks, task) : null;
+                console.log(`  [FALLBACK] Calculated: U=${myUPercentile}%, R=${rPercentile}%`);
             }
             
             task.uValue = myUValue;
@@ -486,34 +510,23 @@ module.exports = function(io) {
             task.rValue = rValue;
             task.rPercentile = rPercentile;
             
-            // Get user group
-            const userGroup = users[activeUsername] ? users[activeUsername].group : 'treatment';
+            // Store user group in task
             task.userGroup = userGroup;
             task.stage = stage;
             
-            // Determine task numbering for UI
-            const useDistraction = experiment.use_distraction_tasks || false;
-            const totalDisplayTasks = useDistraction ? 30 : 25; // 25 focal + 5 distraction OR just 25 focal
+            // Determine task numbering for UI - use pre-calculated values from schedule
+            const totalDisplayTasks = 30; // Always 30 tasks with the CSV schedule
             
-            if (task.isTraining) {
+            if (seqItem.isTraining) {
                 task.taskNumber = sequenceIndex + 1; // Training Task 1 or 2
                 task.totalTasks = 2;
                 task.taskLabel = `Training Task ${sequenceIndex + 1}`;
             } else {
-                // For UI display, use sequential numbering (1-30) for all non-training tasks
-                // This counts position in sequence minus the 2 training tasks
-                const displayPosition = sequenceIndex - 1; // sequenceIndex 2 becomes display 1
+                // Use the ui_task_number from the schedule
+                const displayPosition = seqItem.uiTaskNumber || (sequenceIndex - 1);
                 task.totalTasks = totalDisplayTasks;
-                
-                if (isDistraction) {
-                    task.taskLabel = `Task ${displayPosition}`; // Use sequential numbering for consistency
-                    task.taskNumber = displayPosition; // Sequential position for progress
-                } else {
-                    // For focal tasks, count ALL tasks (focal + distraction) seen so far for sequential numbering
-                    // This ensures after distraction Task 6, the next focal is Task 7
-                    task.taskLabel = `Task ${displayPosition}`;
-                    task.taskNumber = displayPosition;
-                }
+                task.taskLabel = `Task ${displayPosition}`;
+                task.taskNumber = displayPosition;
             }
             
             // Progress calculation

@@ -582,8 +582,8 @@ $(document).ready(function() {
                 500 // 500ms delay before starting animation
             );
             
-            // Show/hide R percentile marker based on user group
-            if (userGroup === 'treatment') {
+            // Show/hide R percentile marker based on user group and r-percentile availability
+            if (userGroup === 'treatment' && response.rPercentile !== null && response.rPercentile !== undefined) {
                 // Treatment group: Show purple paired difficulty marker with animation
                 $("#design-r-marker").show();
                 $("#design-r-legend").css("display", "flex"); // Use flex for proper alignment
@@ -597,7 +597,7 @@ $(document).ready(function() {
                     1200 // 1200ms delay (starts after u-marker animation begins)
                 );
             } else {
-                // Control group: Hide paired difficulty marker
+                // Control group OR no r-percentile: Hide paired difficulty marker
                 $("#design-r-marker").hide();
                 $("#design-r-legend").hide();
             }

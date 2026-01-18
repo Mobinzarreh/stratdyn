@@ -1,0 +1,498 @@
+{
+  "description": "Task schedule for StratDyn experiment - single source of truth",
+  "total_tasks": 30,
+  "task_breakdown": {
+    "focal": 20,
+    "diagonal": 5,
+    "distraction": 5
+  },
+  "distraction_positions": [
+    6,
+    12,
+    18,
+    24,
+    30
+  ],
+  "tasks": [
+    {
+      "ui_task_number": 1,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "21",
+        "u_value": 0.77,
+        "u_percentile": 75,
+        "r_percentile": 50
+      },
+      "user2": {
+        "task_id": "9",
+        "u_value": 0.67,
+        "u_percentile": 25,
+        "r_percentile": 50
+      }
+    },
+    {
+      "ui_task_number": 2,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "7",
+        "u_value": 0.67,
+        "u_percentile": 25,
+        "r_percentile": 8
+      },
+      "user2": {
+        "task_id": "6",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 8
+      }
+    },
+    {
+      "ui_task_number": 3,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "17",
+        "u_value": 0.77,
+        "u_percentile": 75,
+        "r_percentile": 96
+      },
+      "user2": {
+        "task_id": "25",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 96
+      }
+    },
+    {
+      "ui_task_number": 4,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "3",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 38
+      },
+      "user2": {
+        "task_id": "18",
+        "u_value": 0.77,
+        "u_percentile": 75,
+        "r_percentile": 38
+      }
+    },
+    {
+      "ui_task_number": 5,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "15",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 88
+      },
+      "user2": {
+        "task_id": "22",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 88
+      }
+    },
+    {
+      "ui_task_number": 6,
+      "task_type": "distraction",
+      "user1": {
+        "task_id": "D0",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 0
+      },
+      "user2": {
+        "task_id": "D2",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 100
+      }
+    },
+    {
+      "ui_task_number": 7,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "11",
+        "u_value": 0.67,
+        "u_percentile": 25,
+        "r_percentile": 29
+      },
+      "user2": {
+        "task_id": "12",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 29
+      }
+    },
+    {
+      "ui_task_number": 8,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "2",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 8
+      },
+      "user2": {
+        "task_id": "7",
+        "u_value": 0.67,
+        "u_percentile": 25,
+        "r_percentile": 8
+      }
+    },
+    {
+      "ui_task_number": 9,
+      "task_type": "diagonal",
+      "user1": {
+        "task_id": "14",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 42
+      },
+      "user2": {
+        "task_id": "15",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 42
+      }
+    },
+    {
+      "ui_task_number": 10,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "9",
+        "u_value": 0.67,
+        "u_percentile": 25,
+        "r_percentile": 75
+      },
+      "user2": {
+        "task_id": "23",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 75
+      }
+    },
+    {
+      "ui_task_number": 11,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "13",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 29
+      },
+      "user2": {
+        "task_id": "11",
+        "u_value": 0.67,
+        "u_percentile": 25,
+        "r_percentile": 29
+      }
+    },
+    {
+      "ui_task_number": 12,
+      "task_type": "distraction",
+      "user1": {
+        "task_id": "D3",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 100
+      },
+      "user2": {
+        "task_id": "D0",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 0
+      }
+    },
+    {
+      "ui_task_number": 13,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "26",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 75
+      },
+      "user2": {
+        "task_id": "8",
+        "u_value": 0.67,
+        "u_percentile": 25,
+        "r_percentile": 75
+      }
+    },
+    {
+      "ui_task_number": 14,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "4",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 58
+      },
+      "user2": {
+        "task_id": "26",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 58
+      }
+    },
+    {
+      "ui_task_number": 15,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "18",
+        "u_value": 0.77,
+        "u_percentile": 75,
+        "r_percentile": 38
+      },
+      "user2": {
+        "task_id": "5",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 38
+      }
+    },
+    {
+      "ui_task_number": 16,
+      "task_type": "diagonal",
+      "user1": {
+        "task_id": "23",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 100
+      },
+      "user2": {
+        "task_id": "24",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 100
+      }
+    },
+    {
+      "ui_task_number": 17,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "5",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 21
+      },
+      "user2": {
+        "task_id": "13",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 21
+      }
+    },
+    {
+      "ui_task_number": 18,
+      "task_type": "distraction",
+      "user1": {
+        "task_id": "D2",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 100
+      },
+      "user2": {
+        "task_id": "D4",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 50
+      }
+    },
+    {
+      "ui_task_number": 19,
+      "task_type": "diagonal",
+      "user1": {
+        "task_id": "6",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 0
+      },
+      "user2": {
+        "task_id": "4",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 0
+      }
+    },
+    {
+      "ui_task_number": 20,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "8",
+        "u_value": 0.67,
+        "u_percentile": 25,
+        "r_percentile": 50
+      },
+      "user2": {
+        "task_id": "17",
+        "u_value": 0.77,
+        "u_percentile": 75,
+        "r_percentile": 50
+      }
+    },
+    {
+      "ui_task_number": 21,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "16",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 21
+      },
+      "user2": {
+        "task_id": "2",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 21
+      }
+    },
+    {
+      "ui_task_number": 22,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "25",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 96
+      },
+      "user2": {
+        "task_id": "19",
+        "u_value": 0.77,
+        "u_percentile": 75,
+        "r_percentile": 96
+      }
+    },
+    {
+      "ui_task_number": 23,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "19",
+        "u_value": 0.77,
+        "u_percentile": 75,
+        "r_percentile": 67
+      },
+      "user2": {
+        "task_id": "14",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 67
+      }
+    },
+    {
+      "ui_task_number": 24,
+      "task_type": "distraction",
+      "user1": {
+        "task_id": "D1",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 0
+      },
+      "user2": {
+        "task_id": "D3",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 100
+      }
+    },
+    {
+      "ui_task_number": 25,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "24",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 88
+      },
+      "user2": {
+        "task_id": "16",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 88
+      }
+    },
+    {
+      "ui_task_number": 26,
+      "task_type": "diagonal",
+      "user1": {
+        "task_id": "20",
+        "u_value": 0.77,
+        "u_percentile": 75,
+        "r_percentile": 79
+      },
+      "user2": {
+        "task_id": "21",
+        "u_value": 0.77,
+        "u_percentile": 75,
+        "r_percentile": 79
+      }
+    },
+    {
+      "ui_task_number": 27,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "22",
+        "u_value": 0.82,
+        "u_percentile": 100,
+        "r_percentile": 58
+      },
+      "user2": {
+        "task_id": "3",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 58
+      }
+    },
+    {
+      "ui_task_number": 28,
+      "task_type": "focal",
+      "user1": {
+        "task_id": "12",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 67
+      },
+      "user2": {
+        "task_id": "20",
+        "u_value": 0.77,
+        "u_percentile": 75,
+        "r_percentile": 67
+      }
+    },
+    {
+      "ui_task_number": 29,
+      "task_type": "diagonal",
+      "user1": {
+        "task_id": "10",
+        "u_value": 0.67,
+        "u_percentile": 25,
+        "r_percentile": 12
+      },
+      "user2": {
+        "task_id": "10",
+        "u_value": 0.67,
+        "u_percentile": 25,
+        "r_percentile": 12
+      }
+    },
+    {
+      "ui_task_number": 30,
+      "task_type": "distraction",
+      "user1": {
+        "task_id": "D4",
+        "u_value": 0.72,
+        "u_percentile": 50,
+        "r_percentile": 50
+      },
+      "user2": {
+        "task_id": "D1",
+        "u_value": 0.62,
+        "u_percentile": 0,
+        "r_percentile": 0
+      }
+    }
+  ]
+}
