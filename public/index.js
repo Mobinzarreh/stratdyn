@@ -799,17 +799,21 @@ $(document).ready(function() {
                 $('#tutorial-btn-next').text('Next →').removeClass('tutorial-btn-finish').addClass('tutorial-btn-next');
             }
             
-            // Show card first to get accurate dimensions
-            card.show();
-            
             // Highlight target element
             const target = $(step.target);
             if (target.length) {
                 target.addClass('tutorial-highlight');
             }
             
-            // Position card immediately (will reposition after scroll if needed)
+            // CRITICAL: Position card BEFORE showing it
+            // Temporarily show with visibility:hidden to get dimensions
+            card.css('visibility', 'hidden').show();
+            
+            // Calculate and apply position
             this.positionCard(step, target);
+            
+            // Now make it visible
+            card.css('visibility', 'visible');
             
             // Smart scroll: ensure both target and card are visible
             if (target && target.length) {
@@ -864,9 +868,14 @@ $(document).ready(function() {
         },
         
         positionCard: function(step, target) {
+            const card = $('#tutorial-step-card');
+            const pointer = $('#tutorial-pointer');
+            
+            // CRITICAL: Ensure card has fixed positioning
+            card.css('position', 'fixed');
+            
             if (!target || !target.length) {
                 // No target - center card in viewport
-                const card = $('#tutorial-step-card');
                 const viewportWidth = window.innerWidth;
                 const viewportHeight = window.innerHeight;
                 const cardWidth = card.outerWidth();
@@ -876,12 +885,9 @@ $(document).ready(function() {
                     top: (viewportHeight - cardHeight) / 2 + 'px',
                     left: (viewportWidth - cardWidth) / 2 + 'px'
                 });
-                $('#tutorial-pointer').hide();
+                pointer.hide();
                 return;
             }
-            
-            const card = $('#tutorial-step-card');
-            const pointer = $('#tutorial-pointer');
             
             // Reset pointer classes
             pointer.removeClass('tutorial-pointer-up tutorial-pointer-down tutorial-pointer-left tutorial-pointer-right');
@@ -951,7 +957,16 @@ $(document).ready(function() {
             // Apply position
             card.css({
                 top: selectedPos.top + 'px',
-                left: selectedPos.left + 'px'
+                left: selectedPos.left + 'px',
+                position: 'fixed'  // Force fixed positioning
+            });
+            
+            // Debug log
+            console.log('Tutorial card positioned:', {
+                step: step.title,
+                position: { top: selectedPos.top, left: selectedPos.left },
+                targetRect: { top: targetRect.top, left: targetRect.left, width: targetRect.width, height: targetRect.height },
+                cardSize: { width: cardWidth, height: cardHeight }
             });
             
             // Position pointer
@@ -969,9 +984,27 @@ $(document).ready(function() {
                     const maxOffset = cardWidth / 2 - 40;
                     const clampedOffset = Math.max(-maxOffset, Math.min(maxOffset, offsetFromCenter));
                     
-                    pointer.css('left', `calc(50% + ${clampedOffset}px)`);
-                } else {
-                    pointer.css('left', ''); // Reset for left/right pointers
+                    pointer.css({
+                        'left': `calc(50% + ${clampedOffset}px)`,
+                        'top': '',
+                        'right': '',
+                        'bottom': ''
+                    });
+                } else if (selectedPos.pointerClass.includes('left') || selectedPos.pointerClass.includes('right')) {
+                    // For left/right pointers, adjust vertical offset
+                    const targetCenterY = targetRect.top + targetRect.height / 2;
+                    const cardCenterY = selectedPos.top + cardHeight / 2;
+                    const offsetFromCenter = targetCenterY - cardCenterY;
+                    
+                    const maxOffset = cardHeight / 2 - 40;
+                    const clampedOffset = Math.max(-maxOffset, Math.min(maxOffset, offsetFromCenter));
+                    
+                    pointer.css({
+                        'top': `calc(50% + ${clampedOffset}px)`,
+                        'left': '',
+                        'right': '',
+                        'bottom': ''
+                    });
                 }
                 
                 pointer.show();
