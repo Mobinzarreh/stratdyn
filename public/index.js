@@ -664,7 +664,7 @@ $(document).ready(function() {
         currentStep: -1,
         isActive: false,
         overlay: null,
-        totalSteps: 4,
+        totalSteps: 3,
         
         // Step definitions with content
         steps: [
@@ -674,7 +674,7 @@ $(document).ready(function() {
                 content: `
                     <p><strong>Use the slider</strong> to indicate how likely you are to choose a collaborative option (0-100).</p>
                     <div class="tutorial-note">
-                        <strong>Important:</strong> You must move the slider to enable the Submit button. 
+                        <strong>Note:</strong> You must move the slider to enable the Submit button. 
                         (To submit 50% as your intention, move the slider away and return it to 50.)
                     </div>
                     <p>The slider starts at 50 — move it to reflect your actual intention.</p>
@@ -694,17 +694,7 @@ $(document).ready(function() {
                     <p><strong>Individual option (Y):</strong> Same payoff regardless of what your partner chooses.</p>
                 `,
                 target: '#intention table.table',
-                position: 'right'  // Changed from 'below' to 'right' for wide table
-            },
-            {
-                title: 'Two-Stage Decision Process',
-                icon: '<i class="bi-diagram-2"></i>',
-                content: `
-                    <p><strong>Stage 1 (Current):</strong> Express your collaboration intention using the slider, then click Submit.</p>
-                    <p><strong>Stage 2 (Next):</strong> After seeing your partner's intention, you'll make your <strong>final choice</strong> by clicking one of the four options in the table.</p>
-                `,
-                target: '#intention-timer-container',
-                position: 'below'
+                position: 'right'
             },
             {
                 title: 'Submit Your Intention',
