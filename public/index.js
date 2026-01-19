@@ -294,11 +294,6 @@ $(document).ready(function() {
         $("#intention-value").text($(this).val());
         // Enable submit button once slider is moved from default position
         $("#intention-button").prop("disabled", false);
-        
-        // Advance tutorial if active
-        if (window.tutorialController && window.tutorialController.currentStep === 0) {
-            window.tutorialController.advanceToStep(1);
-        }
     });
 
     // bind behavior to intention form submission
@@ -664,11 +659,65 @@ $(document).ready(function() {
         });
     });
     
-    // Tutorial Walkthrough Controller
+    // Tutorial Walkthrough Controller - Rebuilt for proper positioning
     window.tutorialController = {
         currentStep: -1,
         isActive: false,
         overlay: null,
+        totalSteps: 4,
+        
+        // Step definitions with content
+        steps: [
+            {
+                title: 'The Intention Slider',
+                icon: '<i class="bi-sliders"></i>',
+                content: `
+                    <p><strong>Use the slider</strong> to indicate how likely you are to choose a collaborative option (0-100).</p>
+                    <div class="tutorial-note">
+                        <strong>Important:</strong> You must move the slider to enable the Submit button. 
+                        (To submit 50% as your intention, move the slider away and return it to 50.)
+                    </div>
+                    <p>The slider starts at 50 — move it to reflect your actual intention.</p>
+                `,
+                target: '#intention-form .card.border-primary',
+                position: 'above'
+            },
+            {
+                title: 'Understanding Payoffs',
+                icon: '<i class="bi-table"></i>',
+                content: `
+                    <p><strong>Collaborative options (A, B, C):</strong></p>
+                    <ul style="margin: 5px 0; padding-left: 20px;">
+                        <li>If both you and your partner choose collaborative → you get the <strong>higher payoff</strong> (green column)</li>
+                        <li>If you choose collaborative but partner chooses individual → you get the <strong>lower payoff</strong> (red column)</li>
+                    </ul>
+                    <p><strong>Individual option (Y):</strong> Same payoff regardless of what your partner chooses.</p>
+                `,
+                target: '#intention table.table',
+                position: 'below'
+            },
+            {
+                title: 'Two-Stage Decision Process',
+                icon: '<i class="bi-diagram-2"></i>',
+                content: `
+                    <p><strong>Stage 1 (Current):</strong> Express your collaboration intention using the slider, then click Submit.</p>
+                    <p><strong>Stage 2 (Next):</strong> After seeing your partner's intention, you'll make your <strong>final choice</strong> by clicking one of the four options in the table.</p>
+                `,
+                target: '#intention-timer-container',
+                position: 'below'
+            },
+            {
+                title: 'Submit Your Intention',
+                icon: '<i class="bi-check-circle"></i>',
+                content: `
+                    <p>Once you move the slider, the <strong>Submit button turns blue</strong> and becomes clickable.</p>
+                    <p>Click it when you're ready to proceed. You'll then wait briefly for your partner before Stage 2 begins.</p>
+                `,
+                target: '#intention-button',
+                position: 'above',
+                isLast: true
+            }
+        ],
         
         startTutorial: function() {
             // Check if tutorial was already completed in this session
@@ -684,12 +733,12 @@ $(document).ready(function() {
             // Bind button events
             $('#tutorial-start-btn').off('click').on('click', function() {
                 welcomeModal.hide();
-                self.initializeTutorial();
+                setTimeout(() => self.initializeTutorial(), 300);
             });
             
             $('#tutorial-skip-btn').off('click').on('click', function() {
                 welcomeModal.hide();
-                self.skipTutorial();
+                self.markCompleted();
             });
         },
         
@@ -701,132 +750,162 @@ $(document).ready(function() {
             this.overlay = $('<div class="tutorial-overlay"></div>');
             $('body').append(this.overlay);
             
-            // Start with step 0 (slider)
-            this.advanceToStep(0);
+            // Bind navigation buttons
+            const self = this;
+            $('#tutorial-btn-next').off('click').on('click', function() {
+                self.nextStep();
+            });
+            $('#tutorial-btn-skip').off('click').on('click', function() {
+                self.finishTutorial();
+            });
+            
+            // Start with step 0
+            this.showStep(0);
         },
         
-        advanceToStep: function(step) {
-            // Hide all tooltips and remove highlights
-            $('.tutorial-tooltip').hide();
+        showStep: function(stepIndex) {
+            if (stepIndex >= this.totalSteps) {
+                this.finishTutorial();
+                return;
+            }
+            
+            // Remove previous highlights
             $('.tutorial-highlight').removeClass('tutorial-highlight');
             
-            this.currentStep = step;
+            this.currentStep = stepIndex;
+            const step = this.steps[stepIndex];
+            const card = $('#tutorial-step-card');
             
-            switch(step) {
-                case 0:
-                    this.showSliderHint();
-                    break;
-                case 1:
-                    this.showPayoffHint();
-                    break;
-                case 2:
-                    this.showTwoStageHint();
-                    break;
-                case 3:
-                    this.showSubmitHint();
-                    break;
-                default:
-                    this.finishTutorial();
+            // Update card content
+            $('#tutorial-step-icon').html(step.icon);
+            $('#tutorial-step-title-text').text(step.title);
+            $('#tutorial-step-badge').text(`Step ${stepIndex + 1} of ${this.totalSteps}`);
+            $('#tutorial-step-body').html(step.content);
+            
+            // Update progress dots
+            let dotsHtml = '';
+            for (let i = 0; i < this.totalSteps; i++) {
+                let dotClass = 'tutorial-progress-dot';
+                if (i < stepIndex) dotClass += ' completed';
+                if (i === stepIndex) dotClass += ' active';
+                dotsHtml += `<div class="${dotClass}"></div>`;
+            }
+            $('#tutorial-progress').html(dotsHtml);
+            
+            // Update button text for last step
+            if (step.isLast) {
+                $('#tutorial-btn-next').text('Finish').removeClass('tutorial-btn-next').addClass('tutorial-btn-finish');
+            } else {
+                $('#tutorial-btn-next').text('Next →').removeClass('tutorial-btn-finish').addClass('tutorial-btn-next');
+            }
+            
+            // Highlight target element
+            const target = $(step.target);
+            if (target.length) {
+                target.addClass('tutorial-highlight');
+                
+                // Scroll target into view if needed
+                const targetRect = target[0].getBoundingClientRect();
+                if (targetRect.top < 100 || targetRect.bottom > window.innerHeight - 100) {
+                    target[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+            
+            // Position the card with a small delay to allow scroll
+            setTimeout(() => this.positionCard(step, target), 100);
+            
+            // Show card
+            card.show();
+        },
+        
+        positionCard: function(step, target) {
+            const card = $('#tutorial-step-card');
+            const pointer = $('#tutorial-pointer');
+            
+            // Reset pointer classes
+            pointer.removeClass('tutorial-pointer-up tutorial-pointer-down tutorial-pointer-left tutorial-pointer-right');
+            
+            // Get viewport dimensions
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const cardWidth = card.outerWidth();
+            const cardHeight = card.outerHeight();
+            const margin = 20;
+            
+            let top, left;
+            
+            if (target && target.length) {
+                const targetRect = target[0].getBoundingClientRect();
+                const targetCenterX = targetRect.left + targetRect.width / 2;
+                const targetCenterY = targetRect.top + targetRect.height / 2;
+                
+                if (step.position === 'above') {
+                    // Position above the target
+                    top = targetRect.top - cardHeight - margin;
+                    left = targetCenterX - cardWidth / 2;
+                    pointer.addClass('tutorial-pointer-down');
+                    
+                    // If would go off top, position below instead
+                    if (top < margin) {
+                        top = targetRect.bottom + margin;
+                        pointer.removeClass('tutorial-pointer-down').addClass('tutorial-pointer-up');
+                    }
+                } else {
+                    // Position below the target
+                    top = targetRect.bottom + margin;
+                    left = targetCenterX - cardWidth / 2;
+                    pointer.addClass('tutorial-pointer-up');
+                    
+                    // If would go off bottom, position above instead
+                    if (top + cardHeight > viewportHeight - margin) {
+                        top = targetRect.top - cardHeight - margin;
+                        pointer.removeClass('tutorial-pointer-up').addClass('tutorial-pointer-down');
+                    }
+                }
+                
+                // Horizontal bounds checking
+                if (left < margin) {
+                    left = margin;
+                }
+                if (left + cardWidth > viewportWidth - margin) {
+                    left = viewportWidth - cardWidth - margin;
+                }
+                
+                // Final vertical bounds check
+                if (top < margin) {
+                    top = margin;
+                }
+                if (top + cardHeight > viewportHeight - margin) {
+                    top = viewportHeight - cardHeight - margin;
+                }
+            } else {
+                // No target - center in viewport
+                top = (viewportHeight - cardHeight) / 2;
+                left = (viewportWidth - cardWidth) / 2;
+                pointer.hide();
+            }
+            
+            card.css({
+                top: top + 'px',
+                left: left + 'px'
+            });
+            
+            if (target && target.length) {
+                pointer.show();
             }
         },
         
-        showSliderHint: function() {
-            const sliderCard = $('#intention-form .card.border-primary');
-            sliderCard.addClass('tutorial-highlight');
-            
-            const tooltip = $('#tutorial-tooltip-slider');
-            tooltip.show();
-            
-            // Position tooltip above the slider card
-            const offset = sliderCard.offset();
-            tooltip.css({
-                top: offset.top - tooltip.outerHeight() - 20,
-                left: offset.left + 20
-            });
-            
-            // Add arrow pointing down
-            tooltip.find('.tutorial-tooltip-arrow').addClass('arrow-down');
-            
-            // Auto-advance will happen when slider moves (see slider input handler)
-        },
-        
-        showPayoffHint: function() {
-            const payoffTable = $('#intention table.table');
-            payoffTable.addClass('tutorial-highlight');
-            
-            const tooltip = $('#tutorial-tooltip-payoffs');
-            tooltip.show();
-            
-            // Position tooltip to the right of the table
-            const offset = payoffTable.offset();
-            tooltip.css({
-                top: offset.top + 50,
-                left: offset.left + payoffTable.outerWidth() + 20
-            });
-            
-            // Add arrow pointing left
-            tooltip.find('.tutorial-tooltip-arrow').addClass('arrow-left');
-            
-            // Auto-advance after 8 seconds or user can close
-            setTimeout(() => {
-                if (this.currentStep === 1) {
-                    this.advanceToStep(2);
-                }
-            }, 8000);
-        },
-        
-        showTwoStageHint: function() {
-            const timerContainer = $('#intention-timer-container');
-            timerContainer.addClass('tutorial-highlight');
-            
-            const tooltip = $('#tutorial-tooltip-twostage');
-            tooltip.show();
-            
-            // Position tooltip below the timer
-            const offset = timerContainer.offset();
-            tooltip.css({
-                top: offset.top + timerContainer.outerHeight() + 20,
-                left: offset.left + 20
-            });
-            
-            // Add arrow pointing up
-            tooltip.find('.tutorial-tooltip-arrow').addClass('arrow-up');
-            
-            // Auto-advance after 6 seconds
-            setTimeout(() => {
-                if (this.currentStep === 2) {
-                    this.advanceToStep(3);
-                }
-            }, 6000);
-        },
-        
-        showSubmitHint: function() {
-            const submitBtn = $('#intention-button');
-            submitBtn.addClass('tutorial-highlight tutorial-attention');
-            
-            const tooltip = $('#tutorial-tooltip-submit');
-            tooltip.show();
-            
-            // Position tooltip above the submit button
-            const offset = submitBtn.offset();
-            tooltip.css({
-                top: offset.top - tooltip.outerHeight() - 20,
-                left: offset.left - 100
-            });
-            
-            // Add arrow pointing down
-            tooltip.find('.tutorial-tooltip-arrow').addClass('arrow-down');
-            
-            // User can click "Got it!" button or submit to finish
+        nextStep: function() {
+            this.showStep(this.currentStep + 1);
         },
         
         finishTutorial: function() {
             this.isActive = false;
             this.currentStep = -1;
             
-            // Hide all tooltips and remove highlights
-            $('.tutorial-tooltip').hide();
-            $('.tutorial-highlight').removeClass('tutorial-highlight tutorial-attention');
+            // Hide card and remove highlights
+            $('#tutorial-step-card').hide();
+            $('.tutorial-highlight').removeClass('tutorial-highlight');
             
             // Remove overlay
             if (this.overlay) {
@@ -834,6 +913,10 @@ $(document).ready(function() {
                 this.overlay = null;
             }
             
+            this.markCompleted();
+        },
+        
+        markCompleted: function() {
             // Mark tutorial as completed in session storage
             sessionStorage.setItem('tutorialCompleted', 'true');
         },

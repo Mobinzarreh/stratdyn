@@ -1055,86 +1055,53 @@
 
 <!-- Tutorial Walkthrough Modals -->
 <div class="modal fade" id="tutorial-welcome-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-info">
       <div class="modal-header bg-info text-white">
-        <h5 class="modal-title"><i class="bi-lightbulb"></i> Quick UI Walkthrough</h5>
+        <h5 class="modal-title"><i class="bi-lightbulb-fill me-2"></i>Quick UI Walkthrough</h5>
       </div>
       <div class="modal-body">
-        <p class="lead">Welcome to your first training task! Let's quickly walk through the key interface elements.</p>
-        <p>This brief tutorial will guide you through:</p>
-        <ul>
-          <li><strong>How to submit your intention</strong> using the slider</li>
-          <li><strong>Understanding the payoff table</strong> and collaborative vs. individual options</li>
-          <li><strong>The two-stage process</strong> for each task</li>
+        <p class="lead mb-3">Welcome to your first training task!</p>
+        <p>This brief tutorial will show you:</p>
+        <ul class="mb-3">
+          <li><strong>How to use the intention slider</strong> and submit your response</li>
+          <li><strong>The payoff structure</strong> for collaborative vs. individual options</li>
+          <li><strong>The two-stage process</strong> for each decision task</li>
         </ul>
-        <p class="mb-0">Click <strong>Start Tutorial</strong> to begin, or <strong>Skip</strong> if you prefer to explore on your own.</p>
+        <div class="alert alert-light border mb-0">
+          <small><i class="bi-clock me-1"></i>Takes about 30 seconds</small>
+        </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="tutorial-skip-btn">Skip Tutorial</button>
-        <button type="button" class="btn btn-info" id="tutorial-start-btn">Start Tutorial</button>
+        <button type="button" class="btn btn-outline-secondary" id="tutorial-skip-btn">Skip Tutorial</button>
+        <button type="button" class="btn btn-info" id="tutorial-start-btn"><i class="bi-play-fill me-1"></i>Start Tutorial</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Tutorial Tooltips (Hidden by default) -->
-<div id="tutorial-tooltip-slider" class="tutorial-tooltip" style="display: none;">
-  <div class="tutorial-tooltip-content">
-    <div class="tutorial-tooltip-header">
-      <strong><i class="bi-1-circle"></i> Move the Slider</strong>
-      <button type="button" class="tutorial-close-btn" onclick="window.tutorialController.skipTutorial()">
-        <i class="bi-x"></i>
-      </button>
-    </div>
-    <p>Move the slider to indicate your collaboration likelihood. <strong>You must move it from the default position (50) to enable the Submit button.</strong></p>
-    <div class="tutorial-tooltip-arrow"></div>
+<!-- Tutorial Step Card (dynamically positioned) -->
+<div id="tutorial-step-card" class="tutorial-step-card" style="display: none;">
+  <div class="tutorial-step-header">
+    <h6 class="tutorial-step-title">
+      <span id="tutorial-step-icon"></span>
+      <span id="tutorial-step-title-text">Step Title</span>
+    </h6>
+    <span class="tutorial-step-badge" id="tutorial-step-badge">Step 1 of 4</span>
   </div>
-</div>
-
-<div id="tutorial-tooltip-payoffs" class="tutorial-tooltip" style="display: none;">
-  <div class="tutorial-tooltip-content">
-    <div class="tutorial-tooltip-header">
-      <strong><i class="bi-2-circle"></i> Review Payoffs</strong>
-      <button type="button" class="tutorial-close-btn" onclick="window.tutorialController.skipTutorial()">
-        <i class="bi-x"></i>
-      </button>
-    </div>
-    <p><strong>Collaborative options:</strong> If both you and your partner choose any collaborative option (A, B, or C), you receive the higher payoff shown in the green column.</p>
-    <p><strong>Downside risk:</strong> If you choose collaborative but your partner chooses individual (Y), you receive the lower payoff in the red column.</p>
-    <p class="mb-0"><strong>Individual option (Y):</strong> Gives the same payoff regardless of partner's choice.</p>
-    <div class="tutorial-tooltip-arrow"></div>
+  <div class="tutorial-step-body" id="tutorial-step-body">
+    <!-- Content injected by JS -->
   </div>
-</div>
-
-<div id="tutorial-tooltip-twostage" class="tutorial-tooltip" style="display: none;">
-  <div class="tutorial-tooltip-content">
-    <div class="tutorial-tooltip-header">
-      <strong><i class="bi-3-circle"></i> Two-Stage Process</strong>
-      <button type="button" class="tutorial-close-btn" onclick="window.tutorialController.skipTutorial()">
-        <i class="bi-x"></i>
-      </button>
+  <div class="tutorial-step-footer">
+    <div class="tutorial-progress" id="tutorial-progress">
+      <!-- Dots injected by JS -->
     </div>
-    <p><strong>Stage 1 (Current):</strong> Submit your collaboration intention using the slider below.</p>
-    <p class="mb-0"><strong>Stage 2 (Next):</strong> After seeing your partner's intention, you'll make your final choice by clicking one of the four options.</p>
-    <div class="tutorial-tooltip-arrow"></div>
+    <div>
+      <button type="button" class="tutorial-btn tutorial-btn-skip" id="tutorial-btn-skip">Skip</button>
+      <button type="button" class="tutorial-btn tutorial-btn-next" id="tutorial-btn-next">Next</button>
+    </div>
   </div>
-</div>
-
-<div id="tutorial-tooltip-submit" class="tutorial-tooltip" style="display: none;">
-  <div class="tutorial-tooltip-content">
-    <div class="tutorial-tooltip-header">
-      <strong><i class="bi-4-circle"></i> Submit Your Intention</strong>
-      <button type="button" class="tutorial-close-btn" onclick="window.tutorialController.skipTutorial()">
-        <i class="bi-x"></i>
-      </button>
-    </div>
-    <p class="mb-0">Once you've moved the slider, the Submit button turns blue. Click it when you're ready to proceed to the next stage.</p>
-    <div class="tutorial-tooltip-footer">
-      <button type="button" class="btn btn-sm btn-info" onclick="window.tutorialController.finishTutorial()">Got it! End Tutorial</button>
-    </div>
-    <div class="tutorial-tooltip-arrow"></div>
-  </div>
+  <div class="tutorial-pointer" id="tutorial-pointer"></div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.2.min.js" integrity="sha256-2krYZKh//PcchRtd+H+VyyQoZ/e3EcrkxhM8ycwASPA=" crossorigin="anonymous"></script>
