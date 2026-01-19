@@ -1,0 +1,144 @@
+/* Tutorial Walkthrough Styles */
+
+/* Highlight effect for elements during tutorial */
+.tutorial-highlight {
+  position: relative;
+  z-index: 1050;
+  box-shadow: 0 0 0 4px rgba(13, 202, 240, 0.6), 0 0 20px 8px rgba(13, 202, 240, 0.4);
+  border-radius: 8px;
+  animation: tutorial-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tutorial-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(13, 202, 240, 0.6), 0 0 20px 8px rgba(13, 202, 240, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(13, 202, 240, 0.8), 0 0 30px 12px rgba(13, 202, 240, 0.6);
+  }
+}
+
+/* Tutorial overlay backdrop */
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+  pointer-events: none;
+}
+
+/* Tutorial tooltips */
+.tutorial-tooltip {
+  position: absolute;
+  z-index: 1060;
+  max-width: 400px;
+  animation: tutorial-fadein 0.3s ease-in-out;
+}
+
+@keyframes tutorial-fadein {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tutorial-tooltip-content {
+  background-color: #0dcaf0;
+  color: #000;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tutorial-tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.tutorial-tooltip-header strong {
+  font-size: 16px;
+}
+
+.tutorial-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  opacity: 0.7;
+}
+
+.tutorial-close-btn:hover {
+  opacity: 1;
+}
+
+.tutorial-tooltip-footer {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 2px solid rgba(0, 0, 0, 0.2);
+  text-align: right;
+}
+
+.tutorial-tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+/* Arrow pointing up (for tooltips below elements) */
+.tutorial-tooltip-arrow.arrow-up {
+  top: -10px;
+  left: 20px;
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent #0dcaf0 transparent;
+}
+
+/* Arrow pointing down (for tooltips above elements) */
+.tutorial-tooltip-arrow.arrow-down {
+  bottom: -10px;
+  left: 20px;
+  border-width: 10px 10px 0 10px;
+  border-color: #0dcaf0 transparent transparent transparent;
+}
+
+/* Arrow pointing left (for tooltips to the right) */
+.tutorial-tooltip-arrow.arrow-left {
+  left: -10px;
+  top: 20px;
+  border-width: 10px 10px 10px 0;
+  border-color: transparent #0dcaf0 transparent transparent;
+}
+
+/* Pulsing attention indicator */
+.tutorial-attention {
+  animation: tutorial-attention-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes tutorial-attention-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}

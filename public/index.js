@@ -294,6 +294,11 @@ $(document).ready(function() {
         $("#intention-value").text($(this).val());
         // Enable submit button once slider is moved from default position
         $("#intention-button").prop("disabled", false);
+        
+        // Advance tutorial if active
+        if (window.tutorialController && window.tutorialController.currentStep === 0) {
+            window.tutorialController.advanceToStep(1);
+        }
     });
 
     // bind behavior to intention form submission
@@ -464,6 +469,15 @@ $(document).ready(function() {
                 $("#intention .intention-task-label").text(`Training Task ${response.taskNumber} of ${response.totalTasks}`);
             } else {
                 $("#intention .intention-task-label").text(`Task ${response.taskNumber} of ${response.totalTasks}`);
+            }
+            
+            // Initialize tutorial for Training Task 1
+            if (response.isTraining && response.taskNumber === 1) {
+                // Allow re-trigger for Training Task 1
+                sessionStorage.removeItem('tutorialCompleted');
+                if (window.tutorialController) {
+                    window.tutorialController.startTutorial();
+                }
             }
             
             // update the design options in the table
@@ -648,8 +662,185 @@ $(document).ready(function() {
                 $(this).prop("selected", true);
             }
         });
-    });
     
+    // Tutorial Walkthrough Controller
+    window.tutorialController = {
+        currentStep: -1,
+        isActive: false,
+        overlay: null,
+        
+        startTutorial: function() {
+            // Check if tutorial was already completed in this session
+            if (sessionStorage.getItem('tutorialCompleted') === 'true') {
+                return;
+            }
+            
+            const self = this;
+            // Show welcome modal
+            const welcomeModal = new bootstrap.Modal(document.getElementById('tutorial-welcome-modal'));
+            welcomeModal.show();
+            
+            // Bind button events
+            $('#tutorial-start-btn').off('click').on('click', function() {
+                welcomeModal.hide();
+                self.initializeTutorial();
+            });
+            
+            $('#tutorial-skip-btn').off('click').on('click', function() {
+                welcomeModal.hide();
+                self.skipTutorial();
+            });
+        },
+        
+        initializeTutorial: function() {
+            this.isActive = true;
+            this.currentStep = -1;
+            
+            // Create overlay
+            this.overlay = $('<div class="tutorial-overlay"></div>');
+            $('body').append(this.overlay);
+            
+            // Start with step 0 (slider)
+            this.advanceToStep(0);
+        },
+        
+        advanceToStep: function(step) {
+            // Hide all tooltips and remove highlights
+            $('.tutorial-tooltip').hide();
+            $('.tutorial-highlight').removeClass('tutorial-highlight');
+            
+            this.currentStep = step;
+            
+            switch(step) {
+                case 0:
+                    this.showSliderHint();
+                    break;
+                case 1:
+                    this.showPayoffHint();
+                    break;
+                case 2:
+                    this.showTwoStageHint();
+                    break;
+                case 3:
+                    this.showSubmitHint();
+                    break;
+                default:
+                    this.finishTutorial();
+            }
+        },
+        
+        showSliderHint: function() {
+            const sliderCard = $('#intention-form .card.border-primary');
+            sliderCard.addClass('tutorial-highlight');
+            
+            const tooltip = $('#tutorial-tooltip-slider');
+            tooltip.show();
+            
+            // Position tooltip above the slider card
+            const offset = sliderCard.offset();
+            tooltip.css({
+                top: offset.top - tooltip.outerHeight() - 20,
+                left: offset.left + 20
+            });
+            
+            // Add arrow pointing down
+            tooltip.find('.tutorial-tooltip-arrow').addClass('arrow-down');
+            
+            // Auto-advance will happen when slider moves (see slider input handler)
+        },
+        
+        showPayoffHint: function() {
+            const payoffTable = $('#intention table.table');
+            payoffTable.addClass('tutorial-highlight');
+            
+            const tooltip = $('#tutorial-tooltip-payoffs');
+            tooltip.show();
+            
+            // Position tooltip to the right of the table
+            const offset = payoffTable.offset();
+            tooltip.css({
+                top: offset.top + 50,
+                left: offset.left + payoffTable.outerWidth() + 20
+            });
+            
+            // Add arrow pointing left
+            tooltip.find('.tutorial-tooltip-arrow').addClass('arrow-left');
+            
+            // Auto-advance after 8 seconds or user can close
+            setTimeout(() => {
+                if (this.currentStep === 1) {
+                    this.advanceToStep(2);
+                }
+            }, 8000);
+        },
+        
+        showTwoStageHint: function() {
+            const timerContainer = $('#intention-timer-container');
+            timerContainer.addClass('tutorial-highlight');
+            
+            const tooltip = $('#tutorial-tooltip-twostage');
+            tooltip.show();
+            
+            // Position tooltip below the timer
+            const offset = timerContainer.offset();
+            tooltip.css({
+                top: offset.top + timerContainer.outerHeight() + 20,
+                left: offset.left + 20
+            });
+            
+            // Add arrow pointing up
+            tooltip.find('.tutorial-tooltip-arrow').addClass('arrow-up');
+            
+            // Auto-advance after 6 seconds
+            setTimeout(() => {
+                if (this.currentStep === 2) {
+                    this.advanceToStep(3);
+                }
+            }, 6000);
+        },
+        
+        showSubmitHint: function() {
+            const submitBtn = $('#intention-button');
+            submitBtn.addClass('tutorial-highlight tutorial-attention');
+            
+            const tooltip = $('#tutorial-tooltip-submit');
+            tooltip.show();
+            
+            // Position tooltip above the submit button
+            const offset = submitBtn.offset();
+            tooltip.css({
+                top: offset.top - tooltip.outerHeight() - 20,
+                left: offset.left - 100
+            });
+            
+            // Add arrow pointing down
+            tooltip.find('.tutorial-tooltip-arrow').addClass('arrow-down');
+            
+            // User can click "Got it!" button or submit to finish
+        },
+        
+        finishTutorial: function() {
+            this.isActive = false;
+            this.currentStep = -1;
+            
+            // Hide all tooltips and remove highlights
+            $('.tutorial-tooltip').hide();
+            $('.tutorial-highlight').removeClass('tutorial-highlight tutorial-attention');
+            
+            // Remove overlay
+            if (this.overlay) {
+                this.overlay.remove();
+                this.overlay = null;
+            }
+            
+            // Mark tutorial as completed in session storage
+            sessionStorage.setItem('tutorialCompleted', 'true');
+        },
+        
+        skipTutorial: function() {
+            this.finishTutorial();
+        }
+    };
     $("#select-treatment").on("click", () => {
         $("#admin-move-users option").prop("selected", false);
         $("#admin-move-users option[data-group='treatment']").prop("selected", true);
