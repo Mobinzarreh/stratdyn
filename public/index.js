@@ -662,6 +662,7 @@ $(document).ready(function() {
                 $(this).prop("selected", true);
             }
         });
+    });
     
     // Tutorial Walkthrough Controller
     window.tutorialController = {
