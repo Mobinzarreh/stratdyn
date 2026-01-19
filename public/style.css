@@ -154,43 +154,45 @@
   transform: translateY(-1px);
 }
 
-/* Pointer/arrow for step cards */
+/* Pointer/arrow for step cards - LARGER and more visible */
 .tutorial-pointer {
   position: absolute;
   width: 0;
   height: 0;
   border-style: solid;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  z-index: 1;
 }
 
 .tutorial-pointer-down {
-  bottom: -12px;
+  bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 12px 12px 0 12px;
+  border-width: 20px 20px 0 20px;
   border-color: #0aa8c9 transparent transparent transparent;
 }
 
 .tutorial-pointer-up {
-  top: -12px;
+  top: -20px;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 0 12px 12px 12px;
+  border-width: 0 20px 20px 20px;
   border-color: transparent transparent #0dcaf0 transparent;
 }
 
 .tutorial-pointer-left {
-  left: -12px;
+  left: -20px;
   top: 50%;
   transform: translateY(-50%);
-  border-width: 12px 12px 12px 0;
+  border-width: 20px 20px 20px 0;
   border-color: transparent #0dcaf0 transparent transparent;
 }
 
 .tutorial-pointer-right {
-  right: -12px;
+  right: -20px;
   top: 50%;
   transform: translateY(-50%);
-  border-width: 12px 0 12px 12px;
+  border-width: 20px 0 20px 20px;
   border-color: transparent transparent transparent #0aa8c9;
 }
 

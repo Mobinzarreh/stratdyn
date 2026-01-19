@@ -694,7 +694,7 @@ $(document).ready(function() {
                     <p><strong>Individual option (Y):</strong> Same payoff regardless of what your partner chooses.</p>
                 `,
                 target: '#intention table.table',
-                position: 'below'
+                position: 'right'  // Changed from 'below' to 'right' for wide table
             },
             {
                 title: 'Two-Stage Decision Process',
@@ -799,100 +799,235 @@ $(document).ready(function() {
                 $('#tutorial-btn-next').text('Next →').removeClass('tutorial-btn-finish').addClass('tutorial-btn-next');
             }
             
+            // Show card first to get accurate dimensions
+            card.show();
+            
             // Highlight target element
             const target = $(step.target);
             if (target.length) {
                 target.addClass('tutorial-highlight');
-                
-                // Scroll target into view if needed
-                const targetRect = target[0].getBoundingClientRect();
-                if (targetRect.top < 100 || targetRect.bottom > window.innerHeight - 100) {
-                    target[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
             }
             
-            // Position the card with a small delay to allow scroll
-            setTimeout(() => this.positionCard(step, target), 100);
+            // Position card immediately (will reposition after scroll if needed)
+            this.positionCard(step, target);
             
-            // Show card
-            card.show();
+            // Smart scroll: ensure both target and card are visible
+            if (target && target.length) {
+                setTimeout(() => {
+                    this.scrollToShowTargetAndCard(target, card, step);
+                }, 50);
+            }
+        },
+        
+        scrollToShowTargetAndCard: function(target, card, step) {
+            const targetRect = target[0].getBoundingClientRect();
+            const cardRect = card[0].getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const margin = 30;
+            
+            // Determine what needs to be visible
+            let minY, maxY;
+            
+            if (step.position === 'above' || step.position === 'below') {
+                // Need vertical space for both
+                minY = Math.min(targetRect.top, cardRect.top);
+                maxY = Math.max(targetRect.bottom, cardRect.bottom);
+            } else {
+                // Side by side - just need target height
+                minY = targetRect.top;
+                maxY = targetRect.bottom;
+            }
+            
+            // Check if both are already visible
+            const isFullyVisible = minY >= margin && maxY <= viewportHeight - margin;
+            
+            if (!isFullyVisible) {
+                // Calculate scroll needed
+                const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                const totalHeight = maxY - minY;
+                
+                // If fits in viewport, center it
+                if (totalHeight < viewportHeight - 2 * margin) {
+                    const targetScrollTop = currentScroll + minY - (viewportHeight - totalHeight) / 2;
+                    window.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
+                } else {
+                    // Too tall - prioritize showing target at top
+                    const targetScrollTop = currentScroll + targetRect.top - margin;
+                    window.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
+                }
+                
+                // Reposition card after scroll completes
+                setTimeout(() => {
+                    this.positionCard(step, target);
+                }, 400);
+            }
         },
         
         positionCard: function(step, target) {
+            if (!target || !target.length) {
+                // No target - center card in viewport
+                const card = $('#tutorial-step-card');
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                const cardWidth = card.outerWidth();
+                const cardHeight = card.outerHeight();
+                
+                card.css({
+                    top: (viewportHeight - cardHeight) / 2 + 'px',
+                    left: (viewportWidth - cardWidth) / 2 + 'px'
+                });
+                $('#tutorial-pointer').hide();
+                return;
+            }
+            
             const card = $('#tutorial-step-card');
             const pointer = $('#tutorial-pointer');
             
             // Reset pointer classes
             pointer.removeClass('tutorial-pointer-up tutorial-pointer-down tutorial-pointer-left tutorial-pointer-right');
             
-            // Get viewport dimensions
+            // Get dimensions
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
             const cardWidth = card.outerWidth();
             const cardHeight = card.outerHeight();
-            const margin = 20;
+            const targetRect = target[0].getBoundingClientRect();
+            const margin = 30;
+            const pointerSize = 20;
+            const gapBetween = 15; // Gap between card and target
             
-            let top, left;
+            let finalPosition = { top: 0, left: 0, pointerClass: '', pointerOffset: 0 };
             
-            if (target && target.length) {
-                const targetRect = target[0].getBoundingClientRect();
-                const targetCenterX = targetRect.left + targetRect.width / 2;
-                const targetCenterY = targetRect.top + targetRect.height / 2;
-                
-                if (step.position === 'above') {
-                    // Position above the target
-                    top = targetRect.top - cardHeight - margin;
-                    left = targetCenterX - cardWidth / 2;
-                    pointer.addClass('tutorial-pointer-down');
-                    
-                    // If would go off top, position below instead
-                    if (top < margin) {
-                        top = targetRect.bottom + margin;
-                        pointer.removeClass('tutorial-pointer-down').addClass('tutorial-pointer-up');
-                    }
-                } else {
-                    // Position below the target
-                    top = targetRect.bottom + margin;
-                    left = targetCenterX - cardWidth / 2;
-                    pointer.addClass('tutorial-pointer-up');
-                    
-                    // If would go off bottom, position above instead
-                    if (top + cardHeight > viewportHeight - margin) {
-                        top = targetRect.top - cardHeight - margin;
-                        pointer.removeClass('tutorial-pointer-up').addClass('tutorial-pointer-down');
-                    }
-                }
-                
-                // Horizontal bounds checking
-                if (left < margin) {
-                    left = margin;
-                }
-                if (left + cardWidth > viewportWidth - margin) {
-                    left = viewportWidth - cardWidth - margin;
-                }
-                
-                // Final vertical bounds check
-                if (top < margin) {
-                    top = margin;
-                }
-                if (top + cardHeight > viewportHeight - margin) {
-                    top = viewportHeight - cardHeight - margin;
-                }
+            // Try positions in order of preference based on step configuration
+            const positions = this.calculatePositionOptions(targetRect, cardWidth, cardHeight, viewportWidth, viewportHeight, margin, gapBetween, pointerSize);
+            
+            // Select best position based on step.position preference
+            let selectedPos = null;
+            
+            if (step.position === 'above' && positions.above.fits) {
+                selectedPos = positions.above;
+            } else if (step.position === 'below' && positions.below.fits) {
+                selectedPos = positions.below;
+            } else if (step.position === 'left' && positions.left.fits) {
+                selectedPos = positions.left;
+            } else if (step.position === 'right' && positions.right.fits) {
+                selectedPos = positions.right;
             } else {
-                // No target - center in viewport
-                top = (viewportHeight - cardHeight) / 2;
-                left = (viewportWidth - cardWidth) / 2;
-                pointer.hide();
+                // Fallback: use any position that fits, prioritize above/below for narrow elements, left/right for wide
+                const targetIsWide = targetRect.width > cardWidth * 1.2;
+                
+                if (targetIsWide) {
+                    // Try left/right first for wide elements
+                    if (positions.right.fits) selectedPos = positions.right;
+                    else if (positions.left.fits) selectedPos = positions.left;
+                    else if (positions.below.fits) selectedPos = positions.below;
+                    else if (positions.above.fits) selectedPos = positions.above;
+                } else {
+                    // Try above/below first for narrow elements
+                    if (positions.below.fits) selectedPos = positions.below;
+                    else if (positions.above.fits) selectedPos = positions.above;
+                    else if (positions.right.fits) selectedPos = positions.right;
+                    else if (positions.left.fits) selectedPos = positions.left;
+                }
             }
             
+            // If still no good position, force center with best vertical placement
+            if (!selectedPos) {
+                const centerX = (viewportWidth - cardWidth) / 2;
+                let centerY;
+                
+                if (targetRect.bottom + cardHeight + margin < viewportHeight) {
+                    centerY = targetRect.bottom + margin;
+                    selectedPos = { top: centerY, left: centerX, pointerClass: 'tutorial-pointer-up', pointerOffset: 0, fits: false };
+                } else if (targetRect.top - cardHeight - margin > 0) {
+                    centerY = targetRect.top - cardHeight - margin;
+                    selectedPos = { top: centerY, left: centerX, pointerClass: 'tutorial-pointer-down', pointerOffset: 0, fits: false };
+                } else {
+                    centerY = margin;
+                    selectedPos = { top: centerY, left: centerX, pointerClass: '', pointerOffset: 0, fits: false };
+                }
+            }
+            
+            // Apply position
             card.css({
-                top: top + 'px',
-                left: left + 'px'
+                top: selectedPos.top + 'px',
+                left: selectedPos.left + 'px'
             });
             
-            if (target && target.length) {
+            // Position pointer
+            if (selectedPos.pointerClass) {
+                pointer.removeClass('tutorial-pointer-up tutorial-pointer-down tutorial-pointer-left tutorial-pointer-right');
+                pointer.addClass(selectedPos.pointerClass);
+                
+                // Adjust pointer horizontal offset if card was shifted horizontally
+                if (selectedPos.pointerClass.includes('up') || selectedPos.pointerClass.includes('down')) {
+                    const targetCenterX = targetRect.left + targetRect.width / 2;
+                    const cardCenterX = selectedPos.left + cardWidth / 2;
+                    const offsetFromCenter = targetCenterX - cardCenterX;
+                    
+                    // Clamp offset to keep pointer on card
+                    const maxOffset = cardWidth / 2 - 40;
+                    const clampedOffset = Math.max(-maxOffset, Math.min(maxOffset, offsetFromCenter));
+                    
+                    pointer.css('left', `calc(50% + ${clampedOffset}px)`);
+                } else {
+                    pointer.css('left', ''); // Reset for left/right pointers
+                }
+                
                 pointer.show();
+            } else {
+                pointer.hide();
             }
+        },
+        
+        calculatePositionOptions: function(targetRect, cardWidth, cardHeight, viewportWidth, viewportHeight, margin, gap, pointerSize) {
+            const options = {};
+            
+            // ABOVE: card above target
+            const aboveTop = targetRect.top - cardHeight - gap - pointerSize;
+            const aboveLeft = targetRect.left + (targetRect.width / 2) - (cardWidth / 2);
+            const aboveLeftClamped = Math.max(margin, Math.min(viewportWidth - cardWidth - margin, aboveLeft));
+            options.above = {
+                top: aboveTop,
+                left: aboveLeftClamped,
+                pointerClass: 'tutorial-pointer-down',
+                fits: aboveTop >= margin && aboveLeftClamped + cardWidth <= viewportWidth - margin
+            };
+            
+            // BELOW: card below target
+            const belowTop = targetRect.bottom + gap + pointerSize;
+            const belowLeft = targetRect.left + (targetRect.width / 2) - (cardWidth / 2);
+            const belowLeftClamped = Math.max(margin, Math.min(viewportWidth - cardWidth - margin, belowLeft));
+            options.below = {
+                top: belowTop,
+                left: belowLeftClamped,
+                pointerClass: 'tutorial-pointer-up',
+                fits: belowTop + cardHeight <= viewportHeight - margin && belowLeftClamped + cardWidth <= viewportWidth - margin
+            };
+            
+            // LEFT: card to left of target
+            const leftTop = targetRect.top + (targetRect.height / 2) - (cardHeight / 2);
+            const leftTopClamped = Math.max(margin, Math.min(viewportHeight - cardHeight - margin, leftTop));
+            const leftLeft = targetRect.left - cardWidth - gap - pointerSize;
+            options.left = {
+                top: leftTopClamped,
+                left: leftLeft,
+                pointerClass: 'tutorial-pointer-right',
+                fits: leftLeft >= margin && leftTopClamped + cardHeight <= viewportHeight - margin
+            };
+            
+            // RIGHT: card to right of target
+            const rightTop = targetRect.top + (targetRect.height / 2) - (cardHeight / 2);
+            const rightTopClamped = Math.max(margin, Math.min(viewportHeight - cardHeight - margin, rightTop));
+            const rightLeft = targetRect.right + gap + pointerSize;
+            options.right = {
+                top: rightTopClamped,
+                left: rightLeft,
+                pointerClass: 'tutorial-pointer-left',
+                fits: rightLeft + cardWidth <= viewportWidth - margin && rightTopClamped + cardHeight <= viewportHeight - margin
+            };
+            
+            return options;
         },
         
         nextStep: function() {
