@@ -11,7 +11,7 @@ echo "========================================="
 echo ""
 
 # Configuration
-SSH_KEY="~/.ssh/career-game.pem"
+SSH_KEY="$HOME/.ssh/career-game.pem"
 SSH_HOST="ec2-user@game.code-lab.org"
 BRANCH="feature/ui-intention-finalchoice"
 DEPLOY_DIR="stratdyn"

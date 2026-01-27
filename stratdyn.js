@@ -143,18 +143,17 @@ module.exports = function(io) {
             
             let taskData;
             if (isDistraction) {
-                // Find the distraction task by label (D0, D1, D2, D3, D4)
-                const distractionIndex = parseInt(userData.task_id.replace('D', ''));
-                taskData = experiment.distraction_tasks[distractionIndex];
+                // Find the distraction task by distraction_index (0-3 maps directly to distraction_tasks array)
+                taskData = experiment.distraction_tasks[userData.distraction_index];
             } else {
-                // Focal/diagonal task: task_id is the task number (1-20), index is task_id + 1 (accounting for training)
-                const taskIndex = parseInt(userData.task_id) + 1; // +1 because tasks array has 2 training tasks at start
+                // Focal task: task_index directly maps to experiment.tasks array
+                const taskIndex = userData.task_index;
                 taskData = experiment.tasks[taskIndex];
             }
             
             sequence.push({
                 task: taskData,
-                originalIndex: isDistraction ? -1 : parseInt(userData.task_id) + 1,
+                originalIndex: isDistraction ? -1 : userData.task_index,
                 assignmentIndex: schedIdx + 2, // Offset by 2 for training tasks
                 isDistraction: isDistraction,
                 isTraining: false,

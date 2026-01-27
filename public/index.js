@@ -479,6 +479,8 @@ $(document).ready(function() {
                 // Store the design name (K, M, L, or Y) in data attribute for later use
                 $(element).attr("data-label", option.designName);
                 // Set image path based on design name and task number
+                // Mapping: K→A, M→B, L→C (folder names vs actual file names)
+                const imageFileMap = { 'K': 'A', 'M': 'B', 'L': 'C', 'Y': 'Y' };
                 let imagePath = "";
                 if (option.designName === "Y") {
                     imagePath = "Design_images/Y/Individual.png";
@@ -486,7 +488,8 @@ $(document).ready(function() {
                     // For K, M, L - use task-specific images
                     // taskNumber is 1-32 (includes training tasks)
                     const taskNum = response.taskNumber + (response.isTraining ? 0 : 2); // Training tasks 1-2, Main tasks start at 3
-                    imagePath = `Design_images/${option.designName}/${option.designName} (${taskNum}).png`;
+                    const fileLetter = imageFileMap[option.designName];
+                    imagePath = `Design_images/${option.designName}/${fileLetter} (${taskNum}).png`;
                 }
                 $(element).find(".intention-design-image").attr("src", imagePath);
                 $(element).find(".intention-design-name").text(option.designName);
@@ -563,6 +566,8 @@ $(document).ready(function() {
                 // Store the design name (K, M, L, or Y) in data attribute for later use
                 $(element).attr("data-label", option.designName);
                 // Set image path based on design name and task number
+                // Mapping: K→A, M→B, L→C (folder names vs actual file names)
+                const imageFileMap = { 'K': 'A', 'M': 'B', 'L': 'C', 'Y': 'Y' };
                 let imagePath = "";
                 if (option.designName === "Y") {
                     imagePath = "Design_images/Y/Individual.png";
@@ -570,7 +575,8 @@ $(document).ready(function() {
                     // For K, M, L - use task-specific images
                     // taskNumber is 1-32 (includes training tasks)
                     const taskNum = response.taskNumber + (response.isTraining ? 0 : 2); // Training tasks 1-2, Main tasks start at 3
-                    imagePath = `Design_images/${option.designName}/${option.designName} (${taskNum}).png`;
+                    const fileLetter = imageFileMap[option.designName];
+                    imagePath = `Design_images/${option.designName}/${fileLetter} (${taskNum}).png`;
                 }
                 $(element).find(".design-image").attr("src", imagePath);
                 $(element).find(".design-name").text(option.designName);
