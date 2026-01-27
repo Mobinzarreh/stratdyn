@@ -469,6 +469,13 @@ module.exports = function(io) {
                 }
                 rValue = 0;
                 console.log(`  [TRAINING] Fixed values (Task ${sequenceIndex + 1}): U=${myUPercentile}%, R=${rPercentile}%`);
+            } else if (isDistraction) {
+                // Distraction tasks: get percentiles from the distraction task object itself
+                myUPercentile = task.individual_percentile !== undefined ? task.individual_percentile : 50;
+                rPercentile = userGroup === 'treatment' ? 
+                    (task.paired_percentile !== undefined ? task.paired_percentile : 50) : null;
+                rValue = 0;
+                console.log(`  [DISTRACTION] From task: U=${myUPercentile}%, R=${rPercentile}% (${userGroup})`);
             } else if (seqItem.scheduleData) {
                 // Use pre-calculated values from task_schedule.json
                 myUPercentile = seqItem.scheduleData.u_percentile;
