@@ -1,7 +1,7 @@
 /**
  * Utility functions for calculating u percentile and risk dominance (R)
  * 
- * IMPORTANT: All percentile calculations use ONLY the 25 focal tasks.
+ * IMPORTANT: All percentile calculations use ONLY the 20 focal tasks.
  * Training tasks and distraction tasks are EXCLUDED from percentile computations.
  */
 

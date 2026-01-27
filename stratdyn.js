@@ -73,7 +73,7 @@ module.exports = function(io) {
         
         // Start with training tasks (indices 0-1)
         const trainingTasks = baseTasks.slice(0, 2);
-        const focalTasks = baseTasks.slice(2); // Tasks 1-25 (indices 2-26)
+        const focalTasks = baseTasks.slice(2); // Tasks 1-20 (indices 2-21)
         
         // Build the final sequence
         let finalSequence = [...trainingTasks];
@@ -116,12 +116,12 @@ module.exports = function(io) {
     /**
      * Get the effective task sequence for a user using task_schedule.json
      * NEW: Uses the CSV-generated schedule as single source of truth
-     * Returns array with training tasks (indices 0-1) followed by 30 scheduled tasks (indices 2-31)
+     * Returns array with training tasks (indices 0-1) followed by 24 scheduled tasks (indices 2-25)
      */
     function getUserTaskSequence(username) {
         const role = getUserRole(username); // 'user1' or 'user2'
         
-        // Build sequence: 2 training tasks + 30 scheduled tasks
+        // Build sequence: 2 training tasks + 24 scheduled tasks
         let sequence = [];
         
         // Add training tasks (indices 0-1 in experiment.tasks)
@@ -136,7 +136,7 @@ module.exports = function(io) {
             });
         }
         
-        // Add 30 tasks from the schedule
+        // Add 24 tasks from the schedule
         taskSchedule.tasks.forEach((schedTask, schedIdx) => {
             const userData = schedTask[role]; // user1 or user2 data
             const isDistraction = schedTask.task_type === 'distraction';
@@ -147,7 +147,7 @@ module.exports = function(io) {
                 const distractionIndex = parseInt(userData.task_id.replace('D', ''));
                 taskData = experiment.distraction_tasks[distractionIndex];
             } else {
-                // Focal/diagonal task: task_id is the task number (1-25), index is task_id + 1 (accounting for training)
+                // Focal/diagonal task: task_id is the task number (1-20), index is task_id + 1 (accounting for training)
                 const taskIndex = parseInt(userData.task_id) + 1; // +1 because tasks array has 2 training tasks at start
                 taskData = experiment.tasks[taskIndex];
             }
@@ -232,8 +232,8 @@ module.exports = function(io) {
     // NEW FLOW with Consent, Briefing, and Training Tasks:
     // -4 = consent, -3 = briefing, -2 = demographics
     // 0-1 = training tasks (2 practice tasks, not analyzed)
-    // 2-31 = main experiment (30 tasks)
-    // 32 = post-survey, 33+ = thank you
+    // 2-25 = main experiment (24 tasks: 20 focal + 4 distraction)
+    // 26 = post-survey, 27+ = thank you
     let userTaskIndex = {};
     
     // RANDOMIZATION: Store presented option order per user per task
@@ -259,7 +259,6 @@ module.exports = function(io) {
         return {
             task: `${logsDir}/task_${group}_${sessionId}.csv`,
             trainingTask: `${logsDir}/training_task_${group}_${sessionId}.csv`, // Separate file for training data
-            presurvey: `${logsDir}/presurvey_${group}_${sessionId}.csv`,
             postsurvey: `${logsDir}/postsurvey_${group}_${sessionId}.csv`,
             demographics: `${logsDir}/demographics_survey_${group}_${sessionId}.csv`
         };
@@ -276,7 +275,7 @@ module.exports = function(io) {
         // Create main task log file with new headers (includes distraction flag)
         fs.writeFile(
             logFiles.task, 
-            "timestamp,username,group,partner,task,uiTaskNumber,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,designName,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,uiTaskNumber,distraction,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -287,23 +286,12 @@ module.exports = function(io) {
         // Create training task log file (separate from main analysis)
         fs.writeFile(
             logFiles.trainingTask, 
-            "timestamp,username,group,partner,task,uiTaskNumber,distraction,training,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,username,group,partner,task,uiTaskNumber,distraction,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
                 }
                 }
-        );
-
-        // Create pre-survey log file
-        fs.writeFile(
-            logFiles.presurvey, 
-            "timestamp,username,group,q1t2,q2r3,q3c1,q4r2,q5t1,q6r1,q7c3,q8t3,q9c2\r\n",
-            err => {
-                if (err) {
-                    console.error(err);
-                }
-            }
         );
 
         // Create post-survey log file
@@ -364,8 +352,8 @@ module.exports = function(io) {
         if (userOptionOrder[username][taskIndex]) {
             // Use existing order (consistency within task between Part 1 and Part 2)
             const savedOrder = userOptionOrder[username][taskIndex];
-            const reorderedOptions = savedOrder.map(label => 
-                task.options.find(opt => opt.label === label)
+            const reorderedOptions = savedOrder.map(designName => 
+                task.options.find(opt => opt.designName === designName)
             );
             task.options = reorderedOptions;
             task.presentedOrder = savedOrder;
@@ -374,8 +362,8 @@ module.exports = function(io) {
         }
         
         // First time seeing this task - create new randomization
-        // Separate collaborative (A, B, C) from individual (Y)
-        const collaborative = task.options.slice(0, 3); // A, B, C
+        // Separate collaborative (K, M, L) from individual (Y)
+        const collaborative = task.options.slice(0, 3); // K, M, L
         const individual = task.options[3]; // Y
         
         // Fisher-Yates shuffle (true randomization)
@@ -388,7 +376,7 @@ module.exports = function(io) {
         task.options = [...collaborative, individual];
         
         // Store the presented order for logging and consistency
-        task.presentedOrder = task.options.map(opt => opt.label);
+        task.presentedOrder = task.options.map(opt => opt.designName);
         userOptionOrder[username][taskIndex] = task.presentedOrder;
         
         console.log(`User ${username} Task ${taskIndex}: New randomized order = ${task.presentedOrder.join(',')}`);
@@ -515,7 +503,7 @@ module.exports = function(io) {
             task.stage = stage;
             
             // Determine task numbering for UI - use pre-calculated values from schedule
-            const totalDisplayTasks = 30; // Always 30 tasks with the CSV schedule
+            const totalDisplayTasks = 24; // Always 24 tasks (20 focal + 4 distraction)
             
             if (seqItem.isTraining) {
                 task.taskNumber = sequenceIndex + 1; // Training Task 1 or 2
@@ -902,9 +890,6 @@ module.exports = function(io) {
                 
                 // save the task decision (final choice)
                 experiment.decisions[username][taskIndex].design = request.design.replace("\xa0", " ");
-                if (request.designName) {
-                    experiment.decisions[username][taskIndex].designName = request.designName.replace("\xa0", " ");
-                }
                 if (request.strategy) {
                     experiment.decisions[username][taskIndex].strategy = request.strategy.replace("\xa0", " ");
                 }
@@ -983,9 +968,9 @@ module.exports = function(io) {
                             partnerTask = experiment.tasks[partnerSeqItem.originalIndex];
 
                             for (let myDesignIndex = 0; myDesignIndex < 4; myDesignIndex++) {
-                                if (myDesign === myTask.options[myDesignIndex].label) {
+                                if (myDesign === myTask.options[myDesignIndex].designName) {
                                     for (let partnerDesignIndex = 0; partnerDesignIndex < 4; partnerDesignIndex++) {
-                                        if (partnerDesign === partnerTask.options[partnerDesignIndex].label) {
+                                        if (partnerDesign === partnerTask.options[partnerDesignIndex].designName) {
                                             if (myDesignIndex < 3 && partnerDesignIndex < 3) {
                                                 myScore = parseInt(myTask.options[myDesignIndex].upside);
                                                 partnerScore = parseInt(partnerTask.options[partnerDesignIndex].upside);
@@ -1109,11 +1094,10 @@ module.exports = function(io) {
                         (userDecision.uPercentile !== undefined && userDecision.uPercentile !== null ? userDecision.uPercentile : '') + "," + 
                         (experiment.decisions[partnerUser] && experiment.decisions[partnerUser][taskIndex] && experiment.decisions[partnerUser][taskIndex].uPercentile !== undefined && experiment.decisions[partnerUser][taskIndex].uPercentile !== null ? experiment.decisions[partnerUser][taskIndex].uPercentile : '') + "," + 
                         userDecision.design + "," + 
-                        (userDecision.designName || '') + "," + 
                         Date.now() + "," + 
                         (userDecision.choiceTimeSpent || 0) + "," +
                         (userDecision.totalTimeSpent || userDecision.choiceTimeSpent || 0) + "," +
-                        (userOptionOrder[user] && userOptionOrder[user][taskIndex] ? userOptionOrder[user][taskIndex].join(';') : 'A;B;C;Y') + "," +
+                        (userOptionOrder[user] && userOptionOrder[user][taskIndex] ? userOptionOrder[user][taskIndex].join(';') : 'K;M;L;Y') + "," +
                         userPointsEarned + "," +
                         userPenalty + "," +
                         userNetScore + "," + 

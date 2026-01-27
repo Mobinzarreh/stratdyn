@@ -6,25 +6,21 @@
             "isTraining": true,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "100",
                     "downside": "0"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "80",
                     "downside": "30"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "90",
                     "downside": "10"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -37,25 +33,21 @@
             "isTraining": true,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "95",
                     "downside": "-10"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "85",
                     "downside": "15"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "75",
                     "downside": "25"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -63,29 +55,25 @@
             ]
         },
         {
-            "label": "Task 1",
+            "label": "Alaska",
             "uValue": 0.62,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "90",
                     "downside": "-15"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "70",
                     "downside": "17"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "80",
                     "downside": "1"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -96,29 +84,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 2",
+            "label": "Arizona",
             "uValue": 0.62,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "88",
                     "downside": "-11"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "68",
                     "downside": "21"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "77",
                     "downside": "6"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -129,29 +113,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 3",
+            "label": "Hawaii",
             "uValue": 0.62,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "86",
                     "downside": "-9"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "66",
                     "downside": "24"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "75",
                     "downside": "9"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -162,62 +142,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 4",
+            "label": "Idaho",
             "uValue": 0.62,
             "options": [
                 {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "85",
-                    "downside": "-7"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "65",
-                    "downside": "26"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "74",
-                    "downside": "11"
-                },
-                {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ],
-            "isFocal": true,
-            "isTraining": false,
-            "isDistraction": false
-        },
-        {
-            "label": "Task 5",
-            "uValue": 0.62,
-            "options": [
-                {
-                    "label": "A",
                     "designName": "K",
                     "upside": "83",
                     "downside": "-4"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "64",
                     "downside": "27"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "71",
                     "downside": "16"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -228,29 +171,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 6",
+            "label": "Maryland",
             "uValue": 0.67,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "90",
                     "downside": "-32"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "70",
                     "downside": "9"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "80",
                     "downside": "-11"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -261,29 +200,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 7",
+            "label": "Florida",
             "uValue": 0.67,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "88",
                     "downside": "-28"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "68",
                     "downside": "13"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "77",
                     "downside": "-6"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -294,29 +229,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 8",
+            "label": "Georgia",
             "uValue": 0.67,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "86",
                     "downside": "-24"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "66",
                     "downside": "17"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "75",
                     "downside": "-1"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -327,62 +258,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 9",
+            "label": "Nevada",
             "uValue": 0.67,
             "options": [
                 {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "85",
-                    "downside": "-22"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "65",
-                    "downside": "19"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "74",
-                    "downside": "1"
-                },
-                {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ],
-            "isFocal": true,
-            "isTraining": false,
-            "isDistraction": false
-        },
-        {
-            "label": "Task 10",
-            "uValue": 0.67,
-            "options": [
-                {
-                    "label": "A",
                     "designName": "K",
                     "upside": "83",
                     "downside": "-18"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "64",
                     "downside": "21"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "71",
                     "downside": "7"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -393,29 +287,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 11",
+            "label": "Michigan",
             "uValue": 0.72,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "90",
                     "downside": "-53"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "70",
                     "downside": "-2"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "80",
                     "downside": "-28"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -426,29 +316,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 12",
+            "label": "New Jersey",
             "uValue": 0.72,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "88",
                     "downside": "-48"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "68",
                     "downside": "3"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "77",
                     "downside": "-21"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -459,29 +345,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 13",
+            "label": "New York",
             "uValue": 0.72,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "86",
                     "downside": "-44"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "66",
                     "downside": "8"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "75",
                     "downside": "-15"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -492,62 +374,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 14",
+            "label": "Texas",
             "uValue": 0.72,
             "options": [
                 {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "85",
-                    "downside": "-40"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "65",
-                    "downside": "11"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "74",
-                    "downside": "-12"
-                },
-                {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ],
-            "isFocal": true,
-            "isTraining": false,
-            "isDistraction": false
-        },
-        {
-            "label": "Task 15",
-            "uValue": 0.72,
-            "options": [
-                {
-                    "label": "A",
                     "designName": "K",
                     "upside": "83",
                     "downside": "-36"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "64",
                     "downside": "14"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "71",
                     "downside": "-5"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -558,29 +403,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 16",
+            "label": "Virginia",
             "uValue": 0.77,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "90",
                     "downside": "-85"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "70",
                     "downside": "-18"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "80",
                     "downside": "-52"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -591,29 +432,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 17",
+            "label": "Nebraska",
             "uValue": 0.77,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "88",
                     "downside": "-79"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "68",
                     "downside": "-11"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "77",
                     "downside": "-41"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -624,29 +461,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 18",
+            "label": "Arkansas",
             "uValue": 0.77,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "86",
                     "downside": "-71"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "66",
                     "downside": "-4"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "75",
                     "downside": "-35"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -657,62 +490,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 19",
+            "label": "Minnesota",
             "uValue": 0.77,
             "options": [
                 {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "85",
-                    "downside": "-68"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "65",
-                    "downside": "-1"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "74",
-                    "downside": "-31"
-                },
-                {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ],
-            "isFocal": true,
-            "isTraining": false,
-            "isDistraction": false
-        },
-        {
-            "label": "Task 20",
-            "uValue": 0.77,
-            "options": [
-                {
-                    "label": "A",
                     "designName": "K",
                     "upside": "83",
                     "downside": "-63"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "64",
                     "downside": "3"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "71",
                     "downside": "-21"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -723,29 +519,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 21",
+            "label": "Montana",
             "uValue": 0.82,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "90",
                     "downside": "-133"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "70",
                     "downside": "-42"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "80",
                     "downside": "-88"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -756,29 +548,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 22",
+            "label": "Connecticut",
             "uValue": 0.82,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "88",
                     "downside": "-125"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "68",
                     "downside": "-33"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "77",
                     "downside": "-76"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -789,29 +577,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 23",
+            "label": "Massachusetts",
             "uValue": 0.82,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "86",
                     "downside": "-118"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "66",
                     "downside": "-24"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "75",
                     "downside": "-66"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -822,62 +606,25 @@
             "isDistraction": false
         },
         {
-            "label": "Task 24",
+            "label": "Oregon",
             "uValue": 0.82,
             "options": [
                 {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "85",
-                    "downside": "-110"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "65",
-                    "downside": "-19"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "74",
-                    "downside": "-60"
-                },
-                {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ],
-            "isFocal": true,
-            "isTraining": false,
-            "isDistraction": false
-        },
-        {
-            "label": "Task 25",
-            "uValue": 0.82,
-            "options": [
-                {
-                    "label": "A",
                     "designName": "K",
                     "upside": "83",
                     "downside": "-101"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "64",
                     "downside": "-14"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "71",
                     "downside": "-48"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -899,116 +646,112 @@
             0,
             1,
             12,
-            23,
-            4,
-            20,
-            6,
+            3,
+            18,
+            9,
+            2,
             22,
-            13,
-            24,
+            15,
             10,
-            26,
-            17,
-            8,
             14,
+            11,
             5,
+            24,
             16,
-            7,
-            23,
-            19,
-            20,
+            13,
+            4,
             6,
-            17,
+            23,
             8,
-            14,
-            5,
-            11
+            21,
+            17,
+            7,
+            25,
+            20,
+            19
         ],
         "user02": [
             0,
             1,
-            7,
+            16,
             13,
+            6,
+            4,
+            20,
+            24,
+            8,
+            7,
+            21,
             19,
-            5,
-            11,
-            2,
+            17,
+            22,
+            12,
             3,
             9,
-            25,
-            21,
-            22,
-            3,
-            24,
-            25,
-            21,
-            7,
-            23,
-            14,
-            20,
-            6,
-            7,
             18,
-            14,
+            25,
             15,
-            16
+            14,
+            5,
+            10,
+            23,
+            2,
+            11
         ],
         "user03": [
             0,
             1,
-            17,
-            3,
-            24,
-            25,
-            6,
-            22,
-            3,
-            19,
-            10,
-            21,
             12,
-            13,
-            14,
-            20,
-            11,
-            7,
-            23,
-            19,
-            5,
-            6,
-            7,
-            23,
-            14,
+            3,
+            18,
+            9,
+            2,
+            22,
+            15,
             10,
-            16
+            14,
+            11,
+            5,
+            24,
+            16,
+            13,
+            4,
+            6,
+            23,
+            8,
+            21,
+            17,
+            7,
+            25,
+            20,
+            19
         ],
         "user04": [
             0,
             1,
-            7,
-            8,
-            19,
-            5,
-            26,
-            7,
-            18,
-            14,
-            10,
-            21,
-            12,
-            23,
-            4,
-            25,
-            6,
-            17,
-            13,
-            4,
-            5,
             16,
-            12,
-            23,
+            13,
+            6,
+            4,
+            20,
+            24,
+            8,
+            7,
+            21,
             19,
+            17,
+            22,
+            12,
+            3,
+            9,
+            18,
             25,
+            15,
+            14,
+            5,
+            10,
+            23,
+            2,
             11
         ]
     },
@@ -1016,9 +759,8 @@
     "distraction_positions": [
         5,
         11,
-        17,
-        22,
-        25
+        16,
+        21
     ],
     "distraction_tasks": [
         {
@@ -1029,25 +771,21 @@
             "uValue": 0.62,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "90",
                     "downside": "52"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "88",
                     "downside": "50"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "85",
                     "downside": "51"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -1062,25 +800,21 @@
             "uValue": 0.62,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "89",
                     "downside": "55"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "86",
                     "downside": "53"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "84",
                     "downside": "52"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -1095,25 +829,21 @@
             "uValue": 0.82,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "42",
                     "downside": "-20"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "44",
                     "downside": "-10"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "40",
                     "downside": "-30"
                 },
                 {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"
@@ -1128,58 +858,21 @@
             "uValue": 0.82,
             "options": [
                 {
-                    "label": "A",
                     "designName": "K",
                     "upside": "48",
                     "downside": "-15"
                 },
                 {
-                    "label": "B",
                     "designName": "M",
                     "upside": "45",
                     "downside": "-25"
                 },
                 {
-                    "label": "C",
                     "designName": "L",
                     "upside": "43",
                     "downside": "-5"
                 },
                 {
-                    "label": "Y",
-                    "designName": "Y",
-                    "upside": "50",
-                    "downside": "50"
-                }
-            ]
-        },
-        {
-            "label": "Distr_Ambiguous_1",
-            "isDistraction": true,
-            "individual_percentile": 50,
-            "paired_percentile": 50,
-            "uValue": 0.72,
-            "options": [
-                {
-                    "label": "A",
-                    "designName": "K",
-                    "upside": "51",
-                    "downside": "-8"
-                },
-                {
-                    "label": "B",
-                    "designName": "M",
-                    "upside": "49",
-                    "downside": "2"
-                },
-                {
-                    "label": "C",
-                    "designName": "L",
-                    "upside": "50",
-                    "downside": "-3"
-                },
-                {
-                    "label": "Y",
                     "designName": "Y",
                     "upside": "50",
                     "downside": "50"

@@ -213,13 +213,12 @@ $(document).ready(function() {
     // bind behavior to consent form submission
     $("#consent-form").on("submit", (event) => {
         event.preventDefault();
-        const agreed = $("#consent-checkbox").is(":checked");
         const fullName = $("#consent-name").val();
         const date = $("#consent-date").val();
         
         // send consent response to server with electronic signature data
         socket.emit("submit-consent", {
-            consent: agreed ? 'agree' : 'disagree',
+            consent: 'agree',
             fullName: fullName,
             date: date,
             recordingConsent: true  // Recording is now mandatory
@@ -336,8 +335,7 @@ $(document).ready(function() {
         // send a socket.io request to submit the design with timing data
         socket.emit("submit-decision", {
             "task": $("#design .task-label").text(),
-            "design": $("#design .table-active").attr("data-label"), // Send label (A/B/C/Y) for backend matching
-            "designName": $("#design .table-active .design-name").text(),
+            "design": $("#design .table-active").attr("data-label"), // Send design name (K/M/L/Y)
             "strategy": $("#design .table-active").data("strategy"),
             "upside": parseInt($("#design .table-active .design-upside").text()),
             "downside": parseInt($("#design .table-active .design-downside").text()),
@@ -478,20 +476,20 @@ $(document).ready(function() {
             // update the design options in the table
             $("#intention tbody tr").each((index, element) => {
                 let option = response.options[index];
-                // Store the label (A, B, C, or Y) in data attribute for later use
-                $(element).attr("data-label", option.label);
-                // Set image path based on option label and task number
+                // Store the design name (K, M, L, or Y) in data attribute for later use
+                $(element).attr("data-label", option.designName);
+                // Set image path based on design name and task number
                 let imagePath = "";
-                if (option.label === "Y") {
+                if (option.designName === "Y") {
                     imagePath = "Design_images/Y/Individual.png";
                 } else {
-                    // For A, B, C - use task-specific images
+                    // For K, M, L - use task-specific images
                     // taskNumber is 1-32 (includes training tasks)
                     const taskNum = response.taskNumber + (response.isTraining ? 0 : 2); // Training tasks 1-2, Main tasks start at 3
-                    imagePath = `Design_images/${option.label}/${option.label} (${taskNum}).png`;
+                    imagePath = `Design_images/${option.designName}/${option.designName} (${taskNum}).png`;
                 }
                 $(element).find(".intention-design-image").attr("src", imagePath);
-                $(element).find(".intention-design-name").text(option.designName || option.label);
+                $(element).find(".intention-design-name").text(option.designName);
                 $(element).find(".intention-design-upside").text(option.upside);
                 $(element).find(".intention-design-downside").text(option.downside);
             });
@@ -562,20 +560,20 @@ $(document).ready(function() {
             // update the design attributes for each option
             $("#design tbody tr").each((index, element) => {
                 let option = response.options[index];
-                // Store the label (A, B, C, or Y) in data attribute for later use
-                $(element).attr("data-label", option.label);
-                // Set image path based on option label and task number
+                // Store the design name (K, M, L, or Y) in data attribute for later use
+                $(element).attr("data-label", option.designName);
+                // Set image path based on design name and task number
                 let imagePath = "";
-                if (option.label === "Y") {
+                if (option.designName === "Y") {
                     imagePath = "Design_images/Y/Individual.png";
                 } else {
-                    // For A, B, C - use task-specific images
+                    // For K, M, L - use task-specific images
                     // taskNumber is 1-32 (includes training tasks)
                     const taskNum = response.taskNumber + (response.isTraining ? 0 : 2); // Training tasks 1-2, Main tasks start at 3
-                    imagePath = `Design_images/${option.label}/${option.label} (${taskNum}).png`;
+                    imagePath = `Design_images/${option.designName}/${option.designName} (${taskNum}).png`;
                 }
                 $(element).find(".design-image").attr("src", imagePath);
-                $(element).find(".design-name").text(option.designName || option.label);
+                $(element).find(".design-name").text(option.designName);
                 $(element).find(".design-upside").text(option.upside);
                 $(element).find(".design-downside").text(option.downside);
             });

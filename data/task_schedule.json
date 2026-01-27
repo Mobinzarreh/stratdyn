@@ -1,17 +1,15 @@
 {
   "description": "Task schedule for StratDyn experiment - single source of truth",
-  "total_tasks": 30,
+  "total_tasks": 24,
   "task_breakdown": {
     "focal": 20,
-    "diagonal": 5,
-    "distraction": 5
+    "distraction": 4
   },
   "distraction_positions": [
     6,
     12,
-    18,
-    24,
-    30
+    17,
+    22
   ],
   "tasks": [
     {
