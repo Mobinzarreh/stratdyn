@@ -216,12 +216,18 @@ $(document).ready(function() {
         const fullName = $("#consent-name").val();
         const date = $("#consent-date").val();
         
+        // Collect browser and system information for audit trail
+        const userAgent = navigator.userAgent;
+        const timestamp = new Date().toISOString();
+        
         // send consent response to server with electronic signature data
         socket.emit("submit-consent", {
             consent: 'agree',
             fullName: fullName,
             date: date,
-            recordingConsent: true  // Recording is now mandatory
+            recordingConsent: true,  // Recording is now mandatory
+            userAgent: userAgent,
+            consentTimestamp: timestamp
         });
     });
 
@@ -248,14 +254,20 @@ $(document).ready(function() {
         declineModal.hide();
     });
 
-    // bind behavior to briefing continue button
-    $("#briefing-continue-button").on("click", () => {
-        // Stop and reset video before advancing
+    // Helper function to stop briefing video
+    function stopBriefingVideo() {
         const video = $("#briefing-video")[0];
         if (video) {
             video.pause();
             video.currentTime = 0;
+            console.log("Briefing video stopped and reset");
         }
+    }
+
+    // bind behavior to briefing continue button
+    $("#briefing-continue-button").on("click", () => {
+        // Stop and reset video before advancing
+        stopBriefingVideo();
         // send briefing completion to server
         socket.emit("submit-briefing", {});
     });
@@ -442,6 +454,8 @@ $(document).ready(function() {
         if (response.stage === 'intention') {
             // Part 1: Show Intention Stage
             console.log("Showing intention stage, hiding all other screens");
+            // Stop briefing video if it's playing
+            stopBriefingVideo();
             // Immediately hide all screens (no animation) to prevent overlap
             $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #design, #consent, #briefing").removeClass('show').hide();
             // Then show intention screen
@@ -525,6 +539,8 @@ $(document).ready(function() {
         } else {
             // Part 2: Show Choice Stage
             console.log("Showing choice stage, hiding all other screens");
+            // Stop briefing video if it's playing
+            stopBriefingVideo();
             // Immediately hide all screens (no animation) to prevent overlap
             $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").removeClass('show').hide();
             // Then show design screen
@@ -1197,6 +1213,13 @@ $(document).ready(function() {
         $("#admin, #wait, #design, #thank-you, #welcome, #main-postsurvey, #demographics-survey, #intention, #briefing").collapse("hide");
         // reset form
         $("#consent-checkbox").prop("checked", false);
+        $("#consent-name").val("");
+        $("#consent-date").val("");
+        // Restrict calendar selection to today only (no auto-fill, user must select)
+        const today = new Date();
+        const dateString = today.toISOString().split('T')[0];
+        $("#consent-date").attr('min', dateString);  // Set minimum selectable date to today
+        $("#consent-date").attr('max', dateString);  // Set maximum selectable date to today
         // show the consent screen
         $("#consent").collapse("show");
     });
@@ -1790,9 +1813,9 @@ $(document).ready(function() {
         const consentDate = $("#consent-date").val() || "[Date not provided]";
         const currentTimestamp = new Date().toLocaleString();
         
-        addText('Participant Name: ' + fullName, 11);
+        addText('Participant Name (Electronic Signature): ' + fullName, 11);
         addText('Date of Electronic Consent: ' + consentDate, 11);
-        addText('Consent Method: Electronic checkbox agreement', 11);
+        addText('Consent Method: Electronic signature by typing full name and date', 11);
         addText('Consent Status: ✓ AGREED TO PARTICIPATE', 11);
         yPosition += 5;
         
@@ -1805,7 +1828,7 @@ $(document).ready(function() {
         doc.setFont(undefined, 'normal');
         doc.setFontSize(11);
         doc.text('This document serves as electronic consent documentation.', margin, yPosition);
-        doc.text('Consent was provided by checking the agreement checkbox and submitting the form.', margin, yPosition + 6);
+        doc.text('Consent was provided by typing full name and date, then submitting the form.', margin, yPosition + 6);
         yPosition += 15;
         
         addText('Document generated: ' + currentTimestamp, 10);

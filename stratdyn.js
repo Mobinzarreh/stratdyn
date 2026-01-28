@@ -332,7 +332,7 @@ module.exports = function(io) {
         console.log('Created reschedule_log.csv in logs directory');
     }
     if (!fs.existsSync(consentLogPath)) {
-        fs.writeFileSync(consentLogPath, 'timestamp,username,group,fullName,consentDate,recordingConsent,consentGiven\n');
+        fs.writeFileSync(consentLogPath, 'timestamp,username,group,fullName,consentDate,recordingConsent,consentGiven,ipAddress,userAgent,consentTimestamp\n');
         console.log(`Created consent_log_${sessionId}.csv in logs directory`);
     }
 
@@ -1307,9 +1307,12 @@ module.exports = function(io) {
             if (username != null) {
                 console.log(`${username} submitted consent: ${request.consent}`);
                 
-                // Log electronic consent to CSV
+                // Log electronic consent to CSV with enhanced audit trail
                 const userGroup = users[username] ? users[username].group : 'unknown';
-                const consentLogEntry = `${Date.now()},${username},${userGroup},"${request.fullName || ''}","${request.date || ''}",${request.recordingConsent || 'true'},${request.consent === 'agree'}\n`;
+                const ipAddress = socket.handshake.address || 'unknown';
+                const userAgent = (request.userAgent || '').replace(/"/g, "'");  // Replace quotes to avoid CSV issues
+                const consentTimestamp = request.consentTimestamp || new Date().toISOString();
+                const consentLogEntry = `${Date.now()},${username},${userGroup},"${request.fullName || ''}","${request.date || ''}",${request.recordingConsent || 'true'},${request.consent === 'agree'},"${ipAddress}","${userAgent}","${consentTimestamp}"\n`;
                 fs.appendFile(consentLogPath, consentLogEntry, (err) => {
                     if (err) console.error('Error logging consent:', err);
                 });
