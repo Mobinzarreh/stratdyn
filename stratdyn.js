@@ -703,6 +703,13 @@ module.exports = function(io) {
             });
         }
 
+        // Helper function to notify all connected admins
+        function notifyAdmins() {
+            Object.keys(admins).forEach(admin => {
+                showAdminScreen(admins[admin]);
+            });
+        }
+
         function showContent(context) {
             if (username == null) {
                 // if not logged in, show welcome screen
