@@ -3,6 +3,22 @@ module.exports = function(io) {
     var _ = require('lodash');
     const { calculateUPercentile, calculateRiskDominance, calculateRPercentile, getTaskUValue } = require('./utils/calculations');
 
+    /**
+     * Format timestamp to US date format: MM/DD/YYYY HH:MM:SS
+     * @param {number|string} timestamp - Unix milliseconds or ISO string
+     * @returns {string} - Formatted date string
+     */
+    function formatDateUS(timestamp) {
+        const date = new Date(timestamp);
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+    }
+
     // read the admin credentials from file
     const adminCredentials = JSON.parse(
         fs.readFileSync('./data/adminCredentials.json')
@@ -271,10 +287,10 @@ module.exports = function(io) {
         
         const logFiles = getLogFiles(group);
         
-        // Create main task log file with new headers (includes distraction flag)
+        // Create main task log file with new headers (includes distraction flag and date column)
         fs.writeFile(
             logFiles.task, 
-            "timestamp,username,group,partner,task,uiTaskNumber,distraction,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,date,username,group,partner,task,uiTaskNumber,distraction,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -285,7 +301,7 @@ module.exports = function(io) {
         // Create training task log file (separate from main analysis)
         fs.writeFile(
             logFiles.trainingTask, 
-            "timestamp,username,group,partner,task,uiTaskNumber,distraction,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,date,username,group,partner,task,uiTaskNumber,distraction,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -296,7 +312,7 @@ module.exports = function(io) {
         // Create post-survey log file
         fs.writeFile(
             logFiles.postsurvey, 
-            "timestamp,username,group,q1c2,q2r1,q3t3,q4r2,q5t1,q6c3,q7t2,q8c1,q9r3,q10comm\r\n",
+            "timestamp,date,username,group,q1c2,q2r1,q3t3,q4r2,q5t1,q6c3,q7t2,q8c1,q9r3,q10comm\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -307,7 +323,7 @@ module.exports = function(io) {
         // Create demographics survey log file
         fs.writeFile(
             logFiles.demographics, 
-            "timestamp,username,group,demographics-survey-q1,demographics-survey-q2,demographics-survey-q3,demographics-survey-q4,demographics-survey-q5,demographics-survey-q6,demographics-survey-q7,demographics-survey-q8\r\n",
+            "timestamp,date,username,group,demographics-survey-q1,demographics-survey-q2,demographics-survey-q3,demographics-survey-q4,demographics-survey-q5,demographics-survey-q6,demographics-survey-q7,demographics-survey-q8\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -324,15 +340,15 @@ module.exports = function(io) {
     const consentLogPath = `${logsDir}/consent_log_${sessionId}.csv`;
     
     if (!fs.existsSync(declineLogPath)) {
-        fs.writeFileSync(declineLogPath, 'timestamp,username,group,event\n');
+        fs.writeFileSync(declineLogPath, 'timestamp,date,username,group,event\n');
         console.log('Created decline_log.csv in logs directory');
     }
     if (!fs.existsSync(rescheduleLogPath)) {
-        fs.writeFileSync(rescheduleLogPath, 'timestamp,username,group,email,phone,preferredTime\n');
+        fs.writeFileSync(rescheduleLogPath, 'timestamp,date,username,group,email,phone,preferredTime\n');
         console.log('Created reschedule_log.csv in logs directory');
     }
     if (!fs.existsSync(consentLogPath)) {
-        fs.writeFileSync(consentLogPath, 'timestamp,username,group,fullName,consentDate,recordingConsent,consentGiven,ipAddress,userAgent,consentTimestamp\n');
+        fs.writeFileSync(consentLogPath, 'timestamp,date,username,group,fullName,consentDate,recordingConsent,consentGiven,ipAddress,userAgent,consentTimestamp\n');
         console.log(`Created consent_log_${sessionId}.csv in logs directory`);
     }
 
@@ -852,6 +868,9 @@ module.exports = function(io) {
                 } else {
                     console.log(`    ❌ ERROR: users[${username}] or socket not found!`);
                 }
+                
+                // Notify admins of user progress
+                notifyAdmins();
             }
         });
 
@@ -1080,9 +1099,11 @@ module.exports = function(io) {
                     
                     console.log(`📝 Writing CSV for ${user}: Task ${userTask.label}, UI#${uiTaskNumber}, Distraction=${userIsDistraction}, Earned=${userPointsEarned}, Net=${userNetScore}`);
                     
+                    const csvTimestamp = Date.now();
                     fs.appendFile(
                         userLogFile, 
-                        Date.now() + "," + 
+                        csvTimestamp + "," + 
+                        formatDateUS(csvTimestamp) + "," + 
                         user + "," + 
                         userGroup + "," + 
                         experiment.partners[user] + "," + 
@@ -1265,9 +1286,10 @@ module.exports = function(io) {
                 const userGroup = users[username] ? users[username].group : 'treatment';
                 const logFiles = getLogFiles(userGroup);
                 
+                const csvTimestamp = Date.now();
                 fs.appendFile(
                     logFiles.postsurvey, 
-                    Date.now() + "," + username + "," + userGroup + "," + request["q1c2"] + "," + request["q2r1"] + 
+                    csvTimestamp + "," + formatDateUS(csvTimestamp) + "," + username + "," + userGroup + "," + request["q1c2"] + "," + request["q2r1"] + 
                     "," +  request["q3t3"] + "," +request["q4r2"] + "," + request["q5t1"] + "," + 
                     request["q6c3"] + "," + request["q7t2"] + "," + request["q8c1"]  + "," + 
                     request["q9r3"] + "," + request["q10comm"] +  "\r\n",
@@ -1277,6 +1299,9 @@ module.exports = function(io) {
                         }
                     }
                 );
+                
+                // Notify admins of user progress
+                notifyAdmins();
                 
                 // Auto-advance to thank you screen if enabled
                 if (autoAdvance) {
@@ -1312,10 +1337,14 @@ module.exports = function(io) {
                 const ipAddress = socket.handshake.address || 'unknown';
                 const userAgent = (request.userAgent || '').replace(/"/g, "'");  // Replace quotes to avoid CSV issues
                 const consentTimestamp = request.consentTimestamp || new Date().toISOString();
-                const consentLogEntry = `${Date.now()},${username},${userGroup},"${request.fullName || ''}","${request.date || ''}",${request.recordingConsent || 'true'},${request.consent === 'agree'},"${ipAddress}","${userAgent}","${consentTimestamp}"\n`;
+                const csvTimestamp = Date.now();
+                const consentLogEntry = `${csvTimestamp},${formatDateUS(csvTimestamp)},${username},${userGroup},"${request.fullName || ''}","${request.date || ''}",${request.recordingConsent || 'true'},${request.consent === 'agree'},"${ipAddress}","${userAgent}","${consentTimestamp}"\n`;
                 fs.appendFile(consentLogPath, consentLogEntry, (err) => {
                     if (err) console.error('Error logging consent:', err);
                 });
+                
+                // Notify admins of user progress
+                notifyAdmins();
                 
                 // Auto-advance to demographics page
                 if (autoAdvance && request.consent === 'agree') {
@@ -1330,7 +1359,8 @@ module.exports = function(io) {
                     
                     // Log decline event to file
                     const userGroup = users[username] ? users[username].group : 'unknown';
-                    const declineLogEntry = `${new Date().toISOString()},${username},${userGroup},DECLINED_CONSENT\n`;
+                    const csvTimestamp = new Date().toISOString();
+                    const declineLogEntry = `${csvTimestamp},${formatDateUS(csvTimestamp)},${username},${userGroup},DECLINED_CONSENT\n`;
                     fs.appendFile(declineLogPath, declineLogEntry, (err) => {
                         if (err) console.error('Error logging decline:', err);
                     });
@@ -1368,7 +1398,8 @@ module.exports = function(io) {
                     console.log(`Contact: ${request.contactInfo.email} ${request.contactInfo.phone || '(no phone)'}`);
                     
                     // Log reschedule request
-                    const rescheduleEntry = `${new Date().toISOString()},${username},${userGroup},WANTS_RESCHEDULE,${request.contactInfo.email},${request.contactInfo.phone || 'N/A'}\n`;
+                    const csvTimestamp = new Date().toISOString();
+                    const rescheduleEntry = `${csvTimestamp},${formatDateUS(csvTimestamp)},${username},${userGroup},WANTS_RESCHEDULE,${request.contactInfo.email},${request.contactInfo.phone || 'N/A'}\n`;
                     fs.appendFile(rescheduleLogPath, rescheduleEntry, (err) => {
                         if (err) console.error('Error logging reschedule:', err);
                     });
@@ -1376,7 +1407,8 @@ module.exports = function(io) {
                     console.log(`*** ${username} declined reschedule opportunity ***`);
                     
                     // Log no-reschedule decision
-                    const noRescheduleEntry = `${new Date().toISOString()},${username},${userGroup},NO_RESCHEDULE,N/A,N/A\n`;
+                    const csvTimestamp = new Date().toISOString();
+                    const noRescheduleEntry = `${csvTimestamp},${formatDateUS(csvTimestamp)},${username},${userGroup},NO_RESCHEDULE,N/A,N/A\n`;
                     fs.appendFile(rescheduleLogPath, noRescheduleEntry, (err) => {
                         if (err) console.error('Error logging no-reschedule:', err);
                     });
@@ -1403,6 +1435,9 @@ module.exports = function(io) {
                         showDesignTask(socket, 'intention', username);
                     });
                 }
+                
+                // Notify admins of user progress
+                notifyAdmins();
             }
         });
 
@@ -1428,9 +1463,10 @@ module.exports = function(io) {
                 const userGroup = users[username] ? users[username].group : 'treatment';
                 const logFiles = getLogFiles(userGroup);
                 
+                const csvTimestamp = Date.now();
                 fs.appendFile(
                     logFiles.demographics, 
-                    Date.now() + "," + username + "," + userGroup + "," + request["demographics-survey-q1"] + "," + 
+                    csvTimestamp + "," + formatDateUS(csvTimestamp) + "," + username + "," + userGroup + "," + request["demographics-survey-q1"] + "," + 
                     request["demographics-survey-q2"] + "," +  request["demographics-survey-q3"] + 
                     "," +request["demographics-survey-q4"] + "," + request["demographics-survey-q5"] + 
                     ","  + request["demographics-survey-q6"] + "," + request["demographics-survey-q7"] + 
@@ -1442,6 +1478,9 @@ module.exports = function(io) {
                         }
                     }
                 );
+                
+                // Notify admins of user progress
+                notifyAdmins();
                 
                 // Auto-advance to Briefing
                 if (autoAdvance) {
