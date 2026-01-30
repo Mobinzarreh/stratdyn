@@ -1214,12 +1214,19 @@ $(document).ready(function() {
         // reset form
         $("#consent-checkbox").prop("checked", false);
         $("#consent-name").val("");
-        $("#consent-date").val("");
-        // Restrict calendar selection to today only (no auto-fill, user must select)
+        
+        // Use local timezone for today's date (IRB standard: consent must be dated same day)
         const today = new Date();
-        const dateString = today.toISOString().split('T')[0];
-        $("#consent-date").attr('min', dateString);  // Set minimum selectable date to today
-        $("#consent-date").attr('max', dateString);  // Set maximum selectable date to today
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+        
+        // Auto-fill with today's date and restrict to today only (IRB-compliant)
+        $("#consent-date").val(dateString);
+        $("#consent-date").attr('min', dateString);
+        $("#consent-date").attr('max', dateString);
+        
         // show the consent screen
         $("#consent").collapse("show");
     });
