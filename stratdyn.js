@@ -260,7 +260,7 @@ module.exports = function(io) {
     let userTaskCompletion = {};
 
     let timestamp = Math.floor(new Date().getTime() / 1000);
-    let sessionId = 'session1_pilot'; // Can be changed as needed
+    let sessionId = 'session2_pilot'; // Can be changed as needed
 
     // Ensure logs directory exists
     const logsDir = './logs';
