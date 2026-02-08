@@ -16,7 +16,7 @@ function getUserTaskSequence(username) {
     let distractionIdx = 0;
     
     // Training tasks
-    for (let i = 0; i < 2 && assignmentIndex < assignments.length; i++) {
+    for (let i = 0; i < 5 && assignmentIndex < assignments.length; i++) {
         sequence.push({
             task: experiment.tasks[assignments[assignmentIndex]],
             originalIndex: assignments[assignmentIndex],
@@ -51,8 +51,8 @@ function getUserTaskSequence(username) {
 }
 
 function getTaskLabel(index) {
-    if (index < 2) return `Training Task ${index + 1}`;
-    const taskNum = index - 1;
+    if (index < 5) return `Training Task ${index + 1}`;
+    const taskNum = index - 4;
     return `Task ${taskNum}`;
 }
 
@@ -77,7 +77,7 @@ console.log('uiTaskNumber & User & uValue & uiIndividualDifficulty & rPercentile
 console.log('\\hline');
 
 for (let uiTask = 1; uiTask <= 30; uiTask++) {
-    const seqIndex = uiTask + 1; // since uiTask 1 = seqIndex 2
+    const seqIndex = uiTask + 4; // since uiTask 1 = seqIndex 5
     if (seqIndex >= maxTasks) break;
     
     const rowData = [];

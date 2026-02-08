@@ -34,19 +34,19 @@ SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR / "data"
 
 # Task index mapping (0-indexed in tasks array)
-# Index 0-1: Training tasks
-# Index 2-6: u=0.62 (Task 1-5)
-# Index 7-11: u=0.67 (Task 6-10)
-# Index 12-16: u=0.72 (Task 11-15)
-# Index 17-21: u=0.77 (Task 16-20)
-# Index 22-26: u=0.82 (Task 21-25)
+# Index 0-4: Training tasks
+# Index 5-9: u=0.62 (Task 1-5)
+# Index 10-14: u=0.67 (Task 6-10)
+# Index 15-19: u=0.72 (Task 11-15)
+# Index 20-24: u=0.77 (Task 16-20)
+# Index 25-29: u=0.82 (Task 21-25)
 
 U_VALUE_TO_TASK_INDICES = {
-    0.62: [2, 3, 4, 5, 6],
-    0.67: [7, 8, 9, 10, 11],
-    0.72: [12, 13, 14, 15, 16],
-    0.77: [17, 18, 19, 20, 21],
-    0.82: [22, 23, 24, 25, 26],
+    0.62: [5, 6, 7, 8, 9],
+    0.67: [10, 11, 12, 13, 14],
+    0.72: [15, 16, 17, 18, 19],
+    0.77: [20, 21, 22, 23, 24],
+    0.82: [25, 26, 27, 28, 29],
 }
 
 def calculate_u_percentile(u):

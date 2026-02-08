@@ -32,9 +32,9 @@ function calculateUPercentile(uValue, allTasks, taskData = null) {
         !task.isDistraction
     );
     
-    // Fallback: if no isFocal flag, use old logic (tasks from index 2 onwards that aren't distraction)
+    // Fallback: if no isFocal flag, use old logic (tasks from index 5 onwards that aren't distraction)
     const tasksToUse = focalTasks.length > 0 ? focalTasks : allTasks.filter((task, index) => 
-        index >= 2 && !task.isDistraction && !task.isTraining
+        index >= 5 && !task.isDistraction && !task.isTraining
     );
     
     if (tasksToUse.length === 0) {
@@ -107,7 +107,7 @@ function calculateRPercentile(rValue, allTasks, taskData = null) {
     
     // Fallback: if no isFocal flag, use old logic
     const tasksToUse = focalTasks.length > 0 ? focalTasks : allTasks.filter((task, index) => 
-        index >= 2 && !task.isDistraction && !task.isTraining
+        index >= 5 && !task.isDistraction && !task.isTraining
     );
     
     if (tasksToUse.length === 0) {

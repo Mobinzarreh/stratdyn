@@ -8,14 +8,14 @@ console.log('╚═════════════════════�
 
 console.log('PROBLEM IDENTIFIED & FIXED:\n');
 console.log('❌ OLD (WRONG): U-percentiles were being calculated from:');
-console.log('   Training tasks (0-1) + Main tasks (2-26) + Distraction tasks (27+)');
+console.log('   Training tasks (0-4) + Main tasks (5-29) + Distraction tasks (30+)');
 console.log('   This created 12 unique u-values, giving WRONG percentiles\n');
 
 console.log('✅ NEW (CORRECT): U-percentiles now calculated from:');
-console.log('   Main tasks (2-26) + Distraction tasks (27+) only');
-console.log('   Excludes training tasks (indices 0-1)\n');
+console.log('   Main tasks (5-29) + Distraction tasks (30+) only');
+console.log('   Excludes training tasks (indices 0-4)\n');
 
-const nonTrainingTasks = exp.tasks.slice(2);
+const nonTrainingTasks = exp.tasks.slice(5);
 const uniqueValues = [...new Set(nonTrainingTasks.map(t => t.uValue))].sort((a,b) => a-b);
 
 console.log(`Pool has ${uniqueValues.length} unique u-values: ${uniqueValues.join(', ')}\n`);

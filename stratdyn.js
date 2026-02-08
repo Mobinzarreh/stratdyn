@@ -87,9 +87,9 @@ module.exports = function(io) {
         const distractionTasks = experiment.distraction_tasks || [];
         const positions = experiment.distraction_positions || [3, 9, 15, 20, 27];
         
-        // Start with training tasks (indices 0-1)
-        const trainingTasks = baseTasks.slice(0, 2);
-        const focalTasks = baseTasks.slice(2); // Tasks 1-20 (indices 2-21)
+        // Start with training tasks (indices 0-4)
+        const trainingTasks = baseTasks.slice(0, 5);
+        const focalTasks = baseTasks.slice(5); // Tasks 1-20 (indices 5-24)
         
         // Build the final sequence
         let finalSequence = [...trainingTasks];
@@ -103,8 +103,8 @@ module.exports = function(io) {
             // Check if we need to insert a distraction task after this focal task
             // Position N means after focal task N (1-indexed)
             const focalPosition = i + 1; // 1-indexed position
-            if (distractionIndex < distractionTasks.length && positions.includes(focalPosition + 2)) {
-                // +2 because positions include training tasks
+            if (distractionIndex < distractionTasks.length && positions.includes(focalPosition + 5)) {
+                // +5 because positions include training tasks
                 const distTask = { ...distractionTasks[distractionIndex] };
                 distTask.sequenceIndex = finalSequence.length;
                 finalSequence.push(distTask);
@@ -121,7 +121,7 @@ module.exports = function(io) {
         }
         
         console.log(`Task sequence: ${finalSequence.length} tasks (distraction ENABLED)`);
-        console.log(`  - Training: 2, Focal: ${focalTasks.length}, Distraction: ${distractionTasks.length}`);
+        console.log(`  - Training: 5, Focal: ${focalTasks.length}, Distraction: ${distractionTasks.length}`);
         
         return finalSequence;
     }
@@ -132,16 +132,16 @@ module.exports = function(io) {
     /**
      * Get the effective task sequence for a user using task_schedule.json
      * NEW: Uses the CSV-generated schedule as single source of truth
-     * Returns array with training tasks (indices 0-1) followed by 24 scheduled tasks (indices 2-25)
+     * Returns array with training tasks (indices 0-4) followed by 24 scheduled tasks (indices 5-28)
      */
     function getUserTaskSequence(username) {
         const role = getUserRole(username); // 'user1' or 'user2'
         
-        // Build sequence: 2 training tasks + 24 scheduled tasks
+        // Build sequence: 5 training tasks + 24 scheduled tasks
         let sequence = [];
         
-        // Add training tasks (indices 0-1 in experiment.tasks)
-        for (let i = 0; i < 2; i++) {
+        // Add training tasks (indices 0-4 in experiment.tasks)
+        for (let i = 0; i < 5; i++) {
             sequence.push({
                 task: experiment.tasks[i],
                 originalIndex: i,
@@ -170,7 +170,7 @@ module.exports = function(io) {
             sequence.push({
                 task: taskData,
                 originalIndex: isDistraction ? -1 : userData.task_index,
-                assignmentIndex: schedIdx + 2, // Offset by 2 for training tasks
+                assignmentIndex: schedIdx + 5, // Offset by 5 for training tasks
                 isDistraction: isDistraction,
                 isTraining: false,
                 scheduleIndex: schedIdx,
@@ -197,6 +197,9 @@ module.exports = function(io) {
         if (seqIndex === -1) return 'Briefing';  // In case of -1, show briefing
         if (seqIndex === 0) return 'Training Task 1';
         if (seqIndex === 1) return 'Training Task 2';
+        if (seqIndex === 2) return 'Training Task 3';
+        if (seqIndex === 3) return 'Training Task 4';
+        if (seqIndex === 4) return 'Training Task 5';
         
         const userSequence = getUserTaskSequence(username);
         const totalSeqLength = userSequence.length;
@@ -204,11 +207,11 @@ module.exports = function(io) {
         if (seqIndex >= totalSeqLength) return 'Post-Survey';
         if (seqIndex >= totalSeqLength + 1) return 'Complete';
         
-        // For seqIndex >= 2, use sequential numbering for all tasks (focal and distraction)
+        // For seqIndex >= 5, use sequential numbering for all tasks (focal and distraction)
         // This ensures consistency between user UI, admin dashboard, and messages
-        if (seqIndex >= 2 && seqIndex < userSequence.length) {
-            // Use sequential numbering: seqIndex - 1 (training tasks are 0,1 so first task is seqIndex 2 = Task 1)
-            const displayPosition = seqIndex - 1;
+        if (seqIndex >= 5 && seqIndex < userSequence.length) {
+            // Use sequential numbering: seqIndex - 4 (training tasks are 0-4 so first task is seqIndex 5 = Task 1)
+            const displayPosition = seqIndex - 4;
             return `Task ${displayPosition}`;
         }
         
@@ -246,9 +249,9 @@ module.exports = function(io) {
     // Per-user task index: {username: taskIndex}
     // NEW FLOW with Consent, Briefing, and Training Tasks:
     // -4 = consent, -3 = briefing, -2 = demographics
-    // 0-1 = training tasks (2 practice tasks, not analyzed)
-    // 2-25 = main experiment (24 tasks: 20 focal + 4 distraction)
-    // 26 = post-survey, 27+ = thank you
+    // 0-4 = training tasks (5 practice tasks, not analyzed)
+    // 5-28 = main experiment (24 tasks: 20 focal + 4 distraction)
+    // 29 = post-survey, 30+ = thank you
     let userTaskIndex = {};
     
     // RANDOMIZATION: Store presented option order per user per task
@@ -473,15 +476,27 @@ module.exports = function(io) {
             
             if (seqItem.isTraining) {
                 // Training tasks use fixed example values - SAME FOR ALL USERS
-                // but DIFFERENT between Training Task 1 and Training Task 2
+                // but DIFFERENT between each Training Task
                 if (sequenceIndex === 0) {
                     // Training Task 1: lower difficulty
                     myUPercentile = 25;
                     rPercentile = 75;
-                } else {
+                } else if (sequenceIndex === 1) {
                     // Training Task 2: higher difficulty
                     myUPercentile = 60;
                     rPercentile = 40;
+                } else if (sequenceIndex === 2) {
+                    // Training Task 3
+                    myUPercentile = 70;
+                    rPercentile = 30;
+                } else if (sequenceIndex === 3) {
+                    // Training Task 4
+                    myUPercentile = 35;
+                    rPercentile = 65;
+                } else {
+                    // Training Task 5
+                    myUPercentile = 80;
+                    rPercentile = 20;
                 }
                 rValue = 0;
                 console.log(`  [TRAINING] Fixed values (Task ${sequenceIndex + 1}): U=${myUPercentile}%, R=${rPercentile}%`);
@@ -528,12 +543,12 @@ module.exports = function(io) {
             const totalDisplayTasks = 24; // Always 24 tasks (20 focal + 4 distraction)
             
             if (seqItem.isTraining) {
-                task.taskNumber = sequenceIndex + 1; // Training Task 1 or 2
-                task.totalTasks = 2;
+                task.taskNumber = sequenceIndex + 1; // Training Task 1-5
+                task.totalTasks = 5;
                 task.taskLabel = `Training Task ${sequenceIndex + 1}`;
             } else {
                 // Use the ui_task_number from the schedule
-                const displayPosition = seqItem.uiTaskNumber || (sequenceIndex - 1);
+                const displayPosition = seqItem.uiTaskNumber || (sequenceIndex - 4);
                 task.totalTasks = totalDisplayTasks;
                 task.taskLabel = `Task ${displayPosition}`;
                 task.taskNumber = displayPosition;
@@ -662,10 +677,10 @@ module.exports = function(io) {
                     const userSequence = getUserTaskSequence(user);
                     const totalTasks = userSequence.length;
                     
-                    for (let i = 2; i < totalTasks; i++) { // Start from index 2 to skip training tasks
+                    for (let i = 5; i < totalTasks; i++) { // Start from index 5 to skip training tasks
                         if (experiment.decisions[user][i]) {
                             const decision = experiment.decisions[user][i];
-                            // Skip training tasks (should already be excluded by starting at i=2)
+                            // Skip training tasks (should already be excluded by starting at i=5)
                             if (decision.isTraining) continue;
                             
                             // Add net score (with penalty) for compensation/ranking
@@ -736,7 +751,7 @@ module.exports = function(io) {
                     // Show briefing page
                     showBriefingScreen(context);
                 } else if (taskIndex < totalTasks) {
-                    // Show task (0-1 = training, 2+ = main experiment including distraction)
+                    // Show task (0-4 = training, 5+ = main experiment including distraction)
                     showDesignTask(context, 'intention', username);
                 } else if (taskIndex === totalTasks) {
                     // Show post-survey
@@ -838,7 +853,7 @@ module.exports = function(io) {
                 experiment.decisions[username][taskIndex].intentionTimeSpent = request.timeSpent || 0;
                 experiment.decisions[username][taskIndex].intentionStartTime = request.startTime || Date.now();
                 experiment.decisions[username][taskIndex].isDistraction = isDistraction;
-                experiment.decisions[username][taskIndex].isTraining = (taskIndex === 0 || taskIndex === 1);
+                experiment.decisions[username][taskIndex].isTraining = (taskIndex < 5);
                 
                 // Get task data and calculate percentile
                 let uValue, uPercentile;
@@ -892,7 +907,7 @@ module.exports = function(io) {
                 const userSequence = getUserTaskSequence(username);
                 const seqItem = userSequence[taskIndex];
                 const isDistraction = seqItem ? seqItem.isDistraction : false;
-                const isTrainingTask = (taskIndex === 0 || taskIndex === 1);
+                const isTrainingTask = (taskIndex < 5);
                 
                 // Save timing information
                 const choiceTimeSpent = request.timeSpent || 0;
@@ -1099,9 +1114,9 @@ module.exports = function(io) {
                     // Calculate UI task number (same calculation as in showDesignTask)
                     let uiTaskNumber;
                     if (isTrainingTask) {
-                        uiTaskNumber = taskIndex + 1; // Training Task 1 or 2
+                        uiTaskNumber = taskIndex + 1; // Training Task 1-5
                     } else {
-                        uiTaskNumber = taskIndex - 1; // For main tasks, subtract 2 training tasks
+                        uiTaskNumber = taskIndex - 4; // For main tasks, subtract 5 training tasks
                     }
                     
                     console.log(`📝 Writing CSV for ${user}: Task ${userTask.label}, UI#${uiTaskNumber}, Distraction=${userIsDistraction}, Earned=${userPointsEarned}, Net=${userNetScore}`);

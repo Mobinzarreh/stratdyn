@@ -443,11 +443,11 @@ $(document).ready(function() {
             INTENTION_DISPLAY_TIME = 60; // 1 minute shown for intention stage
             console.log("Training Task 1 - using 180s total time (60s intention display) for UI learning");
         } else {
-            // Training Task 2 and all main tasks: Standard timing
+            // Training Task 2-5 and all main tasks: Standard timing
             TOTAL_TASK_TIME = 90; // 90 seconds
             INTENTION_DISPLAY_TIME = 30; // 30 seconds shown for intention stage
-            if (isTrainingTask && taskNumber === 2) {
-                console.log("Training Task 2 - using 90s total time (30s intention display) - same as main tasks");
+            if (isTrainingTask && taskNumber >= 2 && taskNumber <= 5) {
+                console.log(`Training Task ${taskNumber} - using 90s total time (30s intention display) - same as main tasks`);
             }
         }
 
@@ -501,7 +501,7 @@ $(document).ready(function() {
                 } else {
                     // For K, M, L - use task-specific images
                     // taskNumber is 1-32 (includes training tasks)
-                    const taskNum = response.taskNumber + (response.isTraining ? 0 : 2); // Training tasks 1-2, Main tasks start at 3
+                    const taskNum = response.taskNumber + (response.isTraining ? 0 : 5); // Training tasks 1-5, Main tasks start at 6
                     const fileLetter = imageFileMap[option.designName];
                     imagePath = `Design_images/${option.designName}/${fileLetter} (${taskNum}).png`;
                 }
@@ -590,7 +590,7 @@ $(document).ready(function() {
                 } else {
                     // For K, M, L - use task-specific images
                     // taskNumber is 1-32 (includes training tasks)
-                    const taskNum = response.taskNumber + (response.isTraining ? 0 : 2); // Training tasks 1-2, Main tasks start at 3
+                    const taskNum = response.taskNumber + (response.isTraining ? 0 : 5); // Training tasks 1-5, Main tasks start at 6
                     const fileLetter = imageFileMap[option.designName];
                     imagePath = `Design_images/${option.designName}/${fileLetter} (${taskNum}).png`;
                 }
@@ -1763,7 +1763,7 @@ $(document).ready(function() {
         
         // Participation
         addText('PARTICIPATION', 12, true);
-        addText('I am inviting your participation, which involves completing a brief demographics questionnaire and a series of two training and thirty experimental decision-making tasks with a partner. This study will take approximately 60 minutes to complete. Each task poses a design decision-making problem with outcomes based on your and your partner\'s decision. You have the right not to answer any question, and to stop participation at any time.');
+        addText('I am inviting your participation, which involves completing a brief demographics questionnaire and a series of five training and thirty experimental decision-making tasks with a partner. This study will take approximately 60 minutes to complete. Each task poses a design decision-making problem with outcomes based on your and your partner\'s decision. You have the right not to answer any question, and to stop participation at any time.');
         yPosition += 3;
         
         // Communication Protocol

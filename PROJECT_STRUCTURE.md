@@ -14,7 +14,7 @@ StratDyn is a **behavioral research experiment platform** for studying strategic
 - Treatment vs Control group assignment
 - Partner pairing system with synchronized task progression
 - Two-stage decision process (Intention → Final Choice)
-- 25 focal tasks + 5 distraction tasks + 2 training tasks
+- 25 focal tasks + 5 distraction tasks + 5 training tasks
 - Real-time admin monitoring and control
 
 ---

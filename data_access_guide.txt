@@ -26,7 +26,7 @@ MAIN DATA FILES (For Analysis)
    - pointsEarned, pointsLostPenalty, scoreNet
    - partnerScore
 
-2. TRAINING TASKS (Practice tasks 1-2, not for analysis)
+2. TRAINING TASKS (Practice tasks 1-5, not for analysis)
    - training_task_treatment_session1.csv
    - training_task_control_session1.csv
    
@@ -75,7 +75,7 @@ DATA COLLECTION NOTES
 
 - Treatment group: Sees both u-percentile AND R-percentile in choice stage
 - Control group: Only sees u-percentile (individual difficulty)
-- Training tasks (0-1) are logged separately from main tasks (2-31)
+- Training tasks (0-4) are logged separately from main tasks (5-34)
 - Each task has TWO stages: intention (Part 1) and choice (Part 2)
 - Penalties applied only after 100 seconds total (90s + 10s grace)
 

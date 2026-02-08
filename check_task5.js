@@ -4,7 +4,7 @@ console.log('=== Task 5 investigation ===\n');
 
 console.log('USER01 progression:');
 let focalCount = 0;
-for (let i = 2; i <= 10; i++) {
+for (let i = 5; i <= 13; i++) {
   const assignIndex = exp.assignments.user01[i];
   const task = exp.tasks[assignIndex];
   const isFocal = !task.isTraining && !task.isDistraction;
@@ -24,7 +24,7 @@ for (let i = 2; i <= 10; i++) {
 
 console.log('\nUSER02 progression:');
 focalCount = 0;
-for (let i = 2; i <= 10; i++) {
+for (let i = 5; i <= 13; i++) {
   const assignIndex = exp.assignments.user02[i];
   const task = exp.tasks[assignIndex];
   const isFocal = !task.isTraining && !task.isDistraction;

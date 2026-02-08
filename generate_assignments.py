@@ -14,39 +14,39 @@ import json
 import random
 
 # Task indices by u-value
-# Tasks 0-4: u=0.62 (indices 0,1,2,3,4)
-# Tasks 5-9: u=0.67 (indices 5,6,7,8,9)
-# Tasks 10-14: u=0.72 (indices 10,11,12,13,14)
-# Tasks 15-19: u=0.77 (indices 15,16,17,18,19)
-# Tasks 20-24: u=0.82 (indices 20,21,22,23,24)
-# Tasks 25-29: Distraction (indices 25,26,27,28,29)
+# Tasks 0-4: Training tasks
+# Tasks 5-9: u=0.62 (indices 5,6,7,8,9)
+# Tasks 10-14: u=0.67 (indices 10,11,12,13,14)
+# Tasks 15-19: u=0.72 (indices 15,16,17,18,19)
+# Tasks 20-24: u=0.77 (indices 20,21,22,23,24)
+# Tasks 25-29: u=0.82 (indices 25,26,27,28,29)
 
 U_VALUES = [0.62, 0.67, 0.72, 0.77, 0.82]
 
 # Map u-value to task indices
-# Training tasks are at indices 0-1
-# Focal tasks are at indices 2-26 (25 tasks, 5 per u-value)
+# Training tasks are at indices 0-4
+# Focal tasks are at indices 5-29 (25 tasks, 5 per u-value)
 def get_task_indices_for_u(u_value):
     """Return list of task indices for a given u-value.
     
     Task structure in experiment.json:
-    - Index 0-1: Training tasks (u=0.5, u=0.75)
-    - Index 2-6: Focal tasks with u=0.62
-    - Index 7-11: Focal tasks with u=0.67
-    - Index 12-16: Focal tasks with u=0.72
-    - Index 17-21: Focal tasks with u=0.77
-    - Index 22-26: Focal tasks with u=0.82
+    - Index 0-4: Training tasks
+    - Index 5-9: Focal tasks with u=0.62
+    - Index 10-14: Focal tasks with u=0.67
+    - Index 15-19: Focal tasks with u=0.72
+    - Index 20-24: Focal tasks with u=0.77
+    - Index 25-29: Focal tasks with u=0.82
     """
     if u_value == 0.62:
-        return [2, 3, 4, 5, 6]
+        return [5, 6, 7, 8, 9]
     elif u_value == 0.67:
-        return [7, 8, 9, 10, 11]
+        return [10, 11, 12, 13, 14]
     elif u_value == 0.72:
-        return [12, 13, 14, 15, 16]
+        return [15, 16, 17, 18, 19]
     elif u_value == 0.77:
-        return [17, 18, 19, 20, 21]
+        return [20, 21, 22, 23, 24]
     elif u_value == 0.82:
-        return [22, 23, 24, 25, 26]
+        return [25, 26, 27, 28, 29]
     else:
         raise ValueError(f"Unknown u-value: {u_value}")
 

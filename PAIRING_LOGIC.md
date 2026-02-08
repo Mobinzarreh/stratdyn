@@ -9,7 +9,7 @@ The experiment uses a sophisticated pairing system where each participant encoun
 
 ## Task Index Mapping
 ```
-Index 0-1:   Training tasks (u=0.5, u=0.75)
+Index 0-4:   Training tasks (TT1: u=0.5, TT2: u=0.75, TT3: u=0.85, TT4: u=0.55, TT5: u=0.90)
 Index 2-6:   Focal tasks with u = 0.62
 Index 7-11:  Focal tasks with u = 0.67
 Index 12-16: Focal tasks with u = 0.72
@@ -93,7 +93,7 @@ Both partners experience the same distraction tasks at the same positions.
 ✓ **Balanced Design**: Each u-level combination appears exactly once
 ✓ **Systematic Progression**: Clear structure from low to high difficulty
 ✓ **Risk Dominance Variety**: Full range of R-values from 0.490 to 1.516
-✓ **Consistent Experience**: Both partners in a pair complete the same 32 tasks total (2 training + 25 focal + 5 distractions inserted)
+✓ **Consistent Experience**: Both partners in a pair complete the same 35 tasks total (5 training + 25 focal + 5 distractions inserted)
 
 ## Implementation Details
 
@@ -108,7 +108,7 @@ Both partners experience the same distraction tasks at the same positions.
 ```
 
 ### Assignment Structure
-Each user has a 27-element array of task indices (0-26) representing their unique task sequence for the 2 training tasks + 25 focal tasks. Distraction tasks are inserted dynamically during task presentation at positions defined by `distraction_positions` [5,11,17,22,25], resulting in 32 total tasks experienced.
+Each user has a 30-element array of task indices (0-29) representing their unique task sequence for the 5 training tasks + 25 focal tasks. Distraction tasks are inserted dynamically during task presentation at positions defined by `distraction_positions` [5,11,17,22,25], resulting in 35 total tasks experienced.
 
 ### How to Add More Users
 To add a new pair of users (e.g., user05-user06):
