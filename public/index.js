@@ -1531,10 +1531,12 @@ $(document).ready(function() {
     // bind behavior to training-complete transition screen
     socket.on("show-training-complete", (response) => {
         console.log("Training complete! Showing transition screen");
-        // hide all other screens
-        hideAllScreens();
+        // force-hide all other screens with inline styles
+        $("#welcome, #admin, #consent, #briefing, #demographics-survey, #wait, #design, #intention, #main-postsurvey, #thank-you").css("display", "none");
         // show training-complete as full-viewport page (not collapse — uses fixed CSS)
         $("#training-complete").show();
+        // lock body scroll to prevent any background interaction
+        $("body").css("overflow", "hidden");
         // reset button state
         $("#training-complete-button").prop("disabled", false);
         $("#training-complete-button .spinner-border").addClass("d-none");
@@ -1543,6 +1545,8 @@ $(document).ready(function() {
 
     // bind behavior to training-complete continue button
     $("#training-complete-button").on("click", () => {
+        // unlock body scroll
+        $("body").css("overflow", "");
         // show spinner and disable button
         $("#training-complete-button .spinner-border").removeClass("d-none");
         $(".training-complete-btn-label").text("Waiting for partner...");
