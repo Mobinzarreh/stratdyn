@@ -245,32 +245,48 @@
     </div>
   </div>
 
-  <!-- Training Complete Transition Screen -->
-  <div class="container collapse hide" id="training-complete">
-    <div class="row justify-content-center my-5">
-      <div class="col-md-8">
-        <div class="card shadow-lg border-success">
-          <div class="card-header bg-success text-white">
-            <h3 class="mb-0"><i class="bi-check-circle-fill me-2"></i>Training Complete!</h3>
-          </div>
-          <div class="card-body py-5">
-            <div class="mb-4">
-              <i class="bi-award" style="font-size: 4rem; color: #198754;"></i>
-            </div>
-            <h4 class="mb-3">Great job completing all five training tasks!</h4>
-            <p class="lead mb-4">You are now familiar with the interface and how the tasks work.</p>
-            <hr class="my-4">
-            <p class="mb-4">When you click <strong>Continue</strong>, the main experiment will begin. From this point on, your decisions will be recorded for the study.</p>
-            <p class="text-muted mb-4">You and your partner will proceed together once you are both ready.</p>
+  <!-- Training Complete Transition Screen (full-viewport standalone page) -->
+  <div id="training-complete" style="display:none;">
+    <div class="container py-5">
+      <div class="row">
+        <div class="col">
+          <h1 class="mb-4 text-success"><i class="bi-check-circle-fill me-2"></i>Training Complete!</h1>
+
+          <p class="lead">
+            Great job completing all five training tasks! You are now familiar with the interface and how the tasks work.
+          </p>
+
+          <hr class="my-4">
+
+          <h5>What happens next</h5>
+          <p>
+            When you click <strong>Continue</strong> below, the main experiment will begin.
+            From this point on, <strong>your decisions will be recorded</strong> for the study.
+            You and your partner will proceed together once you are both ready.
+          </p>
+
+          <h5 class="mt-4">Reminder</h5>
+          <ul>
+            <li>Each task has a <strong>90-second time limit</strong> (30 seconds for the intention stage, 60 seconds for the decision stage).</li>
+            <li>You may communicate with your partner via audio, but <strong>do not share any numbers</strong> displayed on your screen.</li>
+            <li>Your payoff depends on both your decision and your partner's decision.</li>
+          </ul>
+
+          <hr class="my-4">
+
+          <div class="text-center">
             <button type="button" class="btn btn-success btn-lg px-5" id="training-complete-button">
               <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
               <span class="training-complete-btn-label">Continue to Main Experiment</span>
             </button>
           </div>
+
+          <div class="text-center mt-4">
+            <img class="h-25 border m-2 rounded shadow" src="images/stevens.png?v=2" alt="Stevens Institute of Technology" />
+          </div>
         </div>
       </div>
     </div>
-    <img class="h-25 border m-2 rounded shadow mt-3" src="images/stevens.png?v=2" alt="Stevens Institute of Technology" />
   </div>
 
   <!-- Part 1: Intention Stage -->

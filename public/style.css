@@ -266,3 +266,21 @@
 .tutorial-progress-dot.completed {
   background: #198754;
 }
+
+/* ========================================
+   TRAINING COMPLETE - FULL VIEWPORT PAGE
+   Covers entire viewport with solid background
+   so no underlying content is visible.
+   ======================================== */
+
+#training-complete {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 1060;
+  overflow-y: auto;
+  padding-top: 60px; /* clear the navbar */
+}
