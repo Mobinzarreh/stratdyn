@@ -33,8 +33,10 @@ $(document).ready(function() {
 
     // Helper function to hide all screens consistently
     function hideAllScreens() {
-        $("#welcome, #admin, #wait, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete")
-            .collapse("hide").removeClass("show").hide();
+        // Use only Bootstrap's collapse mechanism - don't add inline styles with .hide()
+        // which can conflict with Bootstrap's show/hide logic
+        $("#welcome, #admin, #demographics-survey, #consent, #briefing").collapse("hide");
+        $("#wait, #design, #thank-you, #main-postsurvey, #intention, #training-complete").removeClass("show").hide();
     }
 
     // Timer functions
