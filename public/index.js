@@ -31,6 +31,12 @@ $(document).ready(function() {
     var TOTAL_TASK_TIME = 90; // Default for main tasks, 180 for training
     var INTENTION_DISPLAY_TIME = 30; // Default for main tasks, 60 for training
 
+    // Helper function to hide all screens consistently
+    function hideAllScreens() {
+        $("#welcome, #admin, #wait, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete")
+            .collapse("hide").removeClass("show").hide();
+    }
+
     // Timer functions
     function startTimer(duration, stage) {
         // Clear any existing timer
@@ -457,7 +463,7 @@ $(document).ready(function() {
             // Stop briefing video if it's playing
             stopBriefingVideo();
             // Immediately hide all screens (no animation) to prevent overlap
-            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #design, #consent, #briefing, #training-complete").removeClass('show').hide();
+            hideAllScreens();
             // Then show intention screen
             $("#intention").addClass('show').show();
             console.log("After screen changes:",
@@ -542,7 +548,7 @@ $(document).ready(function() {
             // Stop briefing video if it's playing
             stopBriefingVideo();
             // Immediately hide all screens (no animation) to prevent overlap
-            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").removeClass('show').hide();
+            hideAllScreens();
             // Then show design screen
             $("#design").addClass('show').show();
             console.log("After screen changes:",
@@ -1216,8 +1222,8 @@ $(document).ready(function() {
 
     // bind behavior to the socket.io show welcome screen
     socket.on("show-welcome-screen", (response) => {
-        // hide the wait, design and thank you screens
-        $("#admin, #wait, #design, #thank-you, #main-postsurvey, #demographics-survey, #intention, #consent, #briefing, #training-complete").collapse("hide");
+        // hide all other screens
+        hideAllScreens();
         // show the welcome screen
         $("#welcome").collapse("show");
     });
@@ -1225,7 +1231,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show consent screen
     socket.on("show-consent-screen", (response) => {
         // hide all other screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #main-postsurvey, #demographics-survey, #intention, #briefing, #training-complete").collapse("hide");
+        hideAllScreens();
         // reset form
         $("#consent-checkbox").prop("checked", false);
         $("#consent-name").val("");
@@ -1249,7 +1255,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show briefing screen
     socket.on("show-briefing-screen", (response) => {
         // hide all other screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #main-postsurvey, #demographics-survey, #intention, #consent").collapse("hide");
+        hideAllScreens();
         
         // Determine which video to show based on user group
         const videoFile = userGroup === 'control' ? 'briefing_control.mp4' : 'briefing_treatment.mp4';
@@ -1279,8 +1285,8 @@ $(document).ready(function() {
 
     // bind behavior to the socket.io show demographics survey screen
     socket.on("show-demographics-survey-screen", (response) => {
-        // hide the wait, design and thank you and main survey screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #main-postsurvey, #intention, #consent, #briefing, #training-complete").collapse("hide");
+        // hide all other screens
+        hideAllScreens();
         
         // Clear all form inputs to prevent browser auto-fill from showing previous data
         $("#demographics-survey-form input[type='radio']").prop("checked", false);
@@ -1433,8 +1439,8 @@ $(document).ready(function() {
     // bind behavior to the socket.io show admin screen
     socket.on("show-admin-screen", (response) => {
         console.log(response);
-        // hide the wait, design and thank you screens
-        $("#welcome, #wait, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").collapse("hide");
+        // hide all other screens
+        hideAllScreens();
         // show the admin screen
         $("#admin").collapse("show");
         // set the progress bar to the correct value
@@ -1512,8 +1518,8 @@ $(document).ready(function() {
 
     // bind behavior to the socket.io show wait screen
     socket.on("show-wait-screen", (response) => {
-        // hide the welcome, admin, design, and thank you screens
-        $("#welcome, #admin, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").collapse("hide");
+        // hide all other screens
+        hideAllScreens();
         // show the wait screen
         $("#wait").removeClass("hide").show();
     });
@@ -1522,7 +1528,7 @@ $(document).ready(function() {
     socket.on("show-training-complete", (response) => {
         console.log("Training complete! Showing transition screen");
         // hide all other screens
-        $("#welcome, #admin, #wait, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").removeClass('show').hide();
+        hideAllScreens();
         // show the training-complete screen
         $("#training-complete").removeClass('hide').addClass('show').show();
         // reset button state
@@ -1551,7 +1557,7 @@ $(document).ready(function() {
         currentWaitingTaskLabel = response.taskLabel;
         
         // hide all other screens
-        $("#welcome, #admin, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").collapse("hide");
+        hideAllScreens();
         // update wait screen message (more descriptive)
         $("#wait-message").html(`
             <div class="alert alert-info text-start">
@@ -1597,8 +1603,7 @@ $(document).ready(function() {
             
             // Hide ALL screens first using both methods to ensure clean state
             console.log(">>> Step 1: Hiding all screens");
-            $("#admin, #design, #thank-you, #welcome, #demographics-survey, #intention, #consent, #briefing, #training-complete").removeClass('show').hide();
-            $("#wait").removeClass('show').hide();
+            hideAllScreens();
             
             console.log(">>> Step 2: Enabling post-survey form");
             $("#postsurvey-form input").prop("disabled", false);
@@ -1656,8 +1661,7 @@ $(document).ready(function() {
             
             // Hide ALL screens using consistent visibility methods
             console.log(">>> Step 1: Hiding all screens");
-            $("#admin, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").removeClass('show').hide();
-            $("#wait").removeClass('show').hide();
+            hideAllScreens();
             
             // Show the thank you screen
             console.log(">>> Step 2: Showing thank-you screen");
