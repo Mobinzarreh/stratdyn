@@ -266,24 +266,3 @@
 .tutorial-progress-dot.completed {
   background: #198754;
 }
-
-/* ========================================
-   SCREEN VISIBILITY SAFETY NET
-   Prevent stale screens from bleeding through during transitions.
-   Only targets elements in their resting collapsed state (not during
-   Bootstrap's collapsing animation) so normal transitions still work.
-   ======================================== */
-
-#welcome.collapse:not(.show):not(.collapsing),
-#admin.collapse:not(.show):not(.collapsing),
-#wait:not(.show),
-#design:not(.show),
-#thank-you:not(.show),
-#demographics-survey.collapse:not(.show):not(.collapsing),
-#main-postsurvey:not(.show),
-#intention:not(.show),
-#consent.collapse:not(.show):not(.collapsing),
-#briefing.collapse:not(.show):not(.collapsing),
-#training-complete:not(.show) {
-  display: none !important;
-}

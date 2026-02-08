@@ -32,11 +32,13 @@ $(document).ready(function() {
     var INTENTION_DISPLAY_TIME = 30; // Default for main tasks, 60 for training
 
     // Helper function to hide all screens consistently
+    // Collapse elements: manipulate classes only (no inline .hide() which breaks collapse("show"))
+    // jQuery elements: use .hide() for instant display:none
     function hideAllScreens() {
-        // Use only Bootstrap's collapse mechanism - don't add inline styles with .hide()
-        // which can conflict with Bootstrap's show/hide logic
-        $("#welcome, #admin, #demographics-survey, #consent, #briefing").collapse("hide");
-        $("#wait, #design, #thank-you, #main-postsurvey, #intention, #training-complete").removeClass("show").hide();
+        $("#welcome, #admin, #consent, #briefing, #demographics-survey")
+            .removeClass("show collapsing").addClass("collapse");
+        $("#wait, #design, #intention, #training-complete, #main-postsurvey, #thank-you")
+            .removeClass("show").hide();
     }
 
     // Timer functions
