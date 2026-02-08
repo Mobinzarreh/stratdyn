@@ -35,9 +35,9 @@ $(document).ready(function() {
     // Collapse elements: manipulate classes only (no inline .hide() which breaks collapse("show"))
     // jQuery elements: use .hide() for instant display:none
     function hideAllScreens() {
-        $("#welcome, #admin, #consent, #briefing, #demographics-survey")
+        $("#welcome, #admin, #consent, #briefing, #demographics-survey, #training-complete")
             .removeClass("show collapsing").addClass("collapse");
-        $("#wait, #design, #intention, #training-complete, #main-postsurvey, #thank-you")
+        $("#wait, #design, #intention, #main-postsurvey, #thank-you")
             .removeClass("show").hide();
     }
 
@@ -1533,8 +1533,8 @@ $(document).ready(function() {
         console.log("Training complete! Showing transition screen");
         // hide all other screens
         hideAllScreens();
-        // show the training-complete screen
-        $("#training-complete").removeClass('hide').addClass('show').show();
+        // show the training-complete screen (using collapse like consent/welcome)
+        $("#training-complete").collapse("show");
         // reset button state
         $("#training-complete-button").prop("disabled", false);
         $("#training-complete-button .spinner-border").addClass("d-none");
