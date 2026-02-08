@@ -457,7 +457,7 @@ $(document).ready(function() {
             // Stop briefing video if it's playing
             stopBriefingVideo();
             // Immediately hide all screens (no animation) to prevent overlap
-            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #design, #consent, #briefing").removeClass('show').hide();
+            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #design, #consent, #briefing, #training-complete").removeClass('show').hide();
             // Then show intention screen
             $("#intention").addClass('show').show();
             console.log("After screen changes:",
@@ -542,7 +542,7 @@ $(document).ready(function() {
             // Stop briefing video if it's playing
             stopBriefingVideo();
             // Immediately hide all screens (no animation) to prevent overlap
-            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").removeClass('show').hide();
+            $("#welcome, #admin, #wait, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").removeClass('show').hide();
             // Then show design screen
             $("#design").addClass('show').show();
             console.log("After screen changes:",
@@ -684,10 +684,39 @@ $(document).ready(function() {
         currentStep: -1,
         isActive: false,
         overlay: null,
-        totalSteps: 3,
+        totalSteps: 4,
         
         // Step definitions with content
+        // Order: Payoffs → Difficulty Indicator → Intention Slider → Submit
         steps: [
+            {
+                title: 'Understanding Payoffs',
+                icon: '<i class="bi-table"></i>',
+                content: `
+                    <p><strong>Collaborative options (K, M, L):</strong></p>
+                    <ul style="margin: 5px 0; padding-left: 20px;">
+                        <li>If both you and your partner choose collaborative → you get the <strong>higher payoff</strong> (green column)</li>
+                        <li>If you choose collaborative but partner chooses individual → you get the <strong>lower payoff</strong> (red column)</li>
+                    </ul>
+                    <p><strong>Individual option (Y):</strong> Same payoff regardless of what your partner chooses.</p>
+                `,
+                target: '#intention table.table',
+                position: 'right'
+            },
+            {
+                title: 'Collaboration Difficulty',
+                icon: '<i class="bi-speedometer2"></i>',
+                content: `
+                    <p>This indicator shows how <strong>challenging and risky</strong> this task is for you to collaborate on.</p>
+                    <p>The colored bar goes from <span style="color:#198754;font-weight:bold;">green (easier)</span> to <span style="color:#dc3545;font-weight:bold;">red (harder)</span>. The <strong>black marker</strong> shows your position.</p>
+                    <ul style="margin: 5px 0; padding-left: 20px;">
+                        <li>A value of <strong>100</strong> means the task is the most challenging to collaborate on.</li>
+                        <li>A value of <strong>0</strong> means it is the least challenging.</li>
+                    </ul>
+                `,
+                target: '#intention-difficulty-indicator',
+                position: 'below'
+            },
             {
                 title: 'The Intention Slider',
                 icon: '<i class="bi-sliders"></i>',
@@ -701,20 +730,6 @@ $(document).ready(function() {
                 `,
                 target: '#intention-form .card.border-primary',
                 position: 'above'
-            },
-            {
-                title: 'Understanding Payoffs',
-                icon: '<i class="bi-table"></i>',
-                content: `
-                    <p><strong>Collaborative options (A, B, C):</strong></p>
-                    <ul style="margin: 5px 0; padding-left: 20px;">
-                        <li>If both you and your partner choose collaborative → you get the <strong>higher payoff</strong> (green column)</li>
-                        <li>If you choose collaborative but partner chooses individual → you get the <strong>lower payoff</strong> (red column)</li>
-                    </ul>
-                    <p><strong>Individual option (Y):</strong> Same payoff regardless of what your partner chooses.</p>
-                `,
-                target: '#intention table.table',
-                position: 'right'
             },
             {
                 title: 'Submit Your Intention',
@@ -1202,7 +1217,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show welcome screen
     socket.on("show-welcome-screen", (response) => {
         // hide the wait, design and thank you screens
-        $("#admin, #wait, #design, #thank-you, #main-postsurvey, #demographics-survey, #intention, #consent, #briefing").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #main-postsurvey, #demographics-survey, #intention, #consent, #briefing, #training-complete").collapse("hide");
         // show the welcome screen
         $("#welcome").collapse("show");
     });
@@ -1210,7 +1225,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show consent screen
     socket.on("show-consent-screen", (response) => {
         // hide all other screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #main-postsurvey, #demographics-survey, #intention, #briefing").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #welcome, #main-postsurvey, #demographics-survey, #intention, #briefing, #training-complete").collapse("hide");
         // reset form
         $("#consent-checkbox").prop("checked", false);
         $("#consent-name").val("");
@@ -1265,7 +1280,7 @@ $(document).ready(function() {
     // bind behavior to the socket.io show demographics survey screen
     socket.on("show-demographics-survey-screen", (response) => {
         // hide the wait, design and thank you and main survey screens
-        $("#admin, #wait, #design, #thank-you, #welcome, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
+        $("#admin, #wait, #design, #thank-you, #welcome, #main-postsurvey, #intention, #consent, #briefing, #training-complete").collapse("hide");
         
         // Clear all form inputs to prevent browser auto-fill from showing previous data
         $("#demographics-survey-form input[type='radio']").prop("checked", false);
@@ -1419,7 +1434,7 @@ $(document).ready(function() {
     socket.on("show-admin-screen", (response) => {
         console.log(response);
         // hide the wait, design and thank you screens
-        $("#welcome, #wait, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
+        $("#welcome, #wait, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").collapse("hide");
         // show the admin screen
         $("#admin").collapse("show");
         // set the progress bar to the correct value
@@ -1498,9 +1513,32 @@ $(document).ready(function() {
     // bind behavior to the socket.io show wait screen
     socket.on("show-wait-screen", (response) => {
         // hide the welcome, admin, design, and thank you screens
-        $("#welcome, #admin, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
+        $("#welcome, #admin, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").collapse("hide");
         // show the wait screen
         $("#wait").removeClass("hide").show();
+    });
+
+    // bind behavior to training-complete transition screen
+    socket.on("show-training-complete", (response) => {
+        console.log("Training complete! Showing transition screen");
+        // hide all other screens
+        $("#welcome, #admin, #wait, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").removeClass('show').hide();
+        // show the training-complete screen
+        $("#training-complete").removeClass('hide').addClass('show').show();
+        // reset button state
+        $("#training-complete-button").prop("disabled", false);
+        $("#training-complete-button .spinner-border").addClass("d-none");
+        $(".training-complete-btn-label").text("Continue to Main Experiment");
+    });
+
+    // bind behavior to training-complete continue button
+    $("#training-complete-button").on("click", () => {
+        // show spinner and disable button
+        $("#training-complete-button .spinner-border").removeClass("d-none");
+        $(".training-complete-btn-label").text("Waiting for partner...");
+        $("#training-complete-button").prop("disabled", true);
+        // notify server
+        socket.emit("submit-training-complete", {});
     });
 
     // Track waiting state for fallback detection
@@ -1513,7 +1551,7 @@ $(document).ready(function() {
         currentWaitingTaskLabel = response.taskLabel;
         
         // hide all other screens
-        $("#welcome, #admin, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
+        $("#welcome, #admin, #design, #thank-you, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").collapse("hide");
         // update wait screen message (more descriptive)
         $("#wait-message").html(`
             <div class="alert alert-info text-start">
@@ -1559,7 +1597,7 @@ $(document).ready(function() {
             
             // Hide ALL screens first using both methods to ensure clean state
             console.log(">>> Step 1: Hiding all screens");
-            $("#admin, #design, #thank-you, #welcome, #demographics-survey, #intention, #consent, #briefing").removeClass('show').hide();
+            $("#admin, #design, #thank-you, #welcome, #demographics-survey, #intention, #consent, #briefing, #training-complete").removeClass('show').hide();
             $("#wait").removeClass('show').hide();
             
             console.log(">>> Step 2: Enabling post-survey form");
@@ -1618,7 +1656,7 @@ $(document).ready(function() {
             
             // Hide ALL screens using consistent visibility methods
             console.log(">>> Step 1: Hiding all screens");
-            $("#admin, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").removeClass('show').hide();
+            $("#admin, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").removeClass('show').hide();
             $("#wait").removeClass('show').hide();
             
             // Show the thank you screen
@@ -1671,7 +1709,7 @@ $(document).ready(function() {
     socket.on("experiment-ended", (response) => {
         console.log("Experiment ended:", response.reason);
         // Hide all screens and show thank you
-        $("#admin, #wait, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing").collapse("hide");
+        $("#admin, #wait, #design, #welcome, #demographics-survey, #main-postsurvey, #intention, #consent, #briefing, #training-complete").collapse("hide");
         
         // Customize thank you message based on who declined
         if (response.reason === "user-declined") {

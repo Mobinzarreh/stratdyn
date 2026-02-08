@@ -262,6 +262,10 @@ module.exports = function(io) {
     // Structure: { "user01": 5, "user02": 4, ... } = user01 completed up to task 5
     let userTaskCompletion = {};
 
+    // TRAINING-COMPLETE SYNC: Track who acknowledged the training-complete transition
+    // Structure: { "user01": true, "user02": false } = user01 clicked Continue
+    let trainingCompleteAck = {};
+
     let timestamp = Math.floor(new Date().getTime() / 1000);
     let sessionId = 'session2_pilot'; // Can be changed as needed
 
@@ -750,6 +754,10 @@ module.exports = function(io) {
                 } else if (taskIndex === -2) {
                     // Show briefing page
                     showBriefingScreen(context);
+                } else if (taskIndex === 5 && !trainingCompleteAck[username]) {
+                    // At first focal task but haven't acknowledged training-complete transition
+                    console.log(`[CONTENT] Showing training-complete transition for ${username}`);
+                    context.emit('show-training-complete', {});
                 } else if (taskIndex < totalTasks) {
                     // Show task (0-4 = training, 5+ = main experiment including distraction)
                     showDesignTask(context, 'intention', username);
@@ -1215,9 +1223,16 @@ module.exports = function(io) {
                                 console.log(`    nextIndex=${nextIndex}, totalUserTasks=${totalUserTasks}`);
                                 
                                 if (nextIndex < totalUserTasks) {
-                                    console.log(`   📋 Showing next task to both users`);
-                                    if (users[username]) showDesignTask(users[username].socket, 'intention', username);
-                                    if (users[partner]) showDesignTask(users[partner].socket, 'intention', partner);
+                                    // Check if training just ended (transitioning from task 4 to task 5)
+                                    if (nextIndex === 5) {
+                                        console.log(`   🎓 Training complete! Showing transition screen to both users`);
+                                        if (users[username]) users[username].socket.emit('show-training-complete', {});
+                                        if (users[partner]) users[partner].socket.emit('show-training-complete', {});
+                                    } else {
+                                        console.log(`   📋 Showing next task to both users`);
+                                        if (users[username]) showDesignTask(users[username].socket, 'intention', username);
+                                        if (users[partner]) showDesignTask(users[partner].socket, 'intention', partner);
+                                    }
                                 } else if (nextIndex === totalUserTasks) {
                                     console.log(`\n   ╔═══════════════════════════════════════════════════════`);
                                     console.log(`   ║ 📝 POST-SURVEY EMISSION BLOCK`);
@@ -1459,6 +1474,36 @@ module.exports = function(io) {
                 }
                 
                 // Notify admins of user progress
+                notifyAdmins();
+            }
+        });
+
+        // Training-complete transition page acknowledgement
+        socket.on('submit-training-complete', (request) => {
+            if (username != null) {
+                console.log(`${username} acknowledged training-complete transition`);
+                trainingCompleteAck[username] = true;
+                
+                const partner = experiment.partners[username];
+                
+                if (partner && trainingCompleteAck[partner]) {
+                    // Both partners ready - advance both to first focal task
+                    console.log(`✅ Both ${username} and ${partner} ready. Starting main experiment.`);
+                    setImmediate(() => {
+                        if (users[username]) showDesignTask(users[username].socket, 'intention', username);
+                        if (users[partner]) showDesignTask(users[partner].socket, 'intention', partner);
+                    });
+                } else {
+                    // Partner hasn't acknowledged yet - show waiting screen
+                    console.log(`⏳ ${username} waiting for ${partner} to acknowledge training-complete`);
+                    if (users[username]) {
+                        users[username].socket.emit('show-partner-waiting', {
+                            partner: partner,
+                            taskLabel: 'Training Complete'
+                        });
+                    }
+                }
+                
                 notifyAdmins();
             }
         });

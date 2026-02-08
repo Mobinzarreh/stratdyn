@@ -245,6 +245,34 @@
     </div>
   </div>
 
+  <!-- Training Complete Transition Screen -->
+  <div class="container collapse hide text-center" id="training-complete">
+    <div class="row justify-content-center my-5">
+      <div class="col-md-8">
+        <div class="card shadow-lg border-success">
+          <div class="card-header bg-success text-white">
+            <h3 class="mb-0"><i class="bi-check-circle-fill me-2"></i>Training Complete!</h3>
+          </div>
+          <div class="card-body py-5">
+            <div class="mb-4">
+              <i class="bi-award" style="font-size: 4rem; color: #198754;"></i>
+            </div>
+            <h4 class="mb-3">Great job completing all five training tasks!</h4>
+            <p class="lead mb-4">You are now familiar with the interface and how the tasks work.</p>
+            <hr class="my-4">
+            <p class="mb-4">When you click <strong>Continue</strong>, the main experiment will begin. From this point on, your decisions will be recorded for the study.</p>
+            <p class="text-muted mb-4">You and your partner will proceed together once you are both ready.</p>
+            <button type="button" class="btn btn-success btn-lg px-5" id="training-complete-button">
+              <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              <span class="training-complete-btn-label">Continue to Main Experiment</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <img class="h-25 border m-2 rounded shadow mt-3" src="images/stevens.png?v=2" alt="Stevens Institute of Technology" />
+  </div>
+
   <!-- Part 1: Intention Stage -->
   <div class="container collapse hide" id="intention">
     <div class="row my-2">
@@ -320,7 +348,7 @@
             <p class="card-text">The following shows how challenging collaboration is for this task:</p>
             
             <!-- Unified Difficulty Slider with Two Markers -->
-            <div class="position-relative" style="padding: 10px 0 40px 0;">
+            <div id="intention-difficulty-indicator" class="position-relative" style="padding: 10px 0 40px 0;">
               <!-- Slider Background with Gradient (Lightened colors for better visibility) -->
               <div style="position: relative; height: 20px; background: linear-gradient(to right, #a8e6a8 0%, #ffe69c 50%, #ffb3b3 100%); border-radius: 10px; margin: 20px 0 25px 0;">
                 <!-- Individual Marker (Black vertical line) with label ABOVE slider -->
