@@ -267,7 +267,7 @@ module.exports = function(io) {
     let trainingCompleteAck = {};
 
     let timestamp = Math.floor(new Date().getTime() / 1000);
-    let sessionId = 'session2_pilot'; // Can be changed as needed
+    let sessionId = 'session3_pilot'; // Can be changed as needed
 
     // Ensure logs directory exists
     const logsDir = './logs';
