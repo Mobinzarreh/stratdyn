@@ -40,6 +40,28 @@ module.exports = function(io) {
     );
     console.log(`Loaded task schedule: ${taskSchedule.total_tasks} tasks`);
 
+    // Load payoff values lookup from CSV (task_name -> payoff level & all upside/downside values)
+    const payoffLookup = {};
+    const payoffCsvLines = fs.readFileSync('./data/payoff_values.csv', 'utf8').trim().split('\n');
+    // Skip header rows (lines 0-1), parse data rows
+    for (let i = 2; i < payoffCsvLines.length; i++) {
+        const cols = payoffCsvLines[i].split(',');
+        const taskName = cols[3].trim();
+        payoffLookup[taskName] = {
+            payoffLevel: parseInt(cols[1]),
+            uLevel: parseInt(cols[2]),
+            K_upside: cols[4],
+            K_downside: cols[5],
+            L_upside: cols[6],
+            L_downside: cols[7],
+            M_upside: cols[8],
+            M_downside: cols[9],
+            Y_upside: cols[10],
+            Y_downside: cols[11]
+        };
+    }
+    console.log(`Loaded payoff lookup for ${Object.keys(payoffLookup).length} tasks`);
+
     /**
      * Get user role (user1 or user2) based on username
      * Odd-numbered users (user01, user03) are 'user1', even-numbered are 'user2'
@@ -297,7 +319,7 @@ module.exports = function(io) {
         // Create main task log file with new headers (includes distraction flag and date column)
         fs.writeFile(
             logFiles.task, 
-            "timestamp,date,username,group,partner,task,uiTaskNumber,distraction,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,date,username,group,partner,task,uiTaskNumber,distraction,payoffLevel,uLevel,K_upside,K_downside,L_upside,L_downside,M_upside,M_downside,Y_upside,Y_downside,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -308,7 +330,7 @@ module.exports = function(io) {
         // Create training task log file (separate from main analysis)
         fs.writeFile(
             logFiles.trainingTask, 
-            "timestamp,date,username,group,partner,task,uiTaskNumber,distraction,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
+            "timestamp,date,username,group,partner,task,uiTaskNumber,distraction,payoffLevel,uLevel,K_upside,K_downside,L_upside,L_downside,M_upside,M_downside,Y_upside,Y_downside,intention,intentionTimestamp,intentionTimeSpent,uValue,uPercentile,rValue,rPercentile,uiIndividualDifficulty,uiPairedDifficulty,finalChoice,finalChoiceTimestamp,choiceTimeSpent,totalTimeSpent,presentedOrder,pointsEarned,pointsLostPenalty,scoreNet,partnerScore\r\n",
             err => {
                 if (err) {
                     console.error(err);
@@ -1127,7 +1149,10 @@ module.exports = function(io) {
                         uiTaskNumber = taskIndex - 4; // For main tasks, subtract 5 training tasks
                     }
                     
-                    console.log(`📝 Writing CSV for ${user}: Task ${userTask.label}, UI#${uiTaskNumber}, Distraction=${userIsDistraction}, Earned=${userPointsEarned}, Net=${userNetScore}`);
+                    // Look up payoff data for this task
+                    const taskPayoff = payoffLookup[userTask.label] || {};
+                    
+                    console.log(`📝 Writing CSV for ${user}: Task ${userTask.label}, UI#${uiTaskNumber}, Distraction=${userIsDistraction}, PayoffLevel=${taskPayoff.payoffLevel || ''}, Earned=${userPointsEarned}, Net=${userNetScore}`);
                     
                     const csvTimestamp = Date.now();
                     fs.appendFile(
@@ -1140,6 +1165,16 @@ module.exports = function(io) {
                         userTask.label + "," + 
                         uiTaskNumber + "," +
                         (userIsDistraction ? "true" : "false") + "," +
+                        (taskPayoff.payoffLevel !== undefined ? taskPayoff.payoffLevel : '') + "," +
+                        (taskPayoff.uLevel !== undefined ? taskPayoff.uLevel : '') + "," +
+                        (taskPayoff.K_upside !== undefined ? taskPayoff.K_upside : '') + "," +
+                        (taskPayoff.K_downside !== undefined ? taskPayoff.K_downside : '') + "," +
+                        (taskPayoff.L_upside !== undefined ? taskPayoff.L_upside : '') + "," +
+                        (taskPayoff.L_downside !== undefined ? taskPayoff.L_downside : '') + "," +
+                        (taskPayoff.M_upside !== undefined ? taskPayoff.M_upside : '') + "," +
+                        (taskPayoff.M_downside !== undefined ? taskPayoff.M_downside : '') + "," +
+                        (taskPayoff.Y_upside !== undefined ? taskPayoff.Y_upside : '') + "," +
+                        (taskPayoff.Y_downside !== undefined ? taskPayoff.Y_downside : '') + "," +
                         (userDecision.intention !== undefined && userDecision.intention !== null ? userDecision.intention : '') + "," + 
                         (userDecision.intentionTimestamp || '') + "," + 
                         (userDecision.intentionTimeSpent || 0) + "," +
