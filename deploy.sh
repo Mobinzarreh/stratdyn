@@ -43,7 +43,7 @@ cd ~/stratdyn
 echo "📥 Pulling latest changes..."
 git fetch --all
 git checkout feature/ui-intention-finalchoice
-git pull origin feature/ui-intention-finalchoice
+git pull myfork feature/ui-intention-finalchoice
 
 echo "📊 Ensuring directories exist..."
 mkdir -p logs
