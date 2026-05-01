@@ -1,282 +1,272 @@
-# StratDyn Experiment Session Management Guide
+# StratDyn Session Management Guide
 
 ## Overview
-StratDyn is a collaborative decision-making experiment where **paired users** work together on tasks. Each session collects data from multiple user pairs simultaneously. This guide outlines the complete process for managing experiment sessions.
+This guide documents the complete workflow for managing StratDyn experiment sessions, from pre-experiment preparation through post-experiment data organization. All processes are designed for consistency and data integrity across sessions 1-30.
 
 ---
 
-## Session Lifecycle
+## BEFORE EXPERIMENT
 
-### 1. Pre-Session Preparation
-
-#### A. Session ID Setup
-**CRITICAL: Always change sessionId before starting a new session**
-
+### 1. Change SessionId
+Update `stratdyn.js` at line 292:
 ```javascript
-// In stratdyn.js, line ~236
-let sessionId = 'session3_pilot'; // Change this for each new session
+let sessionId = 'sessionX'; // Change X to current session number
 ```
 
-**Why this matters:**
-- Each session creates separate CSV files: `task_treatment_{sessionId}.csv`
-- Prevents data mixing between sessions
-- Allows parallel analysis of different sessions
-
-#### B. User Credentials Preparation
-- Ensure user credentials are set up in `data/userCredentials.json`
-- Each pair needs unique usernames (e.g., user01/user02, user03/user04)
-- Pairs are automatically formed based on login order
-
-#### C. Server Deployment
-**Follow DEPLOYMENT_CHECKLIST.md strictly:**
+### 2. Commit and Push
 ```bash
-# 1. Commit and push changes locally
 git add stratdyn.js
-git commit -m "Change sessionId to session3_pilot"
-git push myfork feature-branch
+git commit -m "Set sessionId to sessionX for experiment"
+git push
+```
 
-# 2. Deploy to AWS (CRITICAL: rebuild Docker image)
+### 3. Deploy to AWS
+SSH into the server and redeploy:
+```bash
 ssh -i ~/.ssh/career-game.pem ec2-user@game.code-lab.org
 cd stratdyn
-git pull myfork feature-branch
-docker build -t stratdyn-app:latest .  # ← DON'T SKIP THIS!
+git pull  # Pulls current branch (feature/ui-intention-finalchoice)
+docker build -t stratdyn-app:latest .
 docker-compose down && docker-compose up -d
-
-# 3. Verify deployment
-docker-compose logs --tail=10 stratdyn
 ```
 
----
+**CRITICAL:** Always rebuild Docker image - Docker caches old code.
 
-### 2. During Session Execution
-
-#### A. User Management
-- **Expected participants**: Multiple pairs (typically 10-20 pairs per session)
-- **Login process**: Users access `https://game.code-lab.org` and enter passcodes
-- **Pairing**: Automatic - first user becomes "odd", second becomes "even" in pair
-- **Monitoring**: Check server logs for user activity:
-  ```bash
-  ssh -i ~/.ssh/career-game.pem ec2-user@game.code-lab.org
-  cd stratdyn && docker-compose logs -f stratdyn
-  ```
-
-#### B. Task Sequence (Per Pair)
-Each pair completes:
-1. **Consent page** (initial setup)
-2. **Pre-survey** (demographics)
-3. **Training Tasks** (2 tasks to learn interface)
-4. **Main Tasks** (25 focal tasks + 5 distraction tasks = 32 total)
-5. **Post-survey** (experience feedback)
-
-#### C. Data Collection Points
-- **Real-time**: Task decisions logged immediately
-- **Surveys**: Collected at start/end of session
-- **Synchronization**: Partner responses required before proceeding
-
-#### D. Session Monitoring
-Monitor for:
-- User login/logout events
-- Task completion progress
-- Any errors or disconnections
-- Server performance
-
----
-
-### 3. Post-Session Data Management
-
-#### A. Immediate Data Download
-**Download immediately after session ends:**
+### 4. Verify Deployment - Check Logs
 ```bash
-# From local machine
-scp -i ~/.ssh/career-game.pem ec2-user@game.code-lab.org:~/stratdyn/logs/*_{sessionId}.csv remote-data/
+docker logs stratdyn-app-1 | grep sessionId
+# Should show: "sessionId: sessionX"
 ```
 
-**Files to collect:**
-- `task_treatment_{sessionId}.csv` - Main task data
-- `training_task_treatment_{sessionId}.csv` - Training data
-- `demographics_survey_treatment_{sessionId}.csv` - User demographics
-- `presurvey_treatment_{sessionId}.csv` - Pre-session survey
-- `postsurvey_treatment_{sessionId}.csv` - Post-session survey
-
-#### B. Data Verification
-**Check data integrity:**
+### 5. Verify Server Accessibility
+Test that login page is actually accessible:
 ```bash
-# Count completed pairs
-wc -l remote-data/task_treatment_{sessionId}.csv
-# Should be: (number of pairs × 32 tasks × 2 users) + 1 header
-# Example: 10 pairs = (10 × 32 × 2) + 1 = 641 lines
-
-# Check for incomplete pairs
-grep -c "user01\|user03\|user05" remote-data/task_treatment_{sessionId}.csv
-grep -c "user02\|user04\|user06" remote-data/task_treatment_{sessionId}.csv
+curl -s https://game.code-lab.org | head -20
+# Should show HTML login page content
 ```
 
-#### C. Data Backup
-- Store downloaded files in organized folders: `data/session1_pilot/`, `data/session2_pilot/`
-- Keep raw CSV files as master copies
-- Document any data quality issues
+### 6. Claude AI Reports Ready
+Once logs confirm correct sessionId AND login page is accessible, I will report: **"Ready for test"**
 
----
+### 6. User Tests with Test Data
+You run tests with users: `test-1`, `test-2`, etc.
+- Test all user workflows
+- Verify data storage is working correctly
+- Document any issues
 
-### 4. Session Transition
+### 7. Request Test Data Download
+You message: "download the test and see whether it is fine and check it"
 
-#### A. Clean Up Previous Session
+### 8. Claude Downloads, Verifies, and Cleans Up Test Data
+
+**A. Download test data:**
 ```bash
-# Optional: Remove old session files from server (after backup)
-ssh -i ~/.ssh/career-game.pem ec2-user@game.code-lab.org
-cd stratdyn && rm logs/*_session{old}_pilot.csv
+./download_data.sh
 ```
 
-#### B. Prepare Next Session
-1. **Increment sessionId**: `session1_pilot` → `session2_pilot` → `session3_pilot`
-2. **Update user credentials** if needed for new participants
-3. **Deploy changes** following checklist
-4. **Test with 1 pair** before full session
+**B. Verify test data integrity:**
+- Check file line counts match expected format
+- Verify test-1, test-2 usernames in data
+- Sample head/tail to confirm data structure
 
----
-
-## Session Types and Naming Convention
-
-### Pilot Sessions
-- `session1_pilot`, `session2_pilot`, etc.
-- Used for testing and small-scale data collection
-- May have incomplete data or experimental conditions
-
-### Main Experiment Sessions
-- `session001`, `session002`, etc. (3-digit numbering)
-- Full experimental sessions with complete protocols
-- Production data for analysis
-
-### Special Sessions
-- `session_debug` - For debugging/testing
-- `session_training` - For experimenter training
-- `session_practice` - For participant practice
-
----
-
-## Troubleshooting Common Issues
-
-### Issue: Users can't connect
-**Check:** Server logs, Docker container status
-**Fix:** Restart containers, check network connectivity
-
-### Issue: Data not saving to correct session
-**Check:** Docker image was rebuilt after sessionId change
-**Fix:** Rebuild image and redeploy
-
-### Issue: Incomplete pairs
-**Check:** User login patterns, disconnections
-**Fix:** Document incomplete pairs, may need re-running
-
-### Issue: Server performance issues
-**Check:** Memory usage, concurrent users
-**Fix:** Monitor logs, scale server if needed
-
----
-
-## Quality Assurance Checklist
-
-### Pre-Session
-- [ ] SessionId updated in code
-- [ ] Docker image rebuilt and deployed
-- [ ] User credentials configured
-- [ ] Server logs show correct sessionId
-- [ ] Test login works
-
-### During Session
-- [ ] Monitor user logins and progress
-- [ ] Check for error messages in logs
-- [ ] Ensure pairs are forming correctly
-- [ ] Monitor server performance
-
-### Post-Session
-- [ ] All CSV files downloaded
-- [ ] Data completeness verified
-- [ ] Files backed up securely
-- [ ] SessionId incremented for next session
-
----
-
-## Data Analysis Preparation
-
-### File Organization
-```
-data/
-├── session1_pilot/
-│   ├── task_treatment_session1_pilot.csv
-│   ├── training_task_treatment_session1_pilot.csv
-│   └── survey_files...
-├── session2_pilot/
-│   └── ...
-└── session001/
-    └── ...
+**C. Delete test data locally:**
+```bash
+rm remote-data/task_*_sessionX.csv
+rm remote-data/training_task_*_sessionX.csv
+rm remote-data/demographics_survey_*_sessionX.csv
+rm remote-data/postsurvey_*_sessionX.csv
+rm remote-data/consent_log_sessionX.csv
 ```
 
-### Key Metrics to Track
-- **Completion rate**: Pairs who finished all tasks
-- **Task completion time**: Average time per task/pair
-- **Synchronization success**: Partner waiting times
-- **Data quality**: Missing responses, invalid entries
+**D. Delete test data from AWS:**
+```bash
+ssh -i ~/.ssh/career-game.pem ec2-user@game.code-lab.org "rm stratdyn/logs/*_sessionX.csv"
+```
+
+**E. Report ready for actual experiment:**
+"Test data verified and deleted. Ready for actual experiment."
+
+### 9. User Runs Actual Experiment
+You conduct the actual experiment with real participants.
 
 ---
 
-## Emergency Procedures
+## AFTER EXPERIMENT
 
-### Session Interruption
-1. **Document what happened** (time, users affected, error messages)
-2. **Download partial data** immediately
-3. **Assess data completeness**
-4. **Decide**: Continue session or restart with new sessionId
+### 1. Download Session Data
+You message: "download the data"
 
-### Data Loss Prevention
-- **Always download data immediately** after session
-- **Keep multiple backups** of raw data
-- **Document any data quality issues**
-- **Never modify raw CSV files**
+I execute:
+```bash
+./download_data.sh
+```
 
-### Server Issues
-- **Have backup server ready** if possible
-- **Document all server changes**
-- **Test recovery procedures** regularly
+### 2. Verify Data Integrity
+Check for session X data:
+- Task files: 49 lines each (1 header + 24 tasks × 2 users)
+- Training files: 11 lines each (1 header + 10 training tasks)
+- Survey files present for both groups
+- Sample head/tail to confirm structure
+
+**Verify data consistency:**
+- Control and treatment task files have equal line counts (both should be 49)
+- Both groups have same number of participants
+```bash
+# Check line counts match
+wc -l remote-data/task_control_sessionX.csv remote-data/task_treatment_sessionX.csv
+# Both should be 49
+```
+
+### 3. Organize Session Data - Create Directory Structure
+Create organized folder structure matching sessions 1-11:
+
+```
+remote-data/session_X/
+├── control/
+│   ├── task_control_sessionX.csv
+│   ├── training_task_control_sessionX.csv
+│   ├── demographics_survey_control_sessionX.csv
+│   └── postsurvey_control_sessionX.csv
+├── treatment/
+│   ├── task_treatment_sessionX.csv
+│   ├── training_task_treatment_sessionX.csv
+│   ├── demographics_survey_treatment_sessionX.csv
+│   └── postsurvey_treatment_sessionX.csv
+└── logs/
+    └── consent_log_sessionX.csv
+```
+
+### 4. Move Files to Appropriate Directories
+- Control group CSV files → `session_X/control/`
+- Treatment group CSV files → `session_X/treatment/`
+- Consent logs → `session_X/logs/`
+
+### 5. Verify Organization Complete
+Confirm all files are in correct locations and none are missing.
 
 ---
 
-## Session Planning Template
+## Pre-Experiment Checklist
 
-**Session: [sessionId]**
-**Date:** [YYYY-MM-DD]
-**Expected pairs:** [number]
-**Start time:** [HH:MM UTC]
-**End time:** [HH:MM UTC]
-
-**Pre-session checklist:**
-- [ ] SessionId updated
-- [ ] Deployed and verified
-- [ ] User credentials ready
-- [ ] Backup server available
-
-**During session:**
-- [ ] Monitor logs continuously
-- [ ] Track completion progress
-- [ ] Handle user issues promptly
-
-**Post-session:**
-- [ ] Data downloaded and verified
-- [ ] Files backed up
-- [ ] Session summary documented
+- [ ] SessionId updated in `stratdyn.js:292`
+- [ ] Git commit: `"Set sessionId to sessionX for experiment"`
+- [ ] Git push to remote
+- [ ] Docker image rebuilt on AWS
+- [ ] Docker containers restarted
+- [ ] Logs confirm correct sessionId
+- [ ] Ready for test message sent
 
 ---
 
-## Contact and Support
+## Post-Experiment Checklist
 
-For technical issues:
-- Check DEPLOYMENT_CHECKLIST.md
-- Review server logs
-- Test with minimal user load first
+- [ ] Data downloaded via `./download_data.sh`
+- [ ] Data integrity verified
+- [ ] `session_X/` directory structure created
+- [ ] Control files organized in `session_X/control/`
+- [ ] Treatment files organized in `session_X/treatment/`
+- [ ] Logs organized in `session_X/logs/`
+- [ ] All files accounted for and in correct locations
 
-For data issues:
-- Verify file downloads immediately
-- Check data completeness scripts
-- Document any anomalies
+---
 
-Remember: **Data integrity is paramount** - always prioritize correct data collection over speed.
+## Session Data Structure Reference
+
+### File Naming Convention
+```
+task_[control/treatment]_session[X].csv
+training_task_[control/treatment]_session[X].csv
+demographics_survey_[control/treatment]_session[X].csv
+postsurvey_[control/treatment]_session[X].csv
+consent_log_session[X].csv
+```
+
+### Expected File Counts per Session
+- Task files: 2 (1 control + 1 treatment)
+- Training task files: 2 (1 control + 1 treatment)
+- Demographics survey files: 2 (1 control + 1 treatment)
+- Post-survey files: 2 (1 control + 1 treatment)
+- Consent logs: 1
+
+**Total: 9 files per session**
+
+---
+
+## Session Data Line Count Reference
+
+### Task Files
+- Expected: 49 lines per file (1 header + 24 tasks × 2 users)
+- Both control and treatment should have 49 lines
+
+### Training Task Files
+- Expected: 11 lines per file (1 header + 10 training tasks)
+- Both control and treatment should have 11 lines
+
+### Survey Files
+- Demographics: 1 line (header + 1 data row per group)
+- Post-survey: 1 line (header + 1 data row per group)
+
+---
+
+## Directory Organization Example: Session 11
+
+```
+remote-data/
+├── session_1/
+├── session_2/
+├── ...
+├── session_10/
+└── session_11/
+    ├── control/
+    │   ├── task_control_session11.csv
+    │   ├── training_task_control_session11.csv
+    │   ├── demographics_survey_control_session11.csv
+    │   └── postsurvey_control_session11.csv
+    ├── treatment/
+    │   ├── task_treatment_session11.csv
+    │   ├── training_task_treatment_session11.csv
+    │   ├── demographics_survey_treatment_session11.csv
+    │   └── postsurvey_treatment_session11.csv
+    └── logs/
+        └── consent_log_session11.csv
+```
+
+---
+
+## Troubleshooting
+
+### Issue: Deployment logs don't show correct sessionId
+**Solution:** 
+1. Verify code change was pushed
+2. Rebuild Docker image: `docker build -t stratdyn-app:latest .`
+3. Restart containers: `docker-compose down && docker-compose up -d`
+4. Check logs again
+
+### Issue: Test data doesn't download properly
+**Solution:**
+1. Verify server logs show data was collected
+2. Check file permissions on server
+3. Verify `download_data.sh` script runs without errors
+
+### Issue: Data line counts don't match expected
+**Solution:**
+1. Count completed pairs: `wc -l remote-data/task_*_sessionX.csv`
+2. Verify both test users appear in data
+3. Check for incomplete task sequences
+
+---
+
+## Important Reminders
+
+1. **Always rebuild Docker image after code changes** - Docker caches old code
+2. **Verify deployment before declaring ready** - Check logs for correct sessionId
+3. **Delete test data before actual experiment** - Prevents data contamination
+4. **Organize immediately after experiment** - Prevents file confusion
+5. **Maintain consistent naming** - Keep format: `session_X` for directories, `sessionX` for sessionId
+6. **Backup data** - Keep organized session folders as master copies
+
+---
+
+## Session Tracking
+
+Track all sessions (1-30) in SESSION_CHECKLIST.md with completion status for each phase.
